@@ -1,0 +1,1589 @@
+[
+  {
+    "_id": "1777494002666",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-04-29T20:20:02.666Z"
+  },
+  {
+    "_id": "1777493465651",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-04-29T20:11:05.651Z"
+  },
+  {
+    "_id": "1777493367281",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-04-29T20:09:27.281Z"
+  },
+  {
+    "_id": "1777493352871",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-04-29T20:09:12.871Z"
+  },
+  {
+    "_id": "1777493044025",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-04-29T20:04:04.025Z"
+  },
+  {
+    "_id": "1777492679938",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-04-29T19:57:59.939Z"
+  },
+  {
+    "id": "25dfd73f-165e-498d-97a8-0659446c64c0",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69f25665d4249c49299bedbf",
+      "productName": "ፕሪሚየም በእጅ የተሸመነ የጥጥ ወንድ ቲሸርት(T-shirt)",
+      "category": "Textiles",
+      "price": 3000
+    },
+    "message": "Published product: ፕሪሚየም በእጅ የተሸመነ የጥጥ ወንድ ቲሸርት(T-shirt)",
+    "createdAt": "2026-04-29T19:05:10.129Z"
+  },
+  {
+    "id": "c16e5b68-a9b7-4860-934f-9085f3677015",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-04-09T10:29:42.268Z"
+  },
+  {
+    "id": "e132a51c-91ba-48c4-b345-880ffced9999",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69d77f5cddbab7c73b474871",
+      "productName": "Traditional White Kemis (Men's Version",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Traditional White Kemis (Men's Version",
+    "createdAt": "2026-04-09T10:29:34.749Z"
+  },
+  {
+    "id": "0c6bfcde-7392-4359-adec-bea7fa6f833a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69d77f5cddbab7c73b474871",
+      "productName": "Traditional White Kemis (Men's Version",
+      "category": "Textiles",
+      "price": 2000.01
+    },
+    "message": "Published product: Traditional White Kemis (Men's Version",
+    "createdAt": "2026-04-09T10:28:44.449Z"
+  },
+  {
+    "id": "3766f8fa-5cb6-41aa-96c0-a9872031cd83",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_draft_saved",
+    "details": {
+      "productId": "69d77b79ddbab7c73b47458c",
+      "productName": "Shemma Scarf"
+    },
+    "message": "Saved draft product: Shemma Scarf",
+    "createdAt": "2026-04-09T10:12:09.935Z"
+  },
+  {
+    "_id": "1775685532789",
+    "action": "system_wide_update",
+    "adminEmail": "system-standardization",
+    "details": "System-wide commission rate standardized to 5%",
+    "createdAt": "2026-04-08T21:58:52.789Z"
+  },
+  {
+    "id": "51abb6de-b44f-4fa7-8d88-43abed1e902f",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "698605f5f0cc2558ff6a1606",
+      "productName": "Zembil",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Zembil",
+    "createdAt": "2026-04-01T22:37:28.465Z"
+  },
+  {
+    "id": "7fe7d410-f2cb-4674-9201-dea19a19ce99",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b37748f49fcffb59c0a889",
+      "productName": "የቆዳ ላፕቶፕ ኬዝ",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የቆዳ ላፕቶፕ ኬዝ",
+    "createdAt": "2026-03-28T22:33:31.536Z"
+  },
+  {
+    "id": "bfb41bf4-add2-422b-9148-af973d530b33",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3755e99b3f0ab5a678936",
+      "productName": "የአክሱም መስቀል ሀብል",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የአክሱም መስቀል ሀብል",
+    "createdAt": "2026-03-28T21:58:45.999Z"
+  },
+  {
+    "id": "79df2ed1-021a-4fc5-8be7-faa85f2ddf02",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3731270da081915d643d5",
+      "productName": "በሐረር  ቅርጫት",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: በሐረር  ቅርጫት",
+    "createdAt": "2026-03-28T21:58:40.180Z"
+  },
+  {
+    "id": "23250ff0-35e0-4238-9d98-23810a12101b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b36dde8845b1293c3712b2",
+      "productName": "የንግስት ሳባ ጥበብ ቀሚስ",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የንግስት ሳባ ጥበብ ቀሚስ",
+    "createdAt": "2026-03-28T21:58:13.732Z"
+  },
+  {
+    "id": "c439c4f0-f4b9-46b6-bacf-8de8304cf45d",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b36dde8845b1293c3712b2",
+      "productName": "የንግስት ሳባ ጥበብ ቀሚስ",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የንግስት ሳባ ጥበብ ቀሚስ",
+    "createdAt": "2026-03-28T21:58:02.138Z"
+  },
+  {
+    "id": "2c27e54f-086d-427a-aec3-9c588b623d24",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-03-28T21:57:48.284Z"
+  },
+  {
+    "id": "d90a9ca4-7dec-4b90-8d32-f4a76694d2c4",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "698602fef0cc2558ff6a15f7",
+      "productName": "Colorful Decorative Mesob",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Colorful Decorative Mesob",
+    "createdAt": "2026-03-28T21:57:40.016Z"
+  },
+  {
+    "id": "ad7dcac4-aefb-4dab-9da6-281f626037bc",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6997c4a20a0ac0c6c3e29031",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-03-28T21:57:29.041Z"
+  },
+  {
+    "id": "15aa272c-ccb4-4df8-a203-e12e3cd969a2",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6985ef7ab48db5a16687553c",
+      "productName": "Silver Lalibela Cross Pendant",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "inventory",
+        "variations",
+        "status"
+      ]
+    },
+    "message": "Updated product: Silver Lalibela Cross Pendant",
+    "createdAt": "2026-03-28T11:34:46.994Z"
+  },
+  {
+    "id": "5f65ac2e-0db8-44a9-91b1-b66dc02a1d2e",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3731270da081915d643d5",
+      "productName": "በሐረር  ቅርጫት",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: በሐረር  ቅርጫት",
+    "createdAt": "2026-03-23T16:13:41.830Z"
+  },
+  {
+    "id": "f3a30af5-01af-48b6-86ee-4b564df930d1",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6985ef7ab48db5a16687553c",
+      "productName": "Silver Lalibela Cross Pendant",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Silver Lalibela Cross Pendant",
+    "createdAt": "2026-03-23T16:13:19.159Z"
+  },
+  {
+    "id": "312abbc9-63a9-4149-add6-0d5e451d883d",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6985ef7ab48db5a16687553c",
+      "productName": "Silver Lalibela Cross Pendant",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "inventory",
+        "variations",
+        "status"
+      ]
+    },
+    "message": "Updated product: Silver Lalibela Cross Pendant",
+    "createdAt": "2026-03-21T22:08:31.421Z"
+  },
+  {
+    "id": "266bfad3-6336-44c8-9f2d-43d5560d5ce8",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-03-17T06:19:25.935Z"
+  },
+  {
+    "id": "09aa567c-3dac-430b-90fb-adb026e6a8c3",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3731270da081915d643d5",
+      "productName": "በሐረር  ቅርጫት",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "inventory",
+        "variations",
+        "status"
+      ]
+    },
+    "message": "Updated product: በሐረር  ቅርጫት",
+    "createdAt": "2026-03-17T02:57:12.269Z"
+  },
+  {
+    "id": "d0d595b1-fe8a-4002-921f-7003fb4715cd",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b37748f49fcffb59c0a889",
+      "productName": "የቆዳ ላፕቶፕ ኬዝ",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "inventory",
+        "variations",
+        "status"
+      ]
+    },
+    "message": "Updated product: የቆዳ ላፕቶፕ ኬዝ",
+    "createdAt": "2026-03-17T02:55:43.775Z"
+  },
+  {
+    "id": "a3911f92-55ac-469f-b985-917ecd05d07f",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3731270da081915d643d5",
+      "productName": "በሐረር  ቅርጫት",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "variations",
+        "status"
+      ]
+    },
+    "message": "Updated product: በሐረር  ቅርጫት",
+    "createdAt": "2026-03-17T02:42:50.876Z"
+  },
+  {
+    "id": "0e47ced2-d764-4f5f-a001-6da99520e7fa",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3731270da081915d643d5",
+      "productName": "በሐረር  ቅርጫት",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "variations",
+        "status"
+      ]
+    },
+    "message": "Updated product: በሐረር  ቅርጫት",
+    "createdAt": "2026-03-17T02:40:39.466Z"
+  },
+  {
+    "id": "cac91121-ed9c-4631-bbc4-d6433914cee7",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3731270da081915d643d5",
+      "productName": "በሐረር  ቅርጫት",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "variations",
+        "status"
+      ]
+    },
+    "message": "Updated product: በሐረር  ቅርጫት",
+    "createdAt": "2026-03-17T02:39:33.846Z"
+  },
+  {
+    "id": "f3f7637b-fd7e-49f0-934c-7a9c6acb2af1",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69b7c519ca79b023a1bbf007",
+      "productName": "በባህላዊ ጥበብ የተሰራ የቆዳ ጫማ",
+      "category": "Leather Goods",
+      "price": 2000
+    },
+    "message": "Published product: በባህላዊ ጥበብ የተሰራ የቆዳ ጫማ",
+    "createdAt": "2026-03-16T08:53:45.740Z"
+  },
+  {
+    "id": "0ded59ed-b1dd-4f0b-a3dc-273157c6d903",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b3755e99b3f0ab5a678936",
+      "productName": "የአክሱም መስቀል ሀብል",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የአክሱም መስቀል ሀብል",
+    "createdAt": "2026-03-13T08:04:57.914Z"
+  },
+  {
+    "id": "f62d684f-f325-4ac9-8721-aec68830d7b7",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69b37748f49fcffb59c0a889",
+      "productName": "የቆዳ ላፕቶፕ ኬዝ",
+      "category": "Leather Goods",
+      "price": 2000
+    },
+    "message": "Published product: የቆዳ ላፕቶፕ ኬዝ",
+    "createdAt": "2026-03-13T02:32:40.292Z"
+  },
+  {
+    "id": "544fd258-2a31-4423-be83-7b1dfb03215d",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69b3755e99b3f0ab5a678936",
+      "productName": "የአክሱም መስቀል ሀብል",
+      "category": "Jewelry",
+      "price": 3000
+    },
+    "message": "Published product: የአክሱም መስቀል ሀብል",
+    "createdAt": "2026-03-13T02:24:30.104Z"
+  },
+  {
+    "id": "ab30784a-b988-4fcb-8874-d62af77100c7",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69b3731270da081915d643d5",
+      "productName": "በሐረር  ቅርጫት",
+      "category": "Basketry",
+      "price": 2000
+    },
+    "message": "Published product: በሐረር  ቅርጫት",
+    "createdAt": "2026-03-13T02:14:42.468Z"
+  },
+  {
+    "id": "12565d35-dcef-468f-ad7a-b87125bea9fe",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69b36dde8845b1293c3712b2",
+      "productName": "የንግስት ሳባ ጥበብ ቀሚስ",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የንግስት ሳባ ጥበብ ቀሚስ",
+    "createdAt": "2026-03-13T01:53:17.687Z"
+  },
+  {
+    "id": "3aaf5aee-27bb-4132-be12-a98a2537fdd0",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69b36dde8845b1293c3712b2",
+      "productName": "የንግስት ሳባ ጥበብ ቀሚስ",
+      "category": "Textiles",
+      "price": 7200
+    },
+    "message": "Published product: የንግስት ሳባ ጥበብ ቀሚስ",
+    "createdAt": "2026-03-13T01:52:30.277Z"
+  },
+  {
+    "_id": "1773244170583",
+    "action": "broadcast_cleared",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "happy new year",
+    "createdAt": "2026-03-11T15:49:30.583Z"
+  },
+  {
+    "_id": "1773244141929",
+    "action": "broadcast_sent",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "happy new year",
+    "target": "all",
+    "createdAt": "2026-03-11T15:49:01.929Z"
+  },
+  {
+    "id": "ebacb6b1-1113-4785-adf0-d8587b1adacc",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6984d07e3fde5570a4137059",
+      "productName": "Traditional Ethiopian Gold Plated Jewelry Set",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: Traditional Ethiopian Gold Plated Jewelry Set",
+    "createdAt": "2026-03-04T08:28:38.936Z"
+  },
+  {
+    "id": "403fb016-d1f3-470a-9efd-a3df506f9900",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "69a792750fb918cfa208ac51",
+      "orderNumber": "EC-20260304-05217",
+      "oldStatus": "pending",
+      "newStatus": "confirmed"
+    },
+    "message": "Order EC-20260304-05217 status changed to confirmed",
+    "createdAt": "2026-03-04T06:03:34.205Z"
+  },
+  {
+    "id": "94754f7a-b655-49cb-8d44-d147dfc68d35",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "69893cd415049f68ddd628f1",
+      "orderNumber": "EC-20260209-39305",
+      "oldStatus": "pending",
+      "newStatus": "cancelled"
+    },
+    "message": "Order EC-20260209-39305 status changed to cancelled",
+    "createdAt": "2026-03-04T05:56:13.137Z"
+  },
+  {
+    "id": "bc6f8f87-2fc1-4570-812b-538618c89eb1",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "69893c4615049f68ddd628bd",
+      "orderNumber": "EC-20260209-62304",
+      "oldStatus": "pending",
+      "newStatus": "cancelled"
+    },
+    "message": "Order EC-20260209-62304 status changed to cancelled",
+    "createdAt": "2026-03-04T05:56:07.881Z"
+  },
+  {
+    "id": "9cf77267-8608-48c8-b411-aa7b42d3f23d",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "6987357397c677972cb0e1ac",
+      "orderNumber": "EC-20260207-73067",
+      "oldStatus": "pending",
+      "newStatus": "confirmed"
+    },
+    "message": "Order EC-20260207-73067 status changed to confirmed",
+    "createdAt": "2026-03-04T05:55:57.626Z"
+  },
+  {
+    "id": "e1f52e5f-f6e3-4d85-b743-4bd0fef53025",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "699a6007a61d4ce3597332f9",
+      "orderNumber": "EC-20260222-33258",
+      "oldStatus": "pending",
+      "newStatus": "confirmed"
+    },
+    "message": "Order EC-20260222-33258 status changed to confirmed",
+    "createdAt": "2026-03-04T01:57:07.767Z"
+  },
+  {
+    "id": "303f3cd7-85f4-4fa6-aa5d-ee733a25d147",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "69a78d14e02546a6c1269ecb",
+      "orderNumber": "EC-20260304-12397",
+      "oldStatus": "confirmed",
+      "newStatus": "shipped"
+    },
+    "message": "Order EC-20260304-12397 status changed to shipped",
+    "createdAt": "2026-03-04T01:40:35.176Z"
+  },
+  {
+    "id": "f36edaa3-41f6-48a4-9524-8e8113a40519",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "69a78d14e02546a6c1269ecb",
+      "orderNumber": "EC-20260304-12397",
+      "oldStatus": "pending",
+      "newStatus": "confirmed"
+    },
+    "message": "Order EC-20260304-12397 status changed to confirmed",
+    "createdAt": "2026-03-04T01:40:29.698Z"
+  },
+  {
+    "id": "ab9ea2c2-46fa-4a8f-9c73-a784cfe0265c",
+    "userId": "6985d7df3539900c08c2b0e7",
+    "action": "product_updated",
+    "details": {
+      "productId": "699f157bbc659865f53b6ca8",
+      "productName": "ወሎ ላባሊባ ጥበብ",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: ወሎ ላባሊባ ጥበብ",
+    "createdAt": "2026-02-28T19:58:02.985Z"
+  },
+  {
+    "id": "da0d83d0-a103-43e1-90b8-456b0f97de2a",
+    "userId": "6985d7df3539900c08c2b0e7",
+    "action": "product_draft_saved",
+    "details": {
+      "productId": "699f157bbc659865f53b6ca8",
+      "productName": "ወሎ ላባሊባ ጥበብ"
+    },
+    "message": "Saved draft product: ወሎ ላባሊባ ጥበብ",
+    "createdAt": "2026-02-28T19:58:02.980Z"
+  },
+  {
+    "id": "68c08626-2086-40f7-bc3f-802aeb5ab40c",
+    "userId": "6985d7df3539900c08c2b0e7",
+    "action": "product_published",
+    "details": {
+      "productId": "699f187b5e651d51fc0e9eb7",
+      "productName": "Wollo Royal Labaliba Art",
+      "category": "Textiles",
+      "price": 8000
+    },
+    "message": "Published product: Wollo Royal Labaliba Art",
+    "createdAt": "2026-02-25T15:42:51.691Z"
+  },
+  {
+    "id": "65083ebd-3338-4c5e-8707-ec79f6035305",
+    "userId": "6985d7df3539900c08c2b0e7",
+    "action": "product_updated",
+    "details": {
+      "productId": "699f157bbc659865f53b6ca8",
+      "productName": "ወሎ ላባሊባ ጥበብ",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: ወሎ ላባሊባ ጥበብ",
+    "createdAt": "2026-02-25T15:31:47.406Z"
+  },
+  {
+    "id": "5ae42be1-f43d-4f12-a2ba-1b8e83edd227",
+    "userId": "6985d7df3539900c08c2b0e7",
+    "action": "product_draft_saved",
+    "details": {
+      "productId": "699f157bbc659865f53b6ca8",
+      "productName": "ወሎ ላባሊባ ጥበብ"
+    },
+    "message": "Saved draft product: ወሎ ላባሊባ ጥበብ",
+    "createdAt": "2026-02-25T15:31:47.402Z"
+  },
+  {
+    "id": "4a74606d-bece-473d-ac09-317b09ff9f32",
+    "userId": "6985d7df3539900c08c2b0e7",
+    "action": "product_draft_saved",
+    "details": {
+      "productId": "699f157bbc659865f53b6ca8",
+      "productName": "ወሎ ላባሊባ ጥበብ"
+    },
+    "message": "Saved draft product: ወሎ ላባሊባ ጥበብ",
+    "createdAt": "2026-02-25T15:30:04.054Z"
+  },
+  {
+    "id": "f9537b85-c348-4150-9b44-bfbadda7d587",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "699a6021a61d4ce359733312",
+      "orderNumber": "EC-20260222-29240",
+      "oldStatus": "confirmed",
+      "newStatus": "shipped"
+    },
+    "message": "Order EC-20260222-29240 status changed to shipped",
+    "createdAt": "2026-02-22T01:48:04.524Z"
+  },
+  {
+    "id": "44dfa18d-9df4-4b97-96b9-327257a0568a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "699a59e69c909032eea9eabc",
+      "orderNumber": "EC-20260222-94344",
+      "oldStatus": "pending",
+      "newStatus": "cancelled"
+    },
+    "message": "Order EC-20260222-94344 status changed to cancelled",
+    "createdAt": "2026-02-22T01:45:08.577Z"
+  },
+  {
+    "id": "14269544-2779-4993-b0cb-8e231d417e7f",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "698605f5f0cc2558ff6a1606",
+      "productName": "Zembil",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Zembil",
+    "createdAt": "2026-02-22T01:36:58.157Z"
+  },
+  {
+    "id": "911f85e3-e1a7-4ff1-a32b-371c436aedd3",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-22T01:36:18.758Z"
+  },
+  {
+    "id": "5b0ea54f-c2c7-4084-a4dd-b95b070f7c18",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6997c4a20a0ac0c6c3e29031",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-22T01:35:44.014Z"
+  },
+  {
+    "id": "0f425491-2c99-4442-a490-8f3e89cb315f",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-22T01:30:55.175Z"
+  },
+  {
+    "id": "673c0dbb-c64f-4275-b8c3-732c420ab44f",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-22T01:29:03.904Z"
+  },
+  {
+    "id": "0c5eb24c-3834-47bc-bac4-85fef40f6541",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-22T01:22:36.027Z"
+  },
+  {
+    "id": "ed124fe7-9778-41f3-ab27-d2acef488819",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-22T01:22:16.199Z"
+  },
+  {
+    "id": "d5ebc1dc-62b3-4693-849f-5ff55ea6740b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-22T01:12:20.911Z"
+  },
+  {
+    "id": "490e97a3-749d-4de5-ab70-4befe586911b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-22T01:11:41.525Z"
+  },
+  {
+    "id": "9c91638f-5d35-4945-a353-aaf8e6d6856a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "69965de86ecca4c592f58f23",
+      "orderNumber": "EC-20260219-47263",
+      "oldStatus": "pending",
+      "newStatus": "confirmed"
+    },
+    "message": "Order EC-20260219-47263 status changed to confirmed",
+    "createdAt": "2026-02-20T16:59:57.549Z"
+  },
+  {
+    "id": "e19aeb7e-0d00-4ca3-8005-ddfd7cea68da",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "69965e006ecca4c592f58f42",
+      "orderNumber": "EC-20260219-74133",
+      "oldStatus": "confirmed",
+      "newStatus": "shipped"
+    },
+    "message": "Order EC-20260219-74133 status changed to shipped",
+    "createdAt": "2026-02-20T16:58:10.443Z"
+  },
+  {
+    "id": "162a4450-6493-40a7-949e-c6f8e69df629",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "69980dae2a3d135dba0845aa",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-20T12:35:07.997Z"
+  },
+  {
+    "id": "824bfe7f-d446-474a-ab60-4093753c9981",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "699853e9ee55e092a26d8124",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "category": "Textiles",
+      "price": 8498.99
+    },
+    "message": "Published product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-20T12:30:33.653Z"
+  },
+  {
+    "id": "dc8be2bd-bc31-4489-bfd5-f7ef1cd4360b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "69980dae2a3d135dba0845aa",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "category": "Textiles",
+      "price": 8498.99
+    },
+    "message": "Published product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-20T07:30:54.322Z"
+  },
+  {
+    "id": "97571a23-334e-4725-8ca4-c9de1db1c489",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "699804b10b208df46905fa95",
+      "productName": "Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+      "category": "Textiles",
+      "price": 8499.99
+    },
+    "message": "Published product: Premium Hand-Woven Gojjam Azene (ጎጃም አዘኔ ጥበብ)",
+    "createdAt": "2026-02-20T06:52:34.053Z"
+  },
+  {
+    "id": "04a45820-20fb-4428-95ba-23b474321f34",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6997c4a20a0ac0c6c3e29031",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "changedFields": [
+        "name",
+        "description",
+        "price",
+        "category",
+        "materials",
+        "dimensions",
+        "weight",
+        "story",
+        "craftingTime",
+        "customizable",
+        "tags",
+        "inventory",
+        "status"
+      ]
+    },
+    "message": "Updated product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T06:20:00.740Z"
+  },
+  {
+    "id": "2a84aad3-5add-4585-bb27-afd06049f08c",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997c4a20a0ac0c6c3e29031",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Textiles",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T02:19:15.054Z"
+  },
+  {
+    "id": "fc4f8ebd-31fa-451d-911b-0b7228053ba2",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997bfcf2f7bef5eb86974f5",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Textiles",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T01:58:39.302Z"
+  },
+  {
+    "id": "c7cf7f08-b814-4597-a8b1-9689865924b0",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997be34217d30355deff11d",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Jewelry",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T01:51:48.639Z"
+  },
+  {
+    "id": "709d7d36-c634-49c2-bf38-2c9e58cfdb63",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997b9a05c6aedc281f0607c",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Textiles",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T01:32:16.691Z"
+  },
+  {
+    "id": "3fca783c-b78c-425b-bc85-14b5fcea995b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997b574a79a797162904b5f",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Textiles",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T01:14:29.009Z"
+  },
+  {
+    "id": "f39cf734-728a-4eb6-b46a-42e0f3e31c5c",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997ad94e53da9f24d95a79e",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Paintings",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T00:40:52.137Z"
+  },
+  {
+    "id": "c47400e5-0461-4e66-9872-c3c8c7dee4b5",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997aa11d8f18af2cf970c3f",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Textiles",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T00:25:53.786Z"
+  },
+  {
+    "id": "45dde0dc-1566-4909-b2d5-6b8b098ce5df",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_published",
+    "details": {
+      "productId": "6997a808573acf4b657ce93b",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+      "category": "Textiles",
+      "price": 4500
+    },
+    "message": "Published product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-20T00:17:12.634Z"
+  },
+  {
+    "id": "1142cacd-8080-4fff-bc04-401d983dec4e",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_draft_saved",
+    "details": {
+      "productId": "6997a2ce0452ec6ecb34245d",
+      "productName": "Premium Hand-Woven Ethiopian Dress (ጥበብ)"
+    },
+    "message": "Saved draft product: Premium Hand-Woven Ethiopian Dress (ጥበብ)",
+    "createdAt": "2026-02-19T23:54:55.020Z"
+  },
+  {
+    "id": "a88f2ff4-1b2d-4ff9-bf53-cddc1692fdf1",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "6985f000b48db5a166875540",
+      "orderNumber": "ORD-1001",
+      "oldStatus": "pending",
+      "newStatus": "confirmed"
+    },
+    "message": "Order ORD-1001 status changed to confirmed",
+    "createdAt": "2026-02-19T01:32:07.843Z"
+  },
+  {
+    "id": "7e9996ab-7c91-4ca4-b5b3-70916ddda317",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "order_received",
+    "details": {
+      "orderId": "6985f000b48db5a166875540",
+      "orderNumber": "ORD-1001",
+      "productId": "6985eeb3b48db5a166875537",
+      "productName": "Habesha Filigree Gold Set",
+      "quantity": 1,
+      "totalAmount": 4500
+    },
+    "message": "New order received for Habesha Filigree Gold Set",
+    "createdAt": "2026-02-19T01:32:07.840Z"
+  },
+  {
+    "id": "9c89e15b-29d2-4caf-ad92-351cd448cdb5",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "6985ef7ab48db5a16687553c",
+      "productName": "Silver Lalibela Cross Pendant",
+      "changedFields": [
+        "price",
+        "description"
+      ]
+    },
+    "message": "Updated product: Silver Lalibela Cross Pendant",
+    "createdAt": "2026-02-19T01:32:07.837Z"
+  },
+  {
+    "id": "267577a9-69bd-4d3d-ba2d-83962cc12d5c",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_created",
+    "details": {
+      "productId": "6985eeb3b48db5a166875537",
+      "productName": "Habesha Filigree Gold Set",
+      "category": "Jewelry",
+      "price": 4500
+    },
+    "message": "Created product: Habesha Filigree Gold Set",
+    "createdAt": "2026-02-19T01:32:07.834Z"
+  },
+  {
+    "id": "5c8bee0e-7f8f-4e66-aea3-cf5946eb0971",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_created",
+    "details": {
+      "productId": "6984d07e3fde5570a4137059",
+      "productName": "Traditional Ethiopian Gold Plated Jewelry Set",
+      "category": "Jewelry",
+      "price": 1500
+    },
+    "message": "Created product: Traditional Ethiopian Gold Plated Jewelry Set",
+    "createdAt": "2026-02-19T01:32:07.829Z"
+  },
+  {
+    "id": "56139339-0a1d-44d8-9ced-be0de18539b4",
+    "userId": "507f1f77bcf86cd799439011",
+    "action": "order_status_changed",
+    "details": {
+      "orderId": "507f1f77bcf86cd799439013",
+      "orderNumber": "ORD-12345",
+      "oldStatus": "pending",
+      "newStatus": "confirmed"
+    },
+    "message": "Order ORD-12345 status changed to confirmed",
+    "createdAt": "2026-02-19T01:22:33.502Z"
+  },
+  {
+    "id": "203d5ed3-38f3-4f3a-8c20-4ec18534fa20",
+    "userId": "507f1f77bcf86cd799439011",
+    "action": "order_received",
+    "details": {
+      "orderId": "507f1f77bcf86cd799439013",
+      "orderNumber": "ORD-12345",
+      "productId": "507f1f77bcf86cd799439012",
+      "productName": "Test Handwoven Scarf",
+      "quantity": 2,
+      "totalAmount": 3000
+    },
+    "message": "New order received for Test Handwoven Scarf",
+    "createdAt": "2026-02-19T01:22:33.495Z"
+  },
+  {
+    "id": "1af49ff7-0769-4233-8e55-d08c4ab066c3",
+    "userId": "507f1f77bcf86cd799439011",
+    "action": "product_updated",
+    "details": {
+      "productId": "507f1f77bcf86cd799439012",
+      "productName": "Test Handwoven Scarf",
+      "changedFields": [
+        "price",
+        "description"
+      ]
+    },
+    "message": "Updated product: Test Handwoven Scarf",
+    "createdAt": "2026-02-19T01:22:33.490Z"
+  },
+  {
+    "id": "2a0cf006-962e-4535-a376-8e22312b046f",
+    "userId": "507f1f77bcf86cd799439011",
+    "action": "product_created",
+    "details": {
+      "productId": "507f1f77bcf86cd799439012",
+      "productName": "Test Handwoven Scarf",
+      "category": "Textiles",
+      "price": 1500
+    },
+    "message": "Created product: Test Handwoven Scarf",
+    "createdAt": "2026-02-19T01:22:33.479Z"
+  },
+  {
+    "_id": "1771453612271",
+    "action": "broadcast_cleared",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "add new product",
+    "createdAt": "2026-02-18T22:26:52.271Z"
+  },
+  {
+    "_id": "1771380757240",
+    "action": "broadcast_sent",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "add new product",
+    "target": "artisans",
+    "createdAt": "2026-02-18T02:12:37.240Z"
+  },
+  {
+    "_id": "1771298484801",
+    "action": "broadcast_cleared",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "Hi for all",
+    "createdAt": "2026-02-17T03:21:24.801Z"
+  },
+  {
+    "_id": "1771298228585",
+    "action": "broadcast_cleared",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "hi",
+    "createdAt": "2026-02-17T03:17:08.585Z"
+  },
+  {
+    "_id": "1771298221816",
+    "action": "broadcast_sent",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "hi",
+    "target": "all",
+    "createdAt": "2026-02-17T03:17:01.817Z"
+  },
+  {
+    "_id": "1771298208371",
+    "action": "broadcast_cleared",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "hi for all",
+    "createdAt": "2026-02-17T03:16:48.371Z"
+  },
+  {
+    "_id": "1771297271993",
+    "action": "broadcast_sent",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "hi for all",
+    "target": "all",
+    "createdAt": "2026-02-17T03:01:11.993Z"
+  },
+  {
+    "_id": "1771296100539",
+    "action": "broadcast_sent",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "Hi for all",
+    "createdAt": "2026-02-17T02:41:40.539Z"
+  }
+]

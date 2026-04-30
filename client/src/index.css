@@ -1,0 +1,546 @@
+/**
+ * Global Styles for EthioCraft Global
+ * 
+ * Ethiopian-inspired color palette and design system
+ * Tailwind CSS base styles and custom utilities
+ */
+
+@import url('https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css');
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Ethiopian Color Palette - Premium Theme */
+:root {
+  --ethiopian-red: #DA121A;
+  --ethiopian-gold: #D4AF37; /* Updated to Gold as requested */
+  --ethiopian-green: #078930;
+  --ethiopian-brown: #8B4513;
+  --ethiopian-orange: #F97316;
+  --ethiopian-amber: #F59E0B;
+  
+  /* New Theme Colors */
+  --color-primary-text: #1e293b; /* Charcoal */
+  --color-accent: #D4AF37; /* Gold */
+  --color-divider: #e5e7eb; /* Soft Gray */
+  --color-bg-light: #f9fafb; /* Light Gray for cards */
+}
+
+/* Custom Font Imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@100;300;400;500;600;700;800;900&display=swap');
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-width: 0; /* Prevents flex/grid blowout */
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', 'Noto Sans Ethiopic', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  color: var(--color-primary-text);
+  background-color: #FFFFFF;
+  min-height: 100vh;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--color-primary-text);
+}
+
+/* Custom Utility Classes */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+.text-ethiopian-red {
+  color: var(--ethiopian-red);
+}
+
+.text-ethiopian-gold {
+  color: var(--ethiopian-gold);
+}
+
+.text-ethiopian-green {
+  color: var(--ethiopian-green);
+}
+
+.text-ethiopian-brown {
+  color: var(--ethiopian-brown);
+}
+
+.text-ethiopian-orange {
+  color: var(--ethiopian-orange);
+}
+
+.text-ethiopian-earth {
+  color: #A16207;
+}
+
+.bg-ethiopian-red {
+  background-color: var(--ethiopian-red);
+}
+
+.bg-ethiopian-gold {
+  background-color: var(--ethiopian-gold);
+}
+
+.bg-ethiopian-green {
+  background-color: var(--ethiopian-green);
+}
+
+.bg-ethiopian-brown {
+  background-color: var(--ethiopian-brown);
+}
+
+.bg-ethiopian-orange {
+  background-color: var(--ethiopian-orange);
+}
+
+.bg-ethiopian-earth {
+  background-color: #A16207;
+}
+
+/* Ethiopian Pattern Background */
+.bg-ethiopian-pattern {
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(252, 221, 9, 0.1) 10px, rgba(252, 221, 9, 0.1) 20px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(218, 18, 26, 0.1) 10px, rgba(218, 18, 26, 0.1) 20px);
+}
+
+.pattern-ethiopian {
+  background-image: 
+    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(252, 221, 9, 0.1) 10px, rgba(252, 221, 9, 0.1) 20px),
+    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(218, 18, 26, 0.1) 10px, rgba(218, 18, 26, 0.1) 20px);
+}
+
+/* Card Styles */
+.card-ethiopian {
+  background-color: var(--color-bg-light);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid var(--color-divider);
+}
+
+.card-ethiopian:hover {
+  transform: translateY(-4px);
+}
+
+/* Button Styles */
+.btn-ethiopian {
+  padding: 0.75rem 1.75rem;
+  background-color: var(--color-accent);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(212, 175, 55, 0.3);
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+
+.btn-ethiopian:hover {
+  box-shadow: 0 10px 15px -3px rgba(212, 175, 55, 0.4), 0 4px 6px -2px rgba(212, 175, 55, 0.2);
+  transform: scale(1.02);
+  background-color: #b8962c;
+}
+
+.btn-ethiopian:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(252, 221, 9, 0.5);
+}
+
+.btn-ethiopian-outline {
+  padding: 0.75rem 1.75rem;
+  border: 2px solid var(--color-accent);
+  color: var(--color-accent);
+  font-weight: 600;
+  border-radius: 0.5rem;
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.btn-ethiopian-outline:hover {
+  background-color: var(--color-accent);
+  color: white;
+  transform: scale(1.02);
+}
+
+.btn-ethiopian-outline:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+}
+
+.btn-ethiopian-gold {
+  padding: 0.75rem 1.5rem;
+  background-color: #FCDD09;
+  color: #8B4513;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  transform: scale(1);
+}
+
+.btn-ethiopian-gold:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: scale(1.05);
+}
+
+.btn-ethiopian-gold:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(218, 18, 26, 0.5);
+}
+
+/* Input Styles */
+.input-ethiopian {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid #D1D5DB;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.input-ethiopian:focus {
+  outline: none;
+  border-color: #F97316;
+  box-shadow: 0 0 0 3px rgba(252, 221, 9, 0.3);
+}
+
+/* Badge Styles */
+.badge-ethiopian {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: linear-gradient(to right, #FCDD09, #F97316);
+  color: #8B4513;
+}
+
+/* Loading Animation */
+@keyframes pulse-ethiopian {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-ethiopian {
+  animation: pulse-ethiopian 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Container */
+.container {
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Transitions */
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+.transition-premium {
+  transition: all 0.3s ease;
+}
+
+/* Focus Visible */
+.focus-visible:focus {
+  outline: 2px solid var(--ethiopian-gold);
+  outline-offset: 2px;
+}
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Custom Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.5s ease-out;
+}
+
+/* Ethiopian Border Pattern */
+.border-ethiopian {
+  border: 3px solid;
+  border-image: linear-gradient(135deg, var(--ethiopian-red), var(--ethiopian-gold), var(--ethiopian-green)) 1;
+}
+
+/* Hover Effects */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Image Overlay */
+.image-overlay {
+  position: relative;
+  overflow: hidden;
+}
+
+.image-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.7));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-overlay:hover::after {
+  opacity: 1;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Toast Notification Styles */
+.toast-ethiopian {
+  background-color: #ffffff;
+  color: var(--color-primary-text);
+  border: 1px solid var(--color-divider);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+/* Navigation Styles */
+.nav-ethiopian {
+  background-color: #ffffff;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--color-divider);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+/* Search Bar Styles */
+.search-bar-ethiopian .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ethiopian-brown);
+  opacity: 0.6;
+}
+
+/* Shadow Styles */
+.shadow-cultural {
+  box-shadow: 0 10px 15px -3px rgba(146, 64, 14, 0.1), 0 4px 6px -2px rgba(146, 64, 14, 0.05);
+}
+
+/* Ethiopian Flag Accent */
+.ethiopian-flag-accent {
+  height: 3px;
+  background: linear-gradient(to right, var(--ethiopian-green) 0%, var(--ethiopian-green) 33%, var(--ethiopian-gold) 33%, var(--ethiopian-gold) 66%, var(--ethiopian-red) 66%, var(--ethiopian-red) 100%);
+}
+
+/* Product Grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+}
+
+/* Cultural Story Card */
+.cultural-story-card {
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-divider);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out forwards;
+  opacity: 0;
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+/* User Account Dropdown Animations */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Smooth transitions for dropdown sections */
+.dropdown-section {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Premium shadow effects */
+.shadow-premium {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Hover scale effect */
+.hover-scale {
+  transition: transform 0.2s ease-in-out;
+}
+
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Shake Animation for Validation Feedback */
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+  40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+.animate-shake {
+  animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+}

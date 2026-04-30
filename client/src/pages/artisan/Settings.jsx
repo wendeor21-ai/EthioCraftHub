@@ -1,0 +1,1101 @@
+/**
+ * Professional Artisan Settings & Profile Management
+ * Comprehensive settings page with tabs for profile, bank, notifications, and security
+ */
+
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../utils/api';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import BankConfirmModal from '../../components/settings/BankConfirmModal';
+import {
+  Store,
+  CreditCard,
+  Bell,
+  Shield,
+  Globe,
+  Plane,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import {
+  validateEthiopianPhone,
+  validateAccountHolderName,
+  validateBankName,
+  validateAccountNumber,
+  validatePassword,
+  validateStoreName,
+  validateBankDetails,
+  VALID_BANKS
+} from '../../utils/validation';
+
+const Settings = () => {
+  const { user, updateUser, logout } = useAuth();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('profile');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showBankConfirmModal, setShowBankConfirmModal] = useState(false);
+
+  // Validation errors state
+  const [profileErrors, setProfileErrors] = useState({});
+  const [bankErrors, setBankErrors] = useState({});
+  const [passwordErrors, setPasswordErrors] = useState({});
+
+  // Profile state
+  const [profileData, setProfileData] = useState({
+    storeName: '',
+    storeDescription: '',
+    storeLogo: '',
+    coverBanner: '',
+    phone: '',
+    address: {
+      street: '',
+      city: '',
+      region: '',
+      country: 'Ethiopia'
+    }
+  });
+
+  // Bank details state
+  const [bankData, setBankData] = useState({
+    bankName: '',
+    accountHolderName: '',
+    accountNumber: '',
+    telebirrNumber: '',
+    merchantId: ''
+  });
+
+  // Notification preferences
+  const [notifications, setNotifications] = useState({
+    emailOnNewOrder: true,
+    emailOnLowStock: true,
+    emailOnReview: true,
+    emailOnWithdrawal: true
+  });
+
+  // Security state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
+  // Social links
+  const [socialLinks, setSocialLinks] = useState({
+    instagram: '',
+    facebook: '',
+    twitter: '',
+    website: ''
+  });
+
+  // Vacation mode
+  const [vacationMode, setVacationMode] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/artisan/settings');
+      const data = response.data.data;
+      
+      // Populate profile data
+      if (data.profile) {
+        setProfileData({
+          storeName: data.profile.storeName || '',
+          storeDescription: data.profile.bio || '',
+          storeLogo: data.profile.storeLogo || '',
+          coverBanner: data.profile.coverBanner || '',
+          phone: data.profile.phone || '',
+          address: data.profile.address || {
+            street: '',
+            city: '',
+            region: '',
+            country: 'Ethiopia'
+          }
+        });
+      }
+
+      // Populate bank data
+      if (data.bankDetails) {
+        setBankData(data.bankDetails);
+      }
+
+      // Populate notifications
+      if (data.notifications) {
+        setNotifications(data.notifications);
+      }
+
+      // Populate social links
+      if (data.socialLinks) {
+        setSocialLinks(data.socialLinks);
+      }
+
+      // Set vacation mode
+      setVacationMode(data.vacationMode || false);
+
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      toast.error('Failed to load settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveProfile = async () => {
+    // Validate profile data
+    const errors = {};
+    
+    if (profileData.storeName) {
+      const storeNameValidation = validateStoreName(profileData.storeName);
+      if (!storeNameValidation.valid) {
+        errors.storeName = storeNameValidation.error;
+      }
+    }
+    
+    if (profileData.phone) {
+      const phoneValidation = validateEthiopianPhone(profileData.phone);
+      if (!phoneValidation.valid) {
+        errors.phone = phoneValidation.error;
+      }
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setProfileErrors(errors);
+      toast.error('Please fix validation errors before saving');
+      return;
+    }
+    
+    setProfileErrors({});
+    
+    try {
+      setSaving(true);
+      await api.patch('/artisan/settings/profile', profileData);
+      toast.success('Profile updated successfully');
+      
+      // Update user context if store name changed
+      if (profileData.storeName) {
+        updateUser({ ...user, profile: { ...user.profile, storeName: profileData.storeName } });
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      const errorMsg = error.response?.data?.errors?.join(', ') || error.response?.data?.error || 'Failed to update profile';
+      toast.error(errorMsg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveBankDetails = async () => {
+    // Validate bank details
+    const validation = validateBankDetails(bankData);
+    
+    if (!validation.valid) {
+      setBankErrors(validation.errors);
+      toast.error('Please fix validation errors before saving');
+      return;
+    }
+    
+    setBankErrors({});
+    
+    // Show confirmation modal
+    setShowBankConfirmModal(true);
+  };
+  
+  const confirmBankDetailsSave = async () => {
+    setShowBankConfirmModal(false);
+    
+    try {
+      setSaving(true);
+      await api.patch('/artisan/settings/bank', bankData);
+      toast.success('Bank details updated successfully');
+    } catch (error) {
+      console.error('Error saving bank details:', error);
+      const errorMsg = error.response?.data?.errors?.join(', ') || error.response?.data?.error || 'Failed to update bank details';
+      toast.error(errorMsg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const saveNotifications = async () => {
+    try {
+      setSaving(true);
+      await api.patch('/artisan/settings/notifications', notifications);
+      toast.success('Notification preferences updated');
+    } catch (error) {
+      console.error('Error saving notifications:', error);
+      toast.error('Failed to update notifications');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const changePassword = async () => {
+    // Validate passwords
+    const errors = {};
+    
+    if (!passwordData.currentPassword) {
+      errors.currentPassword = 'Current password is required';
+    }
+    
+    if (!passwordData.newPassword) {
+      errors.newPassword = 'New password is required';
+    } else {
+      const passwordValidation = validatePassword(passwordData.newPassword);
+      if (!passwordValidation.valid) {
+        errors.newPassword = passwordValidation.error;
+      }
+    }
+    
+    if (!passwordData.confirmPassword) {
+      errors.confirmPassword = 'Please confirm your new password';
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      errors.confirmPassword = 'Passwords do not match';
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setPasswordErrors(errors);
+      toast.error('Please fix validation errors before saving');
+      return;
+    }
+    
+    setPasswordErrors({});
+
+    try {
+      setSaving(true);
+      await api.post('/artisan/settings/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      
+      toast.success('Password changed successfully! Logging out...');
+      
+      // Clear password fields
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      
+      // Logout and redirect to login after a short delay
+      setTimeout(async () => {
+        await logout();
+        navigate('/login', { 
+          state: { message: 'Password changed successfully. Please log in with your new password.' }
+        });
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error changing password:', error);
+      const errorMsg = error.response?.data?.errors?.join(', ') || error.response?.data?.error || 'Failed to change password';
+      toast.error(errorMsg);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleVacationMode = async () => {
+    try {
+      const newMode = !vacationMode;
+      await api.patch('/artisan/settings/vacation-mode', { enabled: newMode });
+      setVacationMode(newMode);
+      toast.success(`Vacation mode ${newMode ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error('Error toggling vacation mode:', error);
+      toast.error('Failed to toggle vacation mode');
+    }
+  };
+
+  const saveSocialLinks = async () => {
+    try {
+      setSaving(true);
+      await api.patch('/artisan/settings/social-links', socialLinks);
+      toast.success('Social links updated successfully');
+    } catch (error) {
+      console.error('Error saving social links:', error);
+      toast.error('Failed to update social links');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner size="large" />
+      </div>
+    );
+  }
+
+  const tabs = [
+    { id: 'profile', label: 'Store Profile', icon: Store },
+    { id: 'bank', label: 'Bank & Payment', icon: CreditCard },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'security', label: 'Security', icon: Shield },
+    { id: 'social', label: 'Social & More', icon: Globe }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => navigate('/artisan/dashboard')}
+            className="text-ethiopian-gold hover:text-ethiopian-earth mb-4"
+          >
+            ← Back to Dashboard
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
+          <p className="text-gray-600 mt-2">Manage your store profile, payments, and preferences</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="border-b border-gray-200">
+            <nav className="flex -mb-px space-x-8 overflow-x-auto px-6">
+              {tabs.map(tab => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? 'border-ethiopian-gold text-ethiopian-gold'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Tab Content */}
+          <div className="p-6">
+            {activeTab === 'profile' && (
+              <ProfileTab 
+                data={profileData}
+                setData={setProfileData}
+                onSave={saveProfile}
+                saving={saving}
+                errors={profileErrors}
+                setErrors={setProfileErrors}
+              />
+            )}
+
+            {activeTab === 'bank' && (
+              <BankTab 
+                data={bankData}
+                setData={setBankData}
+                onSave={saveBankDetails}
+                saving={saving}
+                verificationStatus={user?.verification?.status}
+                errors={bankErrors}
+                setErrors={setBankErrors}
+              />
+            )}
+
+            {activeTab === 'notifications' && (
+              <NotificationsTab 
+                data={notifications}
+                setData={setNotifications}
+                onSave={saveNotifications}
+                saving={saving}
+              />
+            )}
+
+            {activeTab === 'security' && (
+              <SecurityTab 
+                data={passwordData}
+                setData={setPasswordData}
+                onChangePassword={changePassword}
+                saving={saving}
+                errors={passwordErrors}
+                setErrors={setPasswordErrors}
+              />
+            )}
+
+            {activeTab === 'social' && (
+              <SocialTab 
+                socialLinks={socialLinks}
+                setSocialLinks={setSocialLinks}
+                vacationMode={vacationMode}
+                onToggleVacation={toggleVacationMode}
+                onSaveSocial={saveSocialLinks}
+                saving={saving}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Bank Confirmation Modal */}
+      <BankConfirmModal
+        isOpen={showBankConfirmModal}
+        onClose={() => setShowBankConfirmModal(false)}
+        onConfirm={confirmBankDetailsSave}
+        bankData={bankData}
+      />
+    </div>
+  );
+};
+
+// Profile Tab Component
+const ProfileTab = ({ data, setData, onSave, saving, errors, setErrors }) => {
+  const handleStoreNameChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, storeName: value });
+    
+    // Real-time validation
+    if (value) {
+      const validation = validateStoreName(value);
+      if (!validation.valid) {
+        setErrors({ ...errors, storeName: validation.error });
+      } else {
+        const newErrors = { ...errors };
+        delete newErrors.storeName;
+        setErrors(newErrors);
+      }
+    }
+  };
+  
+  const handlePhoneChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, phone: value });
+    
+    // Real-time validation
+    if (value) {
+      const validation = validateEthiopianPhone(value);
+      if (!validation.valid) {
+        setErrors({ ...errors, phone: validation.error });
+      } else {
+        const newErrors = { ...errors };
+        delete newErrors.phone;
+        setErrors(newErrors);
+      }
+    }
+  };
+  
+  const isValid = !errors.storeName && !errors.phone;
+  
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Store Profile & Business Details</h3>
+        <p className="text-sm text-gray-600 mb-6">Update your store information and brand identity</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Store Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={data.storeName}
+            onChange={handleStoreNameChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.storeName ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Your Store Name"
+          />
+          {errors.storeName && (
+            <p className="mt-1 text-sm text-red-600">{errors.storeName}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            value={data.phone}
+            onChange={handlePhoneChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.phone ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="+251 XXX XXX XXX"
+          />
+          {errors.phone && (
+            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+          )}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Store Description
+        </label>
+        <textarea
+          value={data.storeDescription}
+          onChange={(e) => setData({ ...data, storeDescription: e.target.value })}
+          rows="4"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+          placeholder="Tell customers about your craft and story..."
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            City
+          </label>
+          <input
+            type="text"
+            value={data.address.city}
+            onChange={(e) => setData({ ...data, address: { ...data.address, city: e.target.value } })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+            placeholder="Addis Ababa"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Region
+          </label>
+          <input
+            type="text"
+            value={data.address.region}
+            onChange={(e) => setData({ ...data, address: { ...data.address, region: e.target.value } })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+            placeholder="Addis Ababa"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={onSave}
+          disabled={saving || !isValid}
+          className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? 'Saving...' : 'Save Profile'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Bank Tab Component
+const BankTab = ({ data, setData, onSave, saving, verificationStatus, errors, setErrors }) => {
+  const handleAccountHolderChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, accountHolderName: value });
+    
+    // Real-time validation
+    if (value) {
+      const validation = validateAccountHolderName(value);
+      if (!validation.valid) {
+        setErrors({ ...errors, accountHolderName: validation.error });
+      } else {
+        const newErrors = { ...errors };
+        delete newErrors.accountHolderName;
+        setErrors(newErrors);
+      }
+    }
+  };
+  
+  const handleBankNameChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, bankName: value });
+    
+    // Real-time validation
+    if (value) {
+      const validation = validateBankName(value);
+      if (!validation.valid) {
+        setErrors({ ...errors, bankName: validation.error });
+      } else {
+        const newErrors = { ...errors };
+        delete newErrors.bankName;
+        setErrors(newErrors);
+      }
+    }
+  };
+  
+  const handleAccountNumberChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, accountNumber: value });
+    
+    // Real-time validation
+    if (value) {
+      const validation = validateAccountNumber(value);
+      if (!validation.valid) {
+        setErrors({ ...errors, accountNumber: validation.error });
+      } else {
+        const newErrors = { ...errors };
+        delete newErrors.accountNumber;
+        setErrors(newErrors);
+      }
+    }
+  };
+  
+  const handleTelebirrChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, telebirrNumber: value });
+    
+    // Real-time validation
+    if (value) {
+      const validation = validateEthiopianPhone(value);
+      if (!validation.valid) {
+        setErrors({ ...errors, telebirrNumber: validation.error });
+      } else {
+        const newErrors = { ...errors };
+        delete newErrors.telebirrNumber;
+        setErrors(newErrors);
+      }
+    }
+  };
+
+  const handleMerchantIdChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, merchantId: value });
+  };
+  
+  const isValid = !errors.accountHolderName && !errors.bankName && !errors.accountNumber && !errors.telebirrNumber;
+  
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Bank & Payment Setup</h3>
+        <p className="text-sm text-gray-600 mb-6">Configure your payout methods for withdrawals</p>
+        
+        {verificationStatus === 'approved' && (
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg mb-4">
+            <CheckCircle className="w-5 h-5 text-green-600" />
+            <span className="text-sm font-medium text-green-800">Verified Account</span>
+          </div>
+        )}
+        
+        {verificationStatus === 'pending' && (
+          <div className="flex items-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+            <span className="text-sm font-medium text-yellow-800">Verification Pending</span>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Bank Name <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={data.bankName}
+            onChange={handleBankNameChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.bankName ? 'border-red-500' : 'border-gray-300'
+            }`}
+          >
+            <option value="">Select a bank</option>
+            {VALID_BANKS.map(bank => (
+              <option key={bank} value={bank}>{bank}</option>
+            ))}
+          </select>
+          {errors.bankName && (
+            <p className="mt-1 text-sm text-red-600">{errors.bankName}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Account Holder Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={data.accountHolderName}
+            onChange={handleAccountHolderChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.accountHolderName ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Full Name (letters only)"
+          />
+          {errors.accountHolderName && (
+            <p className="mt-1 text-sm text-red-600">{errors.accountHolderName}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Account Number <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={data.accountNumber}
+            onChange={handleAccountNumberChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.accountNumber ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="10-15 digits"
+          />
+          {errors.accountNumber && (
+            <p className="mt-1 text-sm text-red-600">{errors.accountNumber}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Telebirr Number
+          </label>
+          <input
+            type="tel"
+            value={data.telebirrNumber}
+            onChange={handleTelebirrChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.telebirrNumber ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="+251 XXX XXX XXX"
+          />
+          {errors.telebirrNumber && (
+            <p className="mt-1 text-sm text-red-600">{errors.telebirrNumber}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Merchant ID <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            value={data.merchantId}
+            onChange={handleMerchantIdChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+            placeholder="Telebirr/Bank Merchant ID"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={onSave}
+          disabled={saving || !isValid}
+          className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? 'Saving...' : 'Save Bank Details'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Notifications Tab Component
+const NotificationsTab = ({ data, setData, onSave, saving }) => (
+  <div className="space-y-6">
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h3>
+      <p className="text-sm text-gray-600 mb-6">Choose what updates you want to receive</p>
+    </div>
+
+    <div className="space-y-4">
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div>
+          <p className="font-medium text-gray-900">New Order Alerts</p>
+          <p className="text-sm text-gray-600">Get notified when you receive a new order</p>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={data.emailOnNewOrder}
+            onChange={(e) => setData({ ...data, emailOnNewOrder: e.target.checked })}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ethiopian-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+        </label>
+      </div>
+
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div>
+          <p className="font-medium text-gray-900">Low Stock Alerts</p>
+          <p className="text-sm text-gray-600">Get notified when products are running low</p>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={data.emailOnLowStock}
+            onChange={(e) => setData({ ...data, emailOnLowStock: e.target.checked })}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ethiopian-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+        </label>
+      </div>
+
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div>
+          <p className="font-medium text-gray-900">Review Notifications</p>
+          <p className="text-sm text-gray-600">Get notified when customers leave reviews</p>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={data.emailOnReview}
+            onChange={(e) => setData({ ...data, emailOnReview: e.target.checked })}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ethiopian-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+        </label>
+      </div>
+
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div>
+          <p className="font-medium text-gray-900">Withdrawal Updates</p>
+          <p className="text-sm text-gray-600">Get notified about withdrawal status changes</p>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={data.emailOnWithdrawal}
+            onChange={(e) => setData({ ...data, emailOnWithdrawal: e.target.checked })}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ethiopian-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+        </label>
+      </div>
+    </div>
+
+    <div className="flex justify-end">
+      <button
+        onClick={onSave}
+        disabled={saving}
+        className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {saving ? 'Saving...' : 'Save Preferences'}
+      </button>
+    </div>
+  </div>
+);
+
+// Security Tab Component
+const SecurityTab = ({ data, setData, onChangePassword, saving, errors, setErrors }) => {
+  const handleNewPasswordChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, newPassword: value });
+    
+    // Real-time validation
+    if (value) {
+      const validation = validatePassword(value);
+      if (!validation.valid) {
+        setErrors({ ...errors, newPassword: validation.error });
+      } else {
+        const newErrors = { ...errors };
+        delete newErrors.newPassword;
+        setErrors(newErrors);
+      }
+    }
+    
+    // Check if passwords match
+    if (data.confirmPassword && value !== data.confirmPassword) {
+      setErrors({ ...errors, confirmPassword: 'Passwords do not match' });
+    } else if (data.confirmPassword && value === data.confirmPassword) {
+      const newErrors = { ...errors };
+      delete newErrors.confirmPassword;
+      setErrors(newErrors);
+    }
+  };
+  
+  const handleConfirmPasswordChange = (e) => {
+    const value = e.target.value;
+    setData({ ...data, confirmPassword: value });
+    
+    // Check if passwords match
+    if (value && data.newPassword !== value) {
+      setErrors({ ...errors, confirmPassword: 'Passwords do not match' });
+    } else {
+      const newErrors = { ...errors };
+      delete newErrors.confirmPassword;
+      setErrors(newErrors);
+    }
+  };
+  
+  const isValid = data.currentPassword && 
+                  data.newPassword && 
+                  data.confirmPassword && 
+                  data.newPassword === data.confirmPassword &&
+                  !errors.newPassword && 
+                  !errors.confirmPassword;
+  
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Settings</h3>
+        <p className="text-sm text-gray-600 mb-6">Manage your password and account security</p>
+      </div>
+
+      {/* Password Requirements Info */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-medium text-blue-900 mb-2">Password Requirements:</h4>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li>• Minimum 8 characters</li>
+          <li>• At least one uppercase letter (A-Z)</li>
+          <li>• At least one number (0-9)</li>
+          <li>• At least one special character (!@#$%^&*...)</li>
+        </ul>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Current Password <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="password"
+            value={data.currentPassword}
+            onChange={(e) => setData({ ...data, currentPassword: e.target.value })}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+            placeholder="Enter current password"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            New Password <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="password"
+            value={data.newPassword}
+            onChange={handleNewPasswordChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.newPassword ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Enter new password"
+          />
+          {errors.newPassword && (
+            <p className="mt-1 text-sm text-red-600">{errors.newPassword}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Confirm New Password <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="password"
+            value={data.confirmPassword}
+            onChange={handleConfirmPasswordChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
+              errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Confirm new password"
+          />
+          {errors.confirmPassword && (
+            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          onClick={onChangePassword}
+          disabled={saving || !isValid}
+          className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {saving ? 'Changing...' : 'Change Password'}
+        </button>
+      </div>
+
+      <div className="border-t border-gray-200 pt-6 mt-6">
+        <h4 className="font-semibold text-gray-900 mb-2">Two-Factor Authentication</h4>
+        <p className="text-sm text-gray-600 mb-4">Add an extra layer of security to your account</p>
+        <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+          Enable 2FA (Coming Soon)
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Social Tab Component
+const SocialTab = ({ socialLinks, setSocialLinks, vacationMode, onToggleVacation, onSaveSocial, saving }) => (
+  <div className="space-y-6">
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Social Links & Additional Settings</h3>
+      <p className="text-sm text-gray-600 mb-6">Connect your social media and manage store availability</p>
+    </div>
+
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Instagram
+        </label>
+        <input
+          type="text"
+          value={socialLinks.instagram}
+          onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+          placeholder="https://instagram.com/yourstore"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Facebook
+        </label>
+        <input
+          type="text"
+          value={socialLinks.facebook}
+          onChange={(e) => setSocialLinks({ ...socialLinks, facebook: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+          placeholder="https://facebook.com/yourstore"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Website
+        </label>
+        <input
+          type="text"
+          value={socialLinks.website}
+          onChange={(e) => setSocialLinks({ ...socialLinks, website: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+          placeholder="https://yourwebsite.com"
+        />
+      </div>
+    </div>
+
+    <div className="flex justify-end">
+      <button
+        onClick={onSaveSocial}
+        disabled={saving}
+        className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {saving ? 'Saving...' : 'Save Social Links'}
+      </button>
+    </div>
+
+    <div className="border-t border-gray-200 pt-6 mt-6">
+      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+        <div className="flex items-center gap-3">
+          <Plane className="w-6 h-6 text-gray-600" />
+          <div>
+            <p className="font-medium text-gray-900">Vacation Mode</p>
+            <p className="text-sm text-gray-600">Temporarily hide your products from the marketplace</p>
+          </div>
+        </div>
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input
+            type="checkbox"
+            checked={vacationMode}
+            onChange={onToggleVacation}
+            className="sr-only peer"
+          />
+          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ethiopian-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+        </label>
+      </div>
+    </div>
+  </div>
+);
+
+export default Settings;
