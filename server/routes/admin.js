@@ -499,6 +499,17 @@ router.get(
         const artisanName = artisan?.businessProfile?.businessName || 
                             (artisan?.profile?.firstName ? `${artisan.profile.firstName} ${artisan.profile.lastName}` : 'Artisan Hub');
 
+        // Delivery Efficiency Calculation
+        let completionDate = null;
+        let deliveryEfficiencyDays = null;
+        if (['delivered', 'completed'].includes(order.status)) {
+          completionDate = order.shipping?.deliveredAt || order.updatedAt;
+          if (completionDate) {
+             const diffTime = Math.abs(new Date(completionDate) - new Date(order.createdAt));
+             deliveryEfficiencyDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))); 
+          }
+        }
+
         return {
           _id: order._id,
           orderNumber: order.orderNumber,
@@ -516,6 +527,8 @@ router.get(
           earning: order.totals.artisanEarning || (order.totals.total * 0.95),
           receiptUrl: order.payment.receipt,
           createdAt: order.createdAt,
+          completionDate,
+          deliveryEfficiencyDays,
           transactionId: order.payment.transactionId,
         };
       }),

@@ -80,8 +80,9 @@ const ArtisanProfile = () => {
   const memberSince = artisan?.memberSince
     ? new Date(artisan.memberSince).getFullYear()
     : (artisan?.createdAt ? new Date(artisan.createdAt).getFullYear() : null);
-  const location = artisan?.profile?.location || artisan?.profile?.city || 'Ethiopia';
-  const profileImage = artisan?.profile?.image;
+  const location = artisan?.profile?.address?.region || artisan?.profile?.location || artisan?.profile?.city || 'Ethiopia';
+  const profileImage = artisan?.profile?.storeLogo || artisan?.profile?.image;
+  const isVerifiedArtisan = artisan?.profile?.isVerifiedArtisan || false;
 
   return (
     <div className="min-h-screen bg-[#fafaf9] font-['Inter',sans-serif]">
@@ -110,12 +111,21 @@ const ArtisanProfile = () => {
 
         {/* ─── Hero Profile Card ─── */}
         <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
-          {/* Header gradient stripe */}
-          <div className="h-36 bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 relative overflow-hidden">
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-80 h-80 bg-ethiopian-gold rounded-full -translate-y-1/2 translate-x-1/4" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-400 rounded-full translate-y-1/2 -translate-x-1/4" />
-            </div>
+          {/* Header Banner - Dynamic or Gradient Fallback */}
+          <div className="h-48 sm:h-64 relative overflow-hidden bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50">
+            {artisan?.profile?.coverBanner ? (
+              <img
+                src={getImageUrl(artisan.profile.coverBanner)}
+                alt={`${name} Banner`}
+                className="w-full h-full object-cover"
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+            ) : (
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-ethiopian-gold rounded-full -translate-y-1/2 translate-x-1/4" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-400 rounded-full translate-y-1/2 -translate-x-1/4" />
+              </div>
+            )}
           </div>
 
           <div className="px-8 sm:px-12 pb-10 -mt-16 relative">
@@ -136,9 +146,11 @@ const ArtisanProfile = () => {
                     </div>
                   )}
                 </div>
-                <div className="absolute -bottom-2 -right-2 p-2 bg-white rounded-full shadow-md border border-gray-100">
-                  <CheckBadgeIcon className="w-6 h-6 text-ethiopian-gold" />
-                </div>
+                {isVerifiedArtisan && (
+                  <div className="absolute -bottom-2 -right-2 p-2 bg-white rounded-full shadow-md border border-gray-100">
+                    <CheckBadgeIcon className="w-6 h-6 text-ethiopian-gold" />
+                  </div>
+                )}
               </div>
 
               {/* Quick Actions */}
@@ -163,7 +175,9 @@ const ArtisanProfile = () => {
             <div className="mt-6">
               <div className="flex items-center gap-3 mb-1 flex-wrap">
                 <h1 className="text-3xl sm:text-4xl font-['Playfair_Display',serif] font-black text-gray-900">{name}</h1>
-                <span className="px-3 py-1 bg-ethiopian-gold/10 text-ethiopian-gold text-[10px] font-black uppercase tracking-widest rounded-full">Verified Artisan</span>
+                {isVerifiedArtisan && (
+                  <span className="px-3 py-1 bg-ethiopian-gold/10 text-ethiopian-gold text-[10px] font-black uppercase tracking-widest rounded-full">Verified Artisan</span>
+                )}
               </div>
               <div className="flex items-center gap-4 text-sm text-gray-500 font-medium mb-4 flex-wrap">
                 {location && (
@@ -193,10 +207,10 @@ const ArtisanProfile = () => {
         {/* ─── Stats Row ─── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Years Experience', value: '15+' },
-            { label: 'Pieces Created', value: '400+' },
-            { label: 'Happy Customers', value: '200+' },
-            { label: 'Traditions Preserved', value: '4' },
+            { label: 'Years Experience', value: `${artisan?.profile?.experienceYears ?? 0}+` },
+            { label: 'Pieces Created', value: `${artisan?.profile?.totalProducts ?? 0}+` },
+            { label: 'Traditions Preserved', value: artisan?.profile?.traditionsPreserved ?? 0 },
+            { label: 'Avg. Rating', value: '4.9' },
           ].map((stat, i) => (
             <div key={i} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm text-center">
               <p className="text-3xl font-black text-gray-900 mb-1">{stat.value}</p>
@@ -217,6 +231,28 @@ const ArtisanProfile = () => {
                 >
                   {s}
                 </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── Workshop Gallery ─── */}
+        {artisan?.profile?.workshopGallery?.length > 0 && (
+          <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 border border-gray-100 shadow-sm">
+            <div className="mb-10 text-center sm:text-left">
+              <h2 className="text-xs font-black text-ethiopian-gold uppercase tracking-[0.3em] mb-3">Inside the Workshop</h2>
+              <h3 className="text-3xl font-['Playfair_Display',serif] font-black text-gray-900">Glimpse the master at work</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {artisan.profile.workshopGallery.map((img, idx) => (
+                <div key={idx} className="aspect-square rounded-2xl overflow-hidden border border-gray-100 group">
+                  <img 
+                    src={getImageUrl(img)} 
+                    alt={`Workshop ${idx + 1}`} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -294,6 +330,33 @@ const ArtisanProfile = () => {
             </div>
           </div>
         </div>
+
+        {/* ─── Workshop Gallery ─── */}
+        {artisan?.profile?.workshopGallery?.length > 0 && (
+          <div className="bg-white rounded-[2rem] p-10 border border-gray-100 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+              <div>
+                <h2 className="text-xs font-black text-ethiopian-gold uppercase tracking-[0.3em] mb-2">Inside the workshop</h2>
+                <h3 className="text-3xl font-['Playfair_Display',serif] font-black text-gray-900">Crafting Heritage</h3>
+              </div>
+              <p className="text-gray-500 text-sm max-w-sm italic">
+                A glimpse into {name}'s sacred workspace where tradition meets artistry.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {artisan.profile.workshopGallery.map((img, i) => (
+                <div key={i} className="group relative aspect-square rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500">
+                  <img
+                    src={getImageUrl(img)}
+                    alt={`Workshop ${i + 1}`}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </main>
     </div>

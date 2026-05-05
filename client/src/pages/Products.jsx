@@ -322,46 +322,7 @@ const Products = () => {
         </div>
       </div>
 
-      {/* ✂️ Clean White-Themed Custom Design Banner */}
-      <div className="relative overflow-hidden bg-white border border-gray-100 rounded-3xl mx-4 my-8 shadow-sm group hover:shadow-md transition-shadow duration-300">
-        {/* Subtle Background Accent */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-orange-50/50 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-orange-100/50 transition-colors duration-500"></div>
 
-        <div className="relative z-10 container mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-6">
-
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-5 text-center md:text-left">
-            {/* Icon with Soft Background */}
-            <div className="relative shrink-0">
-              <div className="p-4 bg-orange-50 rounded-2xl group-hover:bg-orange-100 transition-colors duration-300">
-                <ScissorsIcon className="w-8 h-8 text-orange-600 group-hover:rotate-12 transition-transform" />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <h2 className="text-2xl md:text-3xl font-black text-gray-900 tracking-tight leading-tight">
-                {t('custom_order.banner_title', 'ልዩ የልብስ ዲዛይን ይፈልጋሉ?')}
-                <span className="block text-orange-600 text-base md:text-lg font-bold mt-0.5">
-                  በእርስዎ ምርጫ እና ልክ ተለክቶ የሚሰፋ
-                </span>
-              </h2>
-              <p className="max-w-lg text-gray-500 text-sm md:text-base font-normal leading-relaxed">
-                {t('custom_order.banner_subtitle', 'የሰውነትዎን ልክ (ቁመትና ስፋት) በቀጥታ ለባለሙያ ይላኩ — ለእርስዎ ብቻ የተሰራ ጥበብ።')}
-              </p>
-            </div>
-          </div>
-
-          {/* Primary Action Button */}
-          <button
-            onClick={() => navigate('/custom-order')}
-            className="relative shrink-0 bg-gray-900 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:bg-orange-600 transition-all duration-300 flex items-center gap-3 group/btn hover:-translate-y-0.5 active:scale-95"
-          >
-            <MeasuringTapeIcon className="w-5 h-5 text-orange-400 group-hover/btn:text-white transition-colors" />
-            <span className="text-sm md:text-base uppercase tracking-widest">
-              {t('custom_order.button_text', 'ትዕዛዝ ይጀምሩ')}
-            </span>
-          </button>
-        </div>
-      </div>
       {/* Search Bar */}
       <div className={`sticky top-16 z-40 w-full transition-all duration-300 ${isScrolled ? 'bg-white shadow-lg border-b border-gray-100' : 'bg-white/95 backdrop-blur-md border-b border-gray-100'}`}>
         <div className="container mx-auto px-4 py-6">

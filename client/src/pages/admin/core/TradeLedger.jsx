@@ -8,7 +8,7 @@ import {
   DollarSign, HandCoins, AlertCircle, Filter, Eye, CheckCircle,
   ExternalLink, X, ShieldAlert, FileDown, Package, CreditCard,
   Truck, User, Flag, ShieldCheck, Landmark, History, RefreshCcw,
-  ClipboardList, FileX, Search
+  ClipboardList, FileX, Search, Clock
 } from 'lucide-react';
 import CommissionHistoryModal from '../../../components/admin/CommissionHistoryModal';
 import CommissionPayoutModal from '../../../components/admin/CommissionPayoutModal';
@@ -179,15 +179,18 @@ const OrderDetailModal = ({ order, onClose }) => {
           {/* Delivery */}
           <Section icon={Truck} title={t('product.specifications', 'Delivery Status')}>
             <Row label={t('common.status', 'Current Status')} value={order.status} className="capitalize font-bold text-blue-600" />
-            <Row label="Delivery Step" value={order.shipping?.deliveryStatus || 'Pending'} className="capitalize" />
+            <Row label="Delivery Step" value={order.shipping?.deliveryStatus || order.status} className="capitalize" />
             <Row label="Carrier" value={order.shipping?.carrier} />
             <Row label="Tracking #" value={order.shipping?.trackingNumber} />
             <Row label="Estimated Delivery" value={order.shipping?.estimatedDelivery
               ? new Date(order.shipping.estimatedDelivery).toLocaleDateString()
               : undefined} />
-            <Row label="Delivered At" value={order.shipping?.deliveredAt
-              ? new Date(order.shipping.deliveredAt).toLocaleString()
+            <Row label="Delivered At" value={order.completionDate || order.shipping?.deliveredAt
+              ? new Date(order.completionDate || order.shipping.deliveredAt).toLocaleString()
               : undefined} />
+            {order.deliveryEfficiencyDays && (
+              <Row label="Delivery Efficiency" value={`${order.deliveryEfficiencyDays} day${order.deliveryEfficiencyDays > 1 ? 's' : ''} (from order)`} className="text-emerald-600 font-bold bg-emerald-50 rounded px-2" />
+            )}
           </Section>
 
           {/* Notes */}
@@ -706,17 +709,29 @@ const TradeLedger = () => {
 
                       {/* Status */}
                       <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="space-y-1">
-                          <div className="text-xs">
+                        <div className="space-y-1 mt-1">
+                          <div className="text-xs flex items-center">
                             <span className="text-gray-400 mr-1.5 flex items-center gap-1">
                               <CreditCard className="w-3 h-3" /> Payment:
                             </span>
                             <span className={`font-bold ${['Paid', 'Completed', 'Delivered'].includes(order.status) ? 'text-green-600' : 'text-amber-600'}`}>
                               {['Manual', 'COD'].includes(order.method) && ['Paid', 'Completed', 'Delivered'].includes(order.status) 
-                                ? '[Payment Received by Artisan]' 
+                                ? '[Recv. by Artisan]' 
                                 : order.status}
                             </span>
                           </div>
+                          <div className="text-[10px] flex items-center text-gray-500">
+                            <span className="text-gray-400 mr-1.5 flex items-center gap-1">
+                              <Truck className="w-3 h-3" /> Delivery:
+                            </span>
+                            <span className="font-semibold uppercase">{order.deliveryStatus || 'Pending'}</span>
+                          </div>
+                          {order.deliveryEfficiencyDays && (
+                            <div className="text-[10px] flex items-center text-emerald-600 bg-emerald-50 max-w-fit px-1.5 py-0.5 rounded mt-0.5 font-bold shadow-sm">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {order.deliveryEfficiencyDays} day{order.deliveryEfficiencyDays > 1 ? 's' : ''} avg
+                            </div>
+                          )}
                         </div>
                       </td>
 

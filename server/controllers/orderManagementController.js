@@ -383,10 +383,12 @@ exports.markAsDelivered = asyncHandler(async (req, res) => {
   order.shipping.actualDelivery = new Date();
   order.shipping.deliveryStatus = 'Delivered';
 
-  // Mark as completed
-  await order.updateStatus('completed', `Order delivered and marked as completed. Verified by ${req.user.role === 'admin' ? 'Admin' : 'Artisan'}.`);
-  
-  // Also update payment status to completed if it was paid
+  // Payout logic for online payments
+  if (order.payment.method === 'CHAPA' || order.payment.method === 'stripe') {
+    order.payoutStatus = 'Ready';
+  }
+
+  // Also update payment status to completed if it was explicitly paid online or manually
   if (order.payment.status === 'paid') {
     order.payment.status = 'completed';
   }
@@ -414,28 +416,12 @@ exports.markAsDelivered = asyncHandler(async (req, res) => {
     }
   }
 
-  // DEBT LOGIC: If payment was Manual/COD, the Artisan has the cash. 
-  // We must record the 10% platform commission as debt on the Artisan's account.
-  const manualMethods = ['Manual', 'MANUAL', 'COD', 'manual', 'cash_on_delivery', 'bank_transfer', 'telebirr'];
-  if (manualMethods.includes(order.payment.method)) {
-    console.log(`💰 Recording 5% commission debt for manual order #${order.orderNumber}`);
-    const commissionAmount = order.totals.platformCommission || (order.totals.total * 0.05);
-    
-    // Identify the principal artisan (we currently assume one primary artisan per order for debt tracking)
-    const targetArtisanId = order.artisanId || (order.items && order.items[0]?.artisan);
-    
-    if (targetArtisanId) {
-      const User = require('../models/User');
-      await User.findByIdAndUpdate(targetArtisanId, {
-        $inc: { unpaidCommission: Number(commissionAmount.toFixed(2)) }
-      });
-      order.commissionStatus = 'Pending';
-      console.log(`   ✅ Debt of ${commissionAmount.toFixed(2)} recorded for Artisan: ${targetArtisanId}`);
-    }
-  }
+  // Mark as completed using the model's updateStatus method
+  // This will AUTOMATICALLY trigger the commission debt recording if payment is Manual/COD
+  await order.updateStatus('completed', `Order delivered and marked as completed by ${req.user.role === 'admin' ? 'Admin' : 'Artisan'}.`);
 
-  // CRITICAL: Always save the order to persist status changes (e.g. status: 'completed')
-  await order.save();
+
+  console.log(`✅ Order #${order.orderNumber} successfully delivered and debt (if any) processed.`);
 
   // Send notification to customer
   try {

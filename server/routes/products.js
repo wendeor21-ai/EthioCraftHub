@@ -58,12 +58,11 @@ router.post(
       return res.status(500).json({ success: false, message: "Failed to process image.", error: err.message });
     }
     
-    // Fetch all products that have an imageFeatureVector
     const products = await Product.find({
       status: "active",
       "inventory.quantity": { $gt: 0 },
       imageFeatureVector: { $exists: true, $not: { $size: 0 } }
-    }).populate("artisan", "profile.firstName profile.lastName profile.culturalBackground");
+    }).populate("artisan", "profile.firstName profile.lastName profile.storeName profile.storeLogo profile.culturalBackground profile.isVerifiedArtisan");
     
     const SIMILARITY_THRESHOLD = 0.5; // Lowered from 0.80 for better recall
 
@@ -264,7 +263,7 @@ router.get(
     query = query
       .populate(
         "artisan",
-        "profile.firstName profile.lastName profile.culturalBackground profile.address.region",
+        "profile.firstName profile.lastName profile.storeName profile.storeLogo profile.culturalBackground profile.address.region profile.isVerifiedArtisan",
       )
       .populate("promotionId");
 
@@ -506,7 +505,7 @@ router.get(
         const additionalProducts = await Product.find({
           _id: { $in: newPopularIds.slice(0, remainingLimit) },
           status: "active"
-        }).populate("artisan", "profile.firstName profile.lastName profile.culturalBackground");
+        }).populate("artisan", "profile.firstName profile.lastName profile.storeName profile.storeLogo profile.culturalBackground profile.isVerifiedArtisan");
 
         recommendations = [...recommendations, ...additionalProducts];
       }
@@ -566,7 +565,7 @@ router.get(
 
     const product = await query.populate(
       "artisan",
-      "profile.firstName profile.lastName profile.culturalBackground profile.specialties profile.bio",
+      "profile.firstName profile.lastName profile.storeName profile.storeLogo profile.coverBanner profile.culturalBackground profile.specialties profile.bio profile.experienceYears profile.totalProducts profile.traditionsPreserved profile.workshopGallery profile.isVerifiedArtisan",
     );
 
     if (!product) {
@@ -629,10 +628,18 @@ router.get(
       similarProducts: safeSimilar,
       artisan: {
         id: product.artisan._id,
-        name: product.artisan.fullName,
+        name: product.artisan.fullName || `${product.artisan.profile.firstName} ${product.artisan.profile.lastName}`,
+        storeName: product.artisan.profile.storeName,
+        storeLogo: product.artisan.profile.storeLogo,
+        coverBanner: product.artisan.profile.coverBanner,
         culturalBackground: product.artisan.profile.culturalBackground,
         specialties: product.artisan.profile.specialties,
         bio: product.artisan.profile.bio,
+        experienceYears: product.artisan.profile.experienceYears,
+        totalProducts: product.artisan.profile.totalProducts,
+        traditionsPreserved: product.artisan.profile.traditionsPreserved,
+        workshopGallery: product.artisan.profile.workshopGallery,
+        isVerifiedArtisan: product.artisan.profile.isVerifiedArtisan,
       },
     });
   }),

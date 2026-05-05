@@ -221,7 +221,9 @@ const OrderDetail = () => {
                 <div key={it._id || product._id || Math.random()} className="flex items-center gap-4 border-b pb-3">
                   <img src={imageSrc} alt={product.name || it.name} className="w-16 h-16 object-cover rounded" />
                   <div>
-                    <div className="font-semibold text-gray-800">{product.name || it.name}</div>
+                    <div className="font-semibold text-gray-800">
+                      {order.isCustom ? 'Special Clothing Design' : (product.name || it.name || 'Product')}
+                    </div>
                     <div className="text-sm text-gray-500">Qty: {it.quantity} • {(it.price || product.price)?.toFixed?.(2) || (it.price || product.price)} ETB</div>
                   </div>
                 </div>

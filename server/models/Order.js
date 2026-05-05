@@ -437,6 +437,10 @@ const orderSchema = new mongoose.Schema({
   photos: {
     front: String,
     back: String
+  },
+  debtRecorded: {
+    type: Boolean,
+    default: false
   }
 }, {
   timestamps: true,
@@ -532,41 +536,67 @@ orderSchema.methods.addMessage = function(from, to, message, type) {
   });
   return this.save();
 };
+// Pre-save middleware to record commission debt for manual/COD orders
+orderSchema.pre('save', async function(next) {
+  // Only trigger if status just became 'delivered' or 'completed'
+  if (this.isModified('status') && (this.status === 'delivered' || this.status === 'completed') && !this.debtRecorded) {
+    const manualMethods = ['Manual', 'MANUAL', 'COD', 'manual', 'cash_on_delivery', 'CASH_ON_DELIVERY', 'cod', 'bank_transfer', 'telebirr'];
+    if (manualMethods.includes(this.payment.method)) {
+      console.log(`💰 [Model Auto-Debt] Processing commission for order #${this.orderNumber}`);
+      
+      const User = mongoose.model('User');
+      const artisanDebts = {};
+      
+      this.items.forEach(item => {
+        const artisanId = item.artisan._id ? item.artisan._id.toString() : item.artisan.toString();
+        const itemCommission = (item.price * item.quantity * 0.05);
+        artisanDebts[artisanId] = (artisanDebts[artisanId] || 0) + itemCommission;
+      });
+
+      try {
+        for (const [artisanId, amount] of Object.entries(artisanDebts)) {
+          const roundedAmount = Number(amount.toFixed(2));
+          await User.findByIdAndUpdate(artisanId, {
+            $inc: { unpaidCommission: roundedAmount }
+          });
+          console.log(`   ✅ Recorded ${roundedAmount} ETB commission debt for artisan ${artisanId}`);
+        }
+        this.debtRecorded = true;
+        this.commissionStatus = 'pending';
+      } catch (err) {
+        console.error('❌ Failed to record commission debt in pre-save:', err.message);
+      }
+    }
+  }
+  next();
+});
 
 // Method to update order status
 orderSchema.methods.updateStatus = function(newStatus, notes = '') {
-  const oldStatus = this.status;
   this.status = newStatus;
   
-  // Add to status history
-  if (!this.statusHistory) {
-    this.statusHistory = [];
-  }
+  if (!this.statusHistory) { this.statusHistory = []; }
   this.statusHistory.push({
     status: newStatus,
     timestamp: new Date(),
     note: notes
   });
   
-  if (notes) {
-    this.notes = notes;
-  }
+  if (notes) { this.notes = notes; }
   
-  // Update payment status based on order status
+  // Update payment status
   if ((newStatus === 'confirmed' || newStatus === 'processing') && 
       (this.payment.status === 'pending' || this.payment.status === 'unpaid')) {
-    // For Chapa/Stripe this might be auto-set, for COD/Manual it stays Pending/Unpaid until Admin action
-    if (this.payment.method === 'CHAPA' || this.payment.method === 'stripe') {
+    if (['CHAPA', 'stripe'].includes(this.payment.method)) {
       this.payment.status = 'paid';
       this.payment.processedAt = new Date();
     }
-  } else if (newStatus === 'cancelled' || newStatus === 'rejected') {
+  } else if (['cancelled', 'rejected'].includes(newStatus)) {
     this.payment.status = 'failed';
   } else if (newStatus === 'refunded') {
     this.payment.status = 'refunded';
   }
 
-  // Auto-set payoutStatus to "Ready" if Paid and Delivered
   if ((newStatus === 'delivered' || newStatus === 'completed') && 
       (this.payment.status === 'paid' || this.payment.status === 'completed')) {
     this.payoutStatus = 'Ready';
@@ -574,11 +604,8 @@ orderSchema.methods.updateStatus = function(newStatus, notes = '') {
   
   // Update item statuses
   this.items.forEach(item => {
-    if (item.status === 'pending' && newStatus === 'confirmed') {
-      item.status = 'confirmed';
-    } else if (newStatus === 'cancelled') {
-      item.status = 'cancelled';
-    }
+    if (item.status === 'pending' && newStatus === 'confirmed') item.status = 'confirmed';
+    else if (newStatus === 'cancelled') item.status = 'cancelled';
   });
   
   return this.save();
@@ -596,7 +623,7 @@ orderSchema.methods.updateItemStatus = function(itemId, newStatus, artisanNotes 
     item.artisanNotes = artisanNotes;
   }
   
-  // Update overall order status based on item statuses
+  // Update overall order status
   const allStatuses = this.items.map(i => i.status);
   if (allStatuses.every(s => s === 'delivered')) {
     this.status = 'delivered';
@@ -606,21 +633,17 @@ orderSchema.methods.updateItemStatus = function(itemId, newStatus, artisanNotes 
     this.status = 'processing';
   }
 
-  // Check payout readiness after item status change
   if ((this.status === 'delivered' || this.status === 'completed') && 
       (this.payment.status === 'paid' || this.payment.status === 'completed')) {
     this.payoutStatus = 'ready';
   }
 
   // --- AUTO-INVENTORY CONTROL ---
-  // When an order is marked as Paid or Confirmed, decrement the countInStock
   if (
     this.isModified('payment.status') && 
     ['paid', 'confirmed'].includes(this.payment.status.toLowerCase())
   ) {
     const Product = mongoose.model('Product');
-    // We execute this asynchronously so it doesn't strictly block the save
-    // or we can wait for it. Promise.all ensures stock is lowered exactly now.
     Promise.all(this.items.map(item => 
       Product.findByIdAndUpdate(item.product, {
         $inc: { 'inventory.quantity': -item.quantity }

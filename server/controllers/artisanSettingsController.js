@@ -51,16 +51,19 @@ exports.updateProfile = asyncHandler(async (req, res) => {
     coverBanner,
     phone,
     address,
+    experienceYears,
+    totalProducts,
+    traditionsPreserved,
+    workshopGallery,
+    isVerifiedArtisan,
   } = req.body;
 
   // Validation rules
   const errors = [];
 
-  // Store Name validation
-  if (storeName !== undefined) {
-    if (!storeName || storeName.trim().length === 0) {
-      errors.push("Store name cannot be empty");
-    } else if (storeName.length < 3 || storeName.length > 50) {
+  // Store Name validation (optional but if provided must be valid)
+  if (storeName) {
+    if (storeName.length < 3 || storeName.length > 50) {
       errors.push("Store name must be between 3 and 50 characters");
     }
   }
@@ -93,17 +96,28 @@ exports.updateProfile = asyncHandler(async (req, res) => {
   }
 
   // Update profile fields
-  if (storeName) artisan.profile.storeName = storeName;
-  if (storeDescription) artisan.profile.bio = storeDescription;
-  if (storeLogo) artisan.profile.storeLogo = storeLogo;
-  if (coverBanner) artisan.profile.coverBanner = coverBanner;
-  if (phone) artisan.profile.phone = phone;
-  if (address) {
-    artisan.profile.address = {
-      ...artisan.profile.address,
-      ...address,
-    };
+  if (storeName !== undefined) artisan.profile.storeName = storeName;
+  if (storeDescription !== undefined) artisan.profile.bio = storeDescription;
+  if (storeLogo !== undefined) artisan.profile.storeLogo = storeLogo;
+  if (coverBanner !== undefined) artisan.profile.coverBanner = coverBanner;
+  if (phone !== undefined) {
+    artisan.profile.phone = phone;
+    artisan.profile.phoneNumber = phone; // sync both fields for consistency
   }
+  if (address) {
+    if (!artisan.profile.address) artisan.profile.address = {};
+    if (address.street !== undefined) artisan.profile.address.street = address.street;
+    if (address.city !== undefined) artisan.profile.address.city = address.city;
+    if (address.region !== undefined) artisan.profile.address.region = address.region;
+    if (address.country !== undefined) artisan.profile.address.country = address.country;
+  }
+  
+  // Update new artisan fields
+  if (experienceYears !== undefined) artisan.profile.experienceYears = experienceYears;
+  if (totalProducts !== undefined) artisan.profile.totalProducts = totalProducts;
+  if (traditionsPreserved !== undefined) artisan.profile.traditionsPreserved = traditionsPreserved;
+  if (workshopGallery !== undefined) artisan.profile.workshopGallery = workshopGallery;
+  if (isVerifiedArtisan !== undefined) artisan.profile.isVerifiedArtisan = isVerifiedArtisan;
 
   await artisan.save();
 

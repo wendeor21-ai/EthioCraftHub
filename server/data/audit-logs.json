@@ -1,5 +1,12 @@
 [
   {
+    "_id": "1777752574903",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-05-02T20:09:34.903Z"
+  },
+  {
     "_id": "1777494002666",
     "action": "platform_settings_updated",
     "adminEmail": "ethiocraftadmin@gmail.com",

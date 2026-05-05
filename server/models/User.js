@@ -152,6 +152,24 @@ const profileSchema = new mongoose.Schema(
       tinNumber: String,
       tradeLicenseNumber: String,
     },
+    // Artisan Performance & Trust Stats
+    experienceYears: {
+      type: Number,
+      default: 0
+    },
+    totalProducts: {
+      type: Number,
+      default: 0
+    },
+    traditionsPreserved: {
+      type: Number,
+      default: 0
+    },
+    workshopGallery: [String],
+    isVerifiedArtisan: {
+      type: Boolean,
+      default: false
+    }
   },
   { _id: false },
 );
@@ -794,6 +812,16 @@ userSchema.methods.getDefaultShippingAddress = function () {
     this.shippingAddresses[0]
   );
 };
+
+// Virtual for user's full name
+userSchema.virtual("fullName").get(function () {
+  if (!this.profile) return "User";
+  return `${this.profile.firstName || ""} ${this.profile.lastName || ""}`.trim();
+});
+
+// Ensure virtuals are serialized
+userSchema.set("toJSON", { virtuals: true });
+userSchema.set("toObject", { virtuals: true });
 
 // Index for performance optimization
 userSchema.index({ email: 1 }, { unique: true });

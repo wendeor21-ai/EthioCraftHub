@@ -276,12 +276,7 @@ function Home() {
                 <div className="relative h-full flex flex-col justify-start items-center max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 z-20 pt-20 lg:pt-28">
                   <div className="max-w-3xl text-center">
                     <div className="relative">
-                      {/* Badge */}
-                      <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-3 py-1.5 mb-5 animate-fade-in-up shadow-xl">
-                        <span className="text-[10px] font-semibold text-white tracking-wide uppercase">
-                          {getLocalized(slide, 'badge', 'home.new_collection')}
-                        </span>
-                      </div>
+
 
                       {/* Title - smaller font */}
                       <h1
@@ -294,12 +289,7 @@ function Home() {
                         {getLocalized(slide, 'subtitle', 'home.hero_subheadline')}
                       </p>
 
-                      {/* Description - smaller and with semi-transparent bg */}
-                      {!slide.hideDescription && (
-                        <p className="text-gray-100 text-sm lg:text-base mb-6 leading-relaxed max-w-lg mx-auto animate-fade-in-up animation-delay-300 drop-shadow-md bg-black/30 backdrop-blur-sm p-3 rounded-xl">
-                          {getLocalized(slide, 'description')}
-                        </p>
-                      )}
+
 
                       {/* CTA Buttons - slightly smaller */}
                       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-fade-in-up animation-delay-400 group">

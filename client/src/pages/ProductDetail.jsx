@@ -53,6 +53,7 @@ const ProductDetail = () => {
   const [selectedOptions, setSelectedOptions] = useState({});
   const [filters, setFilters] = useState({ color: '', size: '' });
   const [activeTab, setActiveTab] = useState('description'); // description, specs, reviews
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   // Review state
   const [reviewRating, setReviewRating] = useState(5);
@@ -256,148 +257,127 @@ const ProductDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16">
           
           {/* LEFT SIDE: Image Gallery (lg:col-span-7) */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="relative group aspect-square rounded-3xl overflow-hidden bg-white shadow-xl shadow-gray-200/50 border border-gray-100">
-              {/* Dual View Interaction Logic */}
-              {(() => {
-                const frontImg = product.images?.find(img => img.viewType === 'front');
-                const backImg = product.images?.find(img => img.viewType === 'back');
-                const currentImg = productImages[selectedImage];
-                
-                // If the selected image is the Front one and there's a Back one, enable the toggle
-                const isSelectedFront = frontImg && getImageUrl(frontImg.url) === currentImg;
-                const isSelectedBack = backImg && getImageUrl(backImg.url) === currentImg;
-                
-                return (
-                  <>
+          <div className="lg:col-span-7">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden p-2">
+              <div className="relative aspect-square rounded-lg overflow-hidden bg-gray-50 group">
+                {/* Floating Wishlist Icon */}
+                <button 
+                  onClick={handleToggleWishlist}
+                  className="absolute top-4 right-4 p-2.5 bg-white/90 backdrop-blur-md rounded-full shadow-md hover:scale-110 transition-all z-20 border border-gray-100"
+                >
+                  {isInWishlist(product._id) ? (
+                    <HeartSolidIcon className="w-5 h-5 text-red-500" />
+                  ) : (
+                    <HeartIcon className="w-5 h-5 text-gray-900" />
+                  )}
+                </button>
+
+                {/* Main Product Image */}
+                {(() => {
+                  const currentImg = productImages[selectedImage];
+                  return (
                     <img
                       src={currentImg}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 cursor-zoom-in"
                       crossOrigin="anonymous"
                       onError={(e) => {
                         e.target.src = '/images/gondar_drass1.jpg';
                         e.target.onerror = null;
                       }}
                     />
-                    
-                    {/* View Badge */}
-                    <div className="absolute top-6 left-6 flex flex-col gap-2">
-                      {hasDiscount && (
-                        <div className="px-4 py-2 bg-red-600 text-white text-[10px] font-black rounded-full shadow-lg uppercase tracking-widest">
-                          -{discount}%
-                        </div>
-                      )}
-                      {(isSelectedFront || isSelectedBack) && (
-                        <div className="px-4 py-2 bg-ethiopian-gold/90 backdrop-blur-md text-white text-[10px] font-black rounded-full shadow-lg uppercase tracking-widest border border-white/20">
-                          {isSelectedFront ? 'Front View' : 'Back Detail'}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Interactive Toggle for Front/Back */}
-                    {(frontImg && backImg) && (isSelectedFront || isSelectedBack) && (
-                      <div className="absolute inset-x-0 bottom-8 flex justify-center opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            const target = isSelectedFront ? backImg : frontImg;
-                            const targetIdx = productImages.findIndex(img => img === getImageUrl(target.url));
-                            if (targetIdx !== -1) setSelectedImage(targetIdx);
-                          }}
-                          className="px-6 py-3 bg-gray-900/90 backdrop-blur-xl text-white text-[10px] font-black rounded-2xl shadow-2xl flex items-center gap-3 border border-white/10 hover:bg-black transition-all hover:scale-105 ring-4 ring-white/5"
-                        >
-                          <ArrowPathIcon className="w-4 h-4 text-ethiopian-gold" />
-                          <span>SWITCH TO {isSelectedFront ? 'BACK' : 'FRONT'} VIEW</span>
-                        </button>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-
-              <button 
-                onClick={handleToggleWishlist}
-                className="absolute top-6 right-6 p-3 bg-white/90 backdrop-blur-md rounded-full shadow-lg hover:scale-110 transition-all z-10"
-              >
-                {isInWishlist(product._id) ? (
-                  <HeartSolidIcon className="w-6 h-6 text-red-500" />
-                ) : (
-                  <HeartIcon className="w-6 h-6 text-gray-900" />
-                )}
-              </button>
-            </div>
-
-            {/* Thumbnails */}
-            {productImages.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto py-2 no-scrollbar scroll-smooth">
-                {productImages.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImage(idx)}
-                    className={`flex-shrink-0 w-20 sm:w-24 aspect-square rounded-2xl overflow-hidden border-2 transition-all ${
-                      selectedImage === idx 
-                        ? 'border-ethiopian-gold ring-4 ring-ethiopian-gold/10' 
-                        : 'border-white hover:border-gray-200 shadow-sm'
-                    }`}
-                  >
-                    <img src={img} className="w-full h-full object-cover" crossOrigin="anonymous" alt={`${product.name} - view ${idx + 1}`} />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* RIGHT SIDE: Product Details & Purchase Actions (lg:col-span-5) */}
-          <div className="lg:col-span-5 flex flex-col">
-            <div className="mb-8">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="px-3 py-1 bg-ethiopian-gold/10 text-ethiopian-gold text-[10px] font-bold uppercase tracking-widest rounded-full">
-                  {product.category}
-                </span>
-                <div className="flex items-center gap-1 border-l border-gray-200 pl-3">
-                  <StarSolidIcon className="w-4 h-4 text-[#fbbf24]" />
-                  <span className="text-sm font-bold text-gray-900">{product.metrics?.averageRating?.toFixed(1) || '5.0'}</span>
-                  <span className="text-xs text-gray-500 font-medium ml-1">({product.metrics?.reviewCount || 0} reviews)</span>
+                  );
+                })()}
+                
+                {/* Promo/Status Badges */}
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {hasDiscount && (
+                    <span className="bg-red-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter shadow-sm">
+                      -{discount}% OFF
+                    </span>
+                  )}
+                  <span className="bg-ethiopian-gold text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-tighter shadow-sm">
+                    Authentic
+                  </span>
                 </div>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-['Playfair_Display',serif] font-black text-gray-900 mb-4 leading-tight">
-                {product.name}
-              </h1>
+              {/* Thumbnails Row */}
+              {productImages.length > 1 && (
+                <div className="flex gap-3 overflow-x-auto py-4 px-2 no-scrollbar">
+                  {productImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(idx)}
+                      className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        selectedImage === idx 
+                          ? 'border-ethiopian-gold ring-2 ring-ethiopian-gold/20' 
+                          : 'border-transparent bg-gray-50 hover:border-gray-200'
+                      }`}
+                    >
+                      <img src={img} className="w-full h-full object-cover" crossOrigin="anonymous" alt={`thumbnail ${idx + 1}`} />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
 
-              <div className="flex items-baseline gap-4 mb-4">
-                <span className="text-4xl font-bold text-gray-900 tracking-tight">
-                  {formatCurrency(selectedVariant ? selectedVariant.price : product.price)}
-                </span>
-                {(selectedVariant?.comparePrice || product.comparePrice) && (
-                  <span className="text-xl text-gray-400 line-through font-medium">
-                    {formatCurrency(selectedVariant?.comparePrice || product.comparePrice)}
+          {/* RIGHT SIDE: Product Info & Actions Column (lg:col-span-5) */}
+          <div className="lg:col-span-5">
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 lg:p-8 space-y-6">
+              {/* Header: Title, Badges, Price & Rating */}
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase rounded border border-amber-100">
+                    <CheckBadgeIcon className="w-3 h-3" />
+                    Best Seller
                   </span>
-                )}
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{product.category}</span>
+                </div>
+
+                <h1 className="text-3xl font-black text-gray-900 leading-tight">
+                  {product.name}
+                </h1>
+
+                <div className="flex items-center justify-between gap-4 py-2 border-y border-gray-50">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-gray-900">
+                      {formatCurrency((selectedVariant ? selectedVariant.price : product.price) * quantity)}
+                    </span>
+                    {(selectedVariant?.comparePrice || product.comparePrice) && (
+                      <span className="text-lg text-gray-400 line-through font-medium">
+                        {formatCurrency((selectedVariant?.comparePrice || product.comparePrice) * quantity)}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-0.5">
+                      <StarSolidIcon className="w-4 h-4 text-amber-400" />
+                      <span className="text-sm font-bold text-gray-900">{product.metrics?.averageRating?.toFixed(1) || '5.0'}</span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-200"></div>
+                    <span className="text-xs text-gray-500 font-medium">{product.metrics?.reviewCount || 0} Reviews</span>
+                  </div>
+                </div>
               </div>
 
-              <p className="text-gray-600 leading-relaxed text-base italic border-l-2 border-ethiopian-gold/30 pl-4 mb-6">
-                "{product.shortDescription || `Authentic ${product.category} handcrafted with centuries-old techniques.`}"
-              </p>
-            </div>
-
-            {/* Selection Options */}
-            <div className="space-y-6 mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-              {/* Variations - Color/Size */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Selection Controls (Compact Chips) */}
+              <div className="space-y-5">
+                {/* Variations - Color */}
                 {availableColors.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 mb-3">Color</label>
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Color</label>
                     <div className="flex flex-wrap gap-2">
                       {availableColors.map(color => (
                         <button
                           key={color}
                           onClick={() => setFilters(prev => ({ ...prev, color }))}
-                          className={`px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all ${
+                          className={`px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
                             filters.color === color
-                              ? 'border-ethiopian-gold bg-ethiopian-gold/5 text-ethiopian-gold'
-                              : 'border-gray-100 text-gray-600 hover:border-gray-300'
+                              ? 'border-gray-900 bg-gray-900 text-white'
+                              : 'border-gray-200 text-gray-600 hover:border-gray-900'
                           }`}
                         >
                           {color}
@@ -407,10 +387,11 @@ const ProductDetail = () => {
                   </div>
                 )}
 
+                {/* Variations - Size */}
                 {availableSizes.length > 0 && (
-                  <div>
-                    <label className="block text-sm font-bold text-gray-900 mb-3">Size</label>
-                    <div className="flex flex-wrap gap-2">
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Size</label>
+                    <div className="grid grid-cols-4 gap-2">
                       {availableSizes.map(size => {
                         const variantForSize = product.variations.find(v => v.size === size);
                         const hasPriceDiff = variantForSize && variantForSize.price !== product.price;
@@ -419,15 +400,15 @@ const ProductDetail = () => {
                           <button
                             key={size}
                             onClick={() => setFilters(prev => ({ ...prev, size }))}
-                            className={`px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all flex flex-col items-center ${
+                            className={`px-2 py-2 rounded-lg border text-xs font-bold transition-all flex flex-col items-center justify-center min-h-[44px] ${
                               filters.size === size
-                                ? 'border-ethiopian-gold bg-ethiopian-gold/5 text-gray-900'
-                                : 'border-gray-100 text-gray-600 hover:border-gray-300'
+                                ? 'border-amber-500 bg-amber-50 text-gray-900 shadow-sm'
+                                : 'border-gray-200 text-gray-600 hover:border-gray-400'
                             }`}
                           >
                             <span>{size}</span>
                             {hasPriceDiff && (
-                              <span className="text-[10px] font-bold text-ethiopian-gold">
+                              <span className="text-[9px] font-medium text-amber-600">
                                 {formatCurrency(variantForSize.price)}
                               </span>
                             )}
@@ -437,97 +418,61 @@ const ProductDetail = () => {
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* Custom Options */}
-              {product.options?.map((opt, idx) => (
-                <div key={idx}>
-                  <label className="block text-sm font-bold text-gray-900 mb-3">{opt.name}</label>
-                  <div className="flex flex-wrap gap-2">
-                    {opt.values.map(val => (
-                      <button
-                        key={val}
-                        onClick={() => setSelectedOptions(prev => ({ ...prev, [opt.name]: val }))}
-                        className={`px-4 py-2 rounded-xl border-2 text-sm font-semibold transition-all ${
-                          selectedOptions[opt.name] === val
-                            ? 'border-ethiopian-gold bg-ethiopian-gold/5 text-ethiopian-gold'
-                            : 'border-gray-100 text-gray-600 hover:border-gray-300'
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    ))}
+                {/* Quantity Selector */}
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Quantity</span>
+                  <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 h-10">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-10 h-full flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-l-lg transition-colors border-r border-gray-200"
+                    >
+                      -
+                    </button>
+                    <span className="px-4 font-bold text-gray-900 text-sm">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-10 h-full flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-r-lg transition-colors border-l border-gray-200"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
 
-              {/* Quantity Selector */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                <span className="text-sm font-bold text-gray-900 uppercase tracking-wider">Quantity</span>
-                <div className="flex items-center bg-gray-50 p-1 rounded-2xl border border-gray-100">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-gray-900 font-bold hover:text-ethiopian-gold transition-colors"
-                  >
-                    -
-                  </button>
-                  <span className="w-12 text-center font-bold text-gray-900">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-gray-900 font-bold hover:text-ethiopian-gold transition-colors"
-                  >
-                    +
-                  </button>
-                </div>
+              {/* Action Buttons (Optimized Stack) */}
+              <div className="flex flex-col sm:flex-row gap-3 py-2">
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full sm:w-1/2 bg-[#1A1C20] text-white font-bold py-4 rounded-lg hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm uppercase text-sm tracking-wide"
+                >
+                  <ShoppingCartIcon className="w-5 h-5" />
+                  Add to Cart
+                </button>
+                <button
+                  onClick={handleBuyNow}
+                  className="w-full sm:w-1/2 bg-[#FFB800] hover:bg-[#E5A500] text-gray-900 font-bold py-4 rounded-lg transition-all shadow-sm uppercase text-sm tracking-wide"
+                >
+                  Buy Now
+                </button>
               </div>
-            </div>
 
-            {/* Main Action Buttons */}
-            <div className="flex flex-col gap-4 mb-8">
-              <button
-                onClick={handleAddToCart}
-                className="w-full bg-[#1e293b] text-white font-black py-5 rounded-3xl hover:bg-black transition-all flex items-center justify-center gap-3 shadow-xl shadow-gray-200"
-              >
-                <ShoppingBagIcon className="w-6 h-6" />
-                <span className="uppercase tracking-widest text-sm">Add to Cart</span>
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="w-full bg-ethiopian-gold hover:bg-amber-600 text-white font-black py-5 rounded-3xl transition-all shadow-xl shadow-amber-100"
-              >
-                <span className="uppercase tracking-widest text-sm">Buy Now</span>
-              </button>
-            </div>
-
-            {/* High-end Product Summary / Metadata */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-gray-100">
-                <MapPinIcon className="w-6 h-6 text-ethiopian-gold shrink-0" />
-                <div>
-                  <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Region</h4>
-                  <p className="text-sm font-bold text-gray-900">{product.originRegion || 'Highland Ethiopia'}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-gray-100">
-                <BeakerIcon className="w-6 h-6 text-ethiopian-gold shrink-0" />
-                <div>
-                  <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Material</h4>
-                  <p className="text-sm font-bold text-gray-900">{product.materials || 'Organic Textiles'}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-gray-100">
-                <CheckBadgeIcon className="w-6 h-6 text-ethiopian-gold shrink-0" />
-                <div>
-                  <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Craft</h4>
-                  <p className="text-sm font-bold text-gray-900">{product.category || 'Traditional Craft'}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-4 bg-white rounded-2xl border border-gray-100">
-                <TruckIcon className="w-6 h-6 text-ethiopian-gold shrink-0" />
-                <div>
-                  <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Global</h4>
-                  <p className="text-sm font-bold text-gray-900">Tracked Shipping</p>
-                </div>
+              {/* Product Highlights Grid (2x2) */}
+              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
+                {[
+                  { icon: MapPinIcon, label: 'Origin', value: product.originRegion || 'Ethiopia' },
+                  { icon: BeakerIcon, label: 'Material', value: product.materials || 'Organic' },
+                  { icon: TruckIcon, label: 'Shipping', value: 'Global Delivery' },
+                  { icon: ShieldCheckIcon, label: 'Warranty', value: 'Artisan Quality' }
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center gap-2 p-2.5 bg-gray-50/80 rounded-lg border border-gray-100">
+                    <item.icon className="w-4 h-4 text-amber-500 shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-bold text-gray-400 uppercase leading-none mb-0.5">{item.label}</p>
+                      <p className="text-[11px] font-bold text-gray-900 truncate leading-none">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -554,54 +499,63 @@ const ProductDetail = () => {
             ))}
           </div>
 
-          <div className="bg-white rounded-[3rem] p-8 sm:p-12 border border-gray-100 shadow-sm min-h-[400px]">
-            {activeTab === 'description' && (
-              <div className="max-w-4xl mx-auto">
-                <div className="relative mb-12">
-                   <span className="absolute -top-10 -left-6 text-8xl font-serif text-ethiopian-gold/10 pointer-events-none">"</span>
-                   <h2 className="text-4xl font-['Playfair_Display',serif] font-black text-gray-900 mb-8 relative z-10">Historical Significance & Heritage</h2>
-                   <p className="text-xl text-gray-600 leading-relaxed font-['Inter',sans-serif]">
-                     {product.description}
-                   </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16">
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-amber-50 rounded-2xl">
-                        <BookOpenIcon className="w-6 h-6 text-ethiopian-gold" />
-                      </div>
-                      <h3 className="text-xl font-black text-gray-900">Cultural Story</h3>
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="p-8 lg:p-12">
+              {activeTab === 'description' && (
+                <div className="max-w-4xl mx-auto space-y-12">
+                  {/* Hero Description with Accordion */}
+                  <div className="relative">
+                    <h2 className="text-3xl font-black text-gray-900 mb-6 font-display">Historical Significance & Heritage</h2>
+                    <div className={`relative transition-all duration-500 ease-in-out overflow-hidden ${isDescriptionExpanded ? 'max-h-[2000px]' : 'max-h-[240px]'}`}>
+                      <p className="text-lg text-gray-600 leading-relaxed tracking-wide whitespace-pre-line font-medium">
+                        {product.description}
+                      </p>
+                      {!isDescriptionExpanded && (
+                        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
+                      )}
                     </div>
-                    <p className="text-gray-600 leading-relaxed">
-                      {product.culturalStory?.significance || "Each piece tells a unique story of Ethiopian tradition, preserving techniques passed down through generations."}
-                    </p>
+                    <button 
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                      className="mt-4 text-sm font-bold text-amber-600 hover:text-amber-700 transition-colors flex items-center gap-1"
+                    >
+                      {isDescriptionExpanded ? 'Read Less' : 'Read More About Heritage'}
+                      <ArrowPathIcon className={`w-4 h-4 transition-transform duration-300 ${isDescriptionExpanded ? 'rotate-180' : ''}`} />
+                    </button>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-3 bg-amber-50 rounded-2xl">
-                        <SparklesIcon className="w-6 h-6 text-ethiopian-gold" />
+                  {/* Cultural & Craftsmanship Details Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-gray-50">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-amber-600">
+                        <BookOpenIcon className="w-5 h-5" />
+                        <h3 className="text-lg font-bold text-gray-900">Cultural Story</h3>
                       </div>
-                      <h3 className="text-xl font-black text-gray-900">Master Craftsmanship</h3>
+                      <p className="text-gray-600 leading-relaxed text-sm">
+                        {product.culturalStory?.significance || "Each piece tells a unique story of Ethiopian tradition, preserving techniques passed down through generations."}
+                      </p>
                     </div>
-                    <div className="grid grid-cols-1 gap-3">
-                      {[
-                        { label: 'Crafting Time', value: `${product.craftingTime || 5} days` },
-                        { label: 'Primary Technique', value: product.craftsmanshipType || 'Handmade' },
-                        { label: 'Materials', value: product.materials || 'Organic Mix' },
-                        { label: 'Region', value: product.originRegion || 'Highland Ethiopia' }
-                      ].map((item, i) => (
-                        <div key={i} className="flex justify-between py-3 border-b border-gray-50 last:border-b-0">
-                          <span className="text-gray-500 font-medium">{item.label}</span>
-                          <span className="text-gray-900 font-bold">{item.value}</span>
-                        </div>
-                      ))}
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-amber-600">
+                        <SparklesIcon className="w-5 h-5" />
+                        <h3 className="text-lg font-bold text-gray-900">Master Craftsmanship</h3>
+                      </div>
+                      <div className="space-y-2.5">
+                        {[
+                          { label: 'Crafting Time', value: `${product.craftingTime || 5} days` },
+                          { label: 'Technique', value: product.craftsmanshipType || 'Handmade' },
+                          { label: 'Region', value: product.originRegion || 'Highland Ethiopia' }
+                        ].map((item, i) => (
+                          <div key={i} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-b-0">
+                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{item.label}</span>
+                            <span className="text-sm font-bold text-gray-900">{item.value}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {activeTab === 'artisan' && (
               <div className="max-w-4xl mx-auto">
@@ -614,10 +568,10 @@ const ProductDetail = () => {
                       title="View artisan profile"
                     >
                       <div className="w-48 h-48 rounded-[3rem] overflow-hidden border-4 border-white shadow-2xl ring-4 ring-transparent group-hover:ring-ethiopian-gold/30 transition-all duration-300">
-                        {product.artisan?.profile?.image ? (
+                        {product.artisan?.profile?.storeLogo ? (
                            <img 
-                            src={getImageUrl(product.artisan.profile.image)} 
-                            alt={product.artisan.profile.firstName} 
+                            src={getImageUrl(product.artisan.profile.storeLogo || product.artisan.profile.profileImage)} 
+                            alt={product.artisan.profile.storeName || product.artisan.profile.fullName || product.artisan.profile.firstName} 
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
                            />
                         ) : (
@@ -626,9 +580,11 @@ const ProductDetail = () => {
                           </div>
                         )}
                       </div>
-                      <div className="absolute -bottom-4 -right-4 p-4 bg-white rounded-full shadow-lg border border-gray-100">
-                        <CheckBadgeIcon className="w-8 h-8 text-ethiopian-gold" />
-                      </div>
+                      {product.artisan?.profile?.isVerifiedArtisan && (
+                        <div className="absolute -bottom-4 -right-4 p-4 bg-white rounded-full shadow-lg border border-gray-100 animate-bounce-slow">
+                          <CheckBadgeIcon className="w-8 h-8 text-ethiopian-gold" />
+                        </div>
+                      )}
                       {/* Hover overlay */}
                       <div className="absolute inset-0 rounded-[3rem] bg-ethiopian-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <span className="text-xs font-black text-ethiopian-gold bg-white/90 px-3 py-1 rounded-full shadow-sm translate-y-4 group-hover:translate-y-0 transition-transform duration-300">View Profile</span>
@@ -644,7 +600,7 @@ const ProductDetail = () => {
                       className="text-left group focus:outline-none"
                     >
                       <h3 className="text-4xl font-['Playfair_Display',serif] font-black text-gray-900 mb-4 group-hover:text-ethiopian-gold transition-colors duration-200 underline-offset-4 group-hover:underline decoration-ethiopian-gold/40">
-                        {product.artisan?.profile?.firstName ? `${product.artisan.profile.firstName} ${product.artisan.profile.lastName}` : (product.artisan?.name || 'Traditional Artisan')}
+                        {product.artisan?.profile?.storeName || (product.artisan?.profile?.firstName ? `${product.artisan.profile.firstName} ${product.artisan.profile.lastName}` : (product.artisan?.name || 'Traditional Artisan'))}
                       </h3>
                     </button>
                     <p className="text-gray-600 text-lg leading-relaxed mb-8 max-w-2xl">
@@ -654,17 +610,17 @@ const ProductDetail = () => {
                     <div className="flex flex-wrap justify-center md:justify-start gap-6 mb-8">
                       <div>
                         <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">experience</span>
-                        <span className="text-xl font-bold text-gray-900">15+ Years</span>
+                        <span className="text-xl font-bold text-gray-900">{product.artisan?.profile?.experienceYears ?? 0}+ Years</span>
                       </div>
                       <div className="w-[1px] h-10 bg-gray-200 hidden sm:block"></div>
                       <div>
                         <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">products</span>
-                        <span className="text-xl font-bold text-gray-900">400+ Pieces</span>
+                        <span className="text-xl font-bold text-gray-900">{product.artisan?.profile?.totalProducts ?? 0}+ Pieces</span>
                       </div>
                       <div className="w-[1px] h-10 bg-gray-200 hidden sm:block"></div>
                       <div>
                         <span className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Impact</span>
-                        <span className="text-xl font-bold text-gray-900">Preserved 4 Traditions</span>
+                        <span className="text-xl font-bold text-gray-900">Preserved {product.artisan?.profile?.traditionsPreserved ?? 0} Traditions</span>
                       </div>
                     </div>
 
@@ -680,6 +636,30 @@ const ProductDetail = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Workshop Gallery Section */}
+                {product.artisan?.profile?.workshopGallery?.length > 0 && (
+                  <div className="mt-16 pt-16 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-8">
+                      <div>
+                        <h4 className="text-2xl font-['Playfair_Display',serif] font-black text-gray-900">Inside the Workshop</h4>
+                        <p className="text-sm text-gray-500 uppercase tracking-widest mt-1">Glimpse into the master's craft process</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      {product.artisan.profile.workshopGallery.map((img, idx) => (
+                        <div key={idx} className="group relative aspect-square rounded-[2rem] overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500">
+                          <img 
+                            src={getImageUrl(img)} 
+                            alt={`Workshop ${idx + 1}`} 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -814,6 +794,7 @@ const ProductDetail = () => {
             )}
           </div>
         </div>
+      </div>
 
         {/* RELATED PRODUCTS */}
         {product.similarProducts?.length > 0 && (

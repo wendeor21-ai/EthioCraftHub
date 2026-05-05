@@ -6,7 +6,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import api from '../../utils/api';
+import api, { artisanAPI, userAPI } from '../../utils/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import BankConfirmModal from '../../components/settings/BankConfirmModal';
 import {
@@ -17,7 +17,14 @@ import {
   Globe,
   Plane,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Camera,
+  Image as ImageIcon,
+  Upload,
+  User as UserIcon,
+  Award,
+  Users,
+  History
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -51,6 +58,11 @@ const Settings = () => {
     storeLogo: '',
     coverBanner: '',
     phone: '',
+    experienceYears: 0,
+    totalProducts: 0,
+    traditionsPreserved: 0,
+    workshopGallery: [],
+    isVerifiedArtisan: false,
     address: {
       street: '',
       city: '',
@@ -112,6 +124,11 @@ const Settings = () => {
           storeLogo: data.profile.storeLogo || '',
           coverBanner: data.profile.coverBanner || '',
           phone: data.profile.phone || '',
+          experienceYears: data.profile.experienceYears || 0,
+          totalProducts: data.profile.totalProducts || 0,
+          traditionsPreserved: data.profile.traditionsPreserved || 0,
+          workshopGallery: data.profile.workshopGallery || [],
+          isVerifiedArtisan: data.profile.isVerifiedArtisan || false,
           address: data.profile.address || {
             street: '',
             city: '',
@@ -318,8 +335,15 @@ const Settings = () => {
       await api.patch('/artisan/settings/social-links', socialLinks);
       toast.success('Social links updated successfully');
     } catch (error) {
-      console.error('Error saving social links:', error);
-      toast.error('Failed to update social links');
+      console.error('Error saving profile:', error);
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || 'Failed to update profile';
+      const detailErrors = error.response?.data?.errors;
+      
+      if (detailErrors && Array.isArray(detailErrors)) {
+        toast.error(`${errorMsg}: ${detailErrors.join(', ')}`);
+      } else {
+        toast.error(errorMsg);
+      }
     } finally {
       setSaving(false);
     }
@@ -452,16 +476,50 @@ const Settings = () => {
 
 // Profile Tab Component
 const ProfileTab = ({ data, setData, onSave, saving, errors, setErrors }) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image size should be less than 2MB");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('files', file);
+
+    try {
+      setUploading(true);
+      const response = await userAPI.uploadFiles(formData);
+      
+      const uploadedUrl = response.data.files?.[0];
+      if (!uploadedUrl) throw new Error("No URL returned from server");
+
+      if (type === 'logo') {
+        setData({ ...data, storeLogo: uploadedUrl });
+      } else if (type === 'banner') {
+        setData({ ...data, coverBanner: uploadedUrl });
+      } else if (type === 'gallery') {
+        setData({ ...data, workshopGallery: [...data.workshopGallery, uploadedUrl].slice(0, 4) });
+      }
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleStoreNameChange = (e) => {
     const value = e.target.value;
     setData({ ...data, storeName: value });
-    
-    // Real-time validation
     if (value) {
       const validation = validateStoreName(value);
-      if (!validation.valid) {
-        setErrors({ ...errors, storeName: validation.error });
-      } else {
+      if (!validation.valid) setErrors({ ...errors, storeName: validation.error });
+      else {
         const newErrors = { ...errors };
         delete newErrors.storeName;
         setErrors(newErrors);
@@ -472,13 +530,10 @@ const ProfileTab = ({ data, setData, onSave, saving, errors, setErrors }) => {
   const handlePhoneChange = (e) => {
     const value = e.target.value;
     setData({ ...data, phone: value });
-    
-    // Real-time validation
     if (value) {
       const validation = validateEthiopianPhone(value);
-      if (!validation.valid) {
-        setErrors({ ...errors, phone: validation.error });
-      } else {
+      if (!validation.valid) setErrors({ ...errors, phone: validation.error });
+      else {
         const newErrors = { ...errors };
         delete newErrors.phone;
         setErrors(newErrors);
@@ -489,98 +544,211 @@ const ProfileTab = ({ data, setData, onSave, saving, errors, setErrors }) => {
   const isValid = !errors.storeName && !errors.phone;
   
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Store Profile & Business Details</h3>
-        <p className="text-sm text-gray-600 mb-6">Update your store information and brand identity</p>
+    <div className="space-y-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">Store Profile & Professional Branding</h3>
+          <p className="text-sm text-gray-600">Represent your artisan heritage and brand to the world</p>
+        </div>
+        <div className="flex items-center gap-3 bg-amber-50 px-4 py-2 rounded-xl border border-amber-100">
+          <label className="text-xs font-black text-amber-700 uppercase tracking-widest">Verified Artisan</label>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={data.isVerifiedArtisan}
+              onChange={(e) => setData({ ...data, isVerifiedArtisan: e.target.checked })}
+            />
+            <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+          </label>
+        </div>
       </div>
 
+      {/* Visual Identity: Logo & Banner */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-1">
+          <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Professional Headshot</label>
+          <div className="relative group w-48 h-48 mx-auto lg:mx-0">
+            <div className="w-full h-full rounded-3xl overflow-hidden border-4 border-white shadow-xl bg-gray-50 flex items-center justify-center">
+              {data.storeLogo ? (
+                <img src={data.storeLogo} alt="Logo" className="w-full h-full object-cover" />
+              ) : (
+                <UserIcon className="w-16 h-16 text-gray-200" />
+              )}
+              {uploading && (
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
+                  <LoadingSpinner size="small" />
+                </div>
+              )}
+            </div>
+            <label className="absolute -bottom-2 -right-2 p-3 bg-ethiopian-gold text-white rounded-2xl shadow-lg cursor-pointer hover:scale-110 transition-all">
+              <Camera className="w-5 h-5" />
+              <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'logo')} />
+            </label>
+          </div>
+        </div>
+
+        <div className="lg:col-span-2">
+          <label className="block text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Store Banner</label>
+          <div className="relative h-48 rounded-3xl overflow-hidden bg-gray-50 border-2 border-dashed border-gray-200 group">
+            {data.coverBanner ? (
+              <img src={data.coverBanner} alt="Banner" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                <ImageIcon className="w-10 h-10 mb-2 opacity-20" />
+                <span className="text-sm font-medium">Upload wide workshop banner</span>
+              </div>
+            )}
+            <label className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-md rounded-xl shadow-md cursor-pointer hover:bg-white transition-all">
+              <Upload className="w-4 h-4 text-gray-900" />
+              <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'banner')} />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Basic Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Store Name <span className="text-red-500">*</span>
-          </label>
+          <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Store Name</label>
           <input
             type="text"
             value={data.storeName}
             onChange={handleStoreNameChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
-              errors.storeName ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="Your Store Name"
+            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-ethiopian-gold outline-none ${errors.storeName ? 'border-red-500' : 'border-gray-200'}`}
           />
-          {errors.storeName && (
-            <p className="mt-1 text-sm text-red-600">{errors.storeName}</p>
-          )}
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number
-          </label>
+          <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Public Phone</label>
           <input
             type="tel"
             value={data.phone}
             onChange={handlePhoneChange}
-            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent ${
-              errors.phone ? 'border-red-500' : 'border-gray-300'
-            }`}
-            placeholder="+251 XXX XXX XXX"
+            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-ethiopian-gold outline-none ${errors.phone ? 'border-red-500' : 'border-gray-200'}`}
           />
-          {errors.phone && (
-            <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+        </div>
+      </div>
+
+      {/* Expanded Bio / Story */}
+      <div>
+        <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Your Artisan Story</label>
+        <textarea
+          value={data.storeDescription}
+          onChange={(e) => setData({ ...data, storeDescription: e.target.value })}
+          rows="6"
+          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ethiopian-gold outline-none text-gray-600 leading-relaxed"
+          placeholder="Share your heritage, the techniques you use, and the community you serve..."
+        />
+      </div>
+
+      {/* Experience & Impact Stats */}
+      <div>
+        <label className="block text-sm font-bold text-gray-700 mb-4 uppercase tracking-wide">Artisan Statistics & Impact</label>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 flex items-center gap-4">
+            <div className="p-3 bg-amber-100 text-amber-600 rounded-xl"><History className="w-6 h-6" /></div>
+            <div className="flex-1">
+              <label className="block text-[10px] font-black text-gray-400 uppercase leading-none mb-1">Years Experience</label>
+              <input 
+                type="number" 
+                value={data.experienceYears} 
+                onChange={(e) => setData({ ...data, experienceYears: parseInt(e.target.value) })}
+                className="w-full bg-transparent font-bold text-gray-900 outline-none"
+              />
+            </div>
+          </div>
+          <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 flex items-center gap-4">
+            <div className="p-3 bg-blue-100 text-blue-600 rounded-xl"><Award className="w-6 h-6" /></div>
+            <div className="flex-1">
+              <label className="block text-[10px] font-black text-gray-400 uppercase leading-none mb-1">Total Products</label>
+              <input 
+                type="number" 
+                value={data.totalProducts} 
+                onChange={(e) => setData({ ...data, totalProducts: parseInt(e.target.value) })}
+                className="w-full bg-transparent font-bold text-gray-900 outline-none"
+              />
+            </div>
+          </div>
+          <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 flex items-center gap-4">
+            <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl"><Users className="w-6 h-6" /></div>
+            <div className="flex-1">
+              <label className="block text-[10px] font-black text-gray-400 uppercase leading-none mb-1">Traditions Preserved</label>
+              <input 
+                type="number" 
+                value={data.traditionsPreserved} 
+                onChange={(e) => setData({ ...data, traditionsPreserved: parseInt(e.target.value) })}
+                className="w-full bg-transparent font-bold text-gray-900 outline-none"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Workshop Gallery */}
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <label className="block text-sm font-bold text-gray-700 uppercase tracking-wide">Workshop Gallery</label>
+          <span className="text-[10px] font-bold text-gray-400 uppercase">Max 4 photos</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {data.workshopGallery.map((img, idx) => (
+            <div key={idx} className="relative aspect-square rounded-2xl overflow-hidden group border border-gray-100">
+              <img src={img} className="w-full h-full object-cover" />
+              <button 
+                onClick={() => setData({ ...data, workshopGallery: data.workshopGallery.filter((_, i) => i !== idx) })}
+                className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Upload className="w-3 h-3 rotate-45" />
+              </button>
+            </div>
+          ))}
+          {data.workshopGallery.length < 4 && (
+            <label className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-ethiopian-gold hover:bg-amber-50 transition-all cursor-pointer">
+              <Camera className="w-6 h-6 mb-2" />
+              <span className="text-[10px] font-black uppercase">Add Photo</span>
+              <input type="file" className="hidden" accept="image/*" onChange={(e) => handleFileUpload(e, 'gallery')} />
+            </label>
           )}
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Store Description
-        </label>
-        <textarea
-          value={data.storeDescription}
-          onChange={(e) => setData({ ...data, storeDescription: e.target.value })}
-          rows="4"
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
-          placeholder="Tell customers about your craft and story..."
-        />
-      </div>
-
+      {/* Location */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            City
+          <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide text-gray-800 flex items-center gap-2">
+            City <span className="text-gray-400 font-medium lowercase">/ Region</span>
           </label>
           <input
             type="text"
             value={data.address.city}
             onChange={(e) => setData({ ...data, address: { ...data.address, city: e.target.value } })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ethiopian-gold outline-none"
             placeholder="Addis Ababa"
           />
         </div>
-
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Region
-          </label>
-          <input
-            type="text"
+          <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Historical Origin</label>
+          <select
             value={data.address.region}
             onChange={(e) => setData({ ...data, address: { ...data.address, region: e.target.value } })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
-            placeholder="Addis Ababa"
-          />
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ethiopian-gold outline-none bg-white font-medium"
+          >
+            <option value="">Select Region</option>
+            {["Harar", "Gondar", "Axum", "Lalibela", "Jimma", "Arba Minch", "Debre Markos", "Dessie", "Bahar Dar", "Dire Dawa", "Addis Ababa"].map(region => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="flex justify-end">
+      <div className="pt-6 border-t border-gray-100 flex justify-end">
         <button
           onClick={onSave}
           disabled={saving || !isValid}
-          className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-10 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:shadow-2xl hover:shadow-gray-300 transition-all disabled:opacity-50 flex items-center gap-2"
         >
-          {saving ? 'Saving...' : 'Save Profile'}
+          {saving && <LoadingSpinner size="small" />}
+          {saving ? 'Synchronizing...' : 'Save Artisan Profile'}
         </button>
       </div>
     </div>
