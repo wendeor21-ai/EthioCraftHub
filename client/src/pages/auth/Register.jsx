@@ -14,6 +14,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -32,6 +33,7 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { register, loading, isAuthenticated, getRedirectPath } = useAuth();
+  const { t } = useCustomTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -78,38 +80,38 @@ const Register = () => {
 
     // Email validation
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('errors.email_required', 'Email is required');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = t('errors.email_invalid', 'Email is invalid');
     }
 
     // Password validation
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('errors.password_required', 'Password is required');
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = t('errors.password_too_short', 'Password must be at least 8 characters');
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+      newErrors.password = t('errors.password_complexity_failure', 'Password must contain at least one uppercase letter, one lowercase letter, and one number');
     }
 
     // Confirm password validation
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = t('errors.confirm_password_required', 'Please confirm your password');
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('errors.passwords_not_match', 'Passwords do not match');
     }
 
     // Profile validation
     if (!formData.profile.firstName) {
-      newErrors['profile.firstName'] = 'First name is required';
+      newErrors['profile.firstName'] = t('errors.first_name_required', 'First name is required');
     }
 
     if (!formData.profile.lastName) {
-      newErrors['profile.lastName'] = 'Last name is required';
+      newErrors['profile.lastName'] = t('errors.last_name_required', 'Last name is required');
     }
 
     if (formData.profile.phone && !/^\+?[\d\s\-\(\)]+$/.test(formData.profile.phone)) {
-      newErrors['profile.phone'] = 'Please enter a valid phone number';
+      newErrors['profile.phone'] = t('errors.phone_invalid', 'Please enter a valid phone number');
     }
 
     setErrors(newErrors);
@@ -142,10 +144,10 @@ const Register = () => {
         {/* Header */}
         <div className="text-center">
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Join EthioCraft Global
+            {t('auth.join_title', 'Join EthioCraft Global')}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            እንኳን ደህና መጡ! Create your account
+            {t('auth.join_subtitle', 'እንኳን ደህና መጡ! Create your account')}
           </p>
         </div>
 
@@ -162,7 +164,7 @@ const Register = () => {
             {/* Role Selection */}
             <div>
               <label htmlFor="role" className="block text-sm font-medium text-gray-700">
-                I want to join as
+                {t('auth.join_as', 'I want to join as')}
               </label>
               <select
                 id="role"
@@ -171,8 +173,8 @@ const Register = () => {
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
-                <option value="customer">Customer - Buy authentic Ethiopian crafts</option>
-                <option value="artisan">Artisan - Sell my traditional crafts</option>
+                <option value="customer">{t('auth.customer_role', 'Customer - Buy authentic Ethiopian crafts')}</option>
+                <option value="artisan">{t('auth.artisan_role', 'Artisan - Sell my traditional crafts')}</option>
               </select>
             </div>
 
@@ -180,7 +182,7 @@ const Register = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                  First Name
+                  {t('auth.first_name', 'First Name')}
                 </label>
                 <input
                   id="firstName"
@@ -192,7 +194,7 @@ const Register = () => {
                   className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors['profile.firstName'] ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="First name"
+                  placeholder={t('auth.first_name', 'First Name')}
                 />
                 {errors['profile.firstName'] && (
                   <p className="mt-1 text-sm text-red-600">{errors['profile.firstName']}</p>
@@ -201,7 +203,7 @@ const Register = () => {
 
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                  Last Name
+                  {t('auth.last_name', 'Last Name')}
                 </label>
                 <input
                   id="lastName"
@@ -213,7 +215,7 @@ const Register = () => {
                   className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors['profile.lastName'] ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Last name"
+                  placeholder={t('auth.last_name', 'Last Name')}
                 />
                 {errors['profile.lastName'] && (
                   <p className="mt-1 text-sm text-red-600">{errors['profile.lastName']}</p>
@@ -224,7 +226,7 @@ const Register = () => {
             {/* Email Field */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
+                {t('auth.email_address', 'Email Address')}
               </label>
               <input
                 id="email"
@@ -237,7 +239,7 @@ const Register = () => {
                 className={`mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                   errors.email ? 'border-red-300' : 'border-gray-300'
                 }`}
-                placeholder="Enter your email"
+                placeholder={t('auth.enter_email', 'Enter your email')}
               />
               {errors.email && (
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
@@ -247,7 +249,7 @@ const Register = () => {
             {/* Phone Field */}
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone Number (Optional)
+                {t('auth.phone_number_optional', 'Phone Number (Optional)')}
               </label>
               <input
                 id="phone"
@@ -268,7 +270,7 @@ const Register = () => {
             {/* Password Field */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t('auth.password', 'Password')}
               </label>
               <div className="mt-1 relative">
                 <input
@@ -282,7 +284,7 @@ const Register = () => {
                   className={`block w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors.password ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Create a strong password"
+                  placeholder={t('auth.create_strong_password', 'Create a strong password')}
                 />
                 <button
                   type="button"
@@ -304,7 +306,7 @@ const Register = () => {
             {/* Confirm Password Field */}
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirm Password
+                {t('auth.confirm_password', 'Confirm Password')}
               </label>
               <div className="mt-1 relative">
                 <input
@@ -318,7 +320,7 @@ const Register = () => {
                   className={`block w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
                     errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Confirm your password"
+                  placeholder={t('auth.confirm_password_placeholder', 'Confirm your password')}
                 />
                 <button
                   type="button"
@@ -348,13 +350,13 @@ const Register = () => {
               className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
             />
             <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-              I agree to the{' '}
+              {t('auth.agree_terms', 'I agree to the')}{' '}
               <Link to="/terms" className="text-orange-600 hover:text-orange-500">
-                Terms of Service
+                {t('auth.terms_service', 'Terms of Service')}
               </Link>{' '}
-              and{' '}
+              {t('common.and', 'and')}{' '}
               <Link to="/privacy" className="text-orange-600 hover:text-orange-500">
-                Privacy Policy
+                {t('auth.privacy_policy', 'Privacy Policy')}
               </Link>
             </label>
           </div>
@@ -369,7 +371,7 @@ const Register = () => {
               {loading ? (
                 <LoadingSpinner size="small" color="white" />
               ) : (
-                'Create Account'
+                t('auth.create_account_btn', 'Create Account')
               )}
             </button>
           </div>
@@ -377,12 +379,12 @@ const Register = () => {
           {/* Login Link */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Already have an account?{' '}
+              {t('auth.already_account', 'Already have an account?')}{' '}
               <Link
                 to="/login"
                 className="font-medium text-orange-600 hover:text-orange-500"
               >
-                Sign in here
+                {t('auth.sign_in_here', 'Sign in here')}
               </Link>
             </p>
           </div>
@@ -390,18 +392,18 @@ const Register = () => {
 
         {/* Role Information */}
         <div className="mt-8 bg-white p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Your Role</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('auth.choose_role', 'Choose Your Role')}</h3>
           <div className="space-y-3 text-sm text-gray-600">
             <div className="flex items-start space-x-3">
               <span className="text-ethiopian-gold">🛍️</span>
               <div>
-                <strong>Customer:</strong> Discover and purchase authentic Ethiopian crafts, learn about cultural heritage, and support local artisans
+                <strong>{t('sidebar.customer', 'Customer')}:</strong> {t('auth.customer_desc', 'Discover and purchase authentic Ethiopian crafts, learn about cultural heritage, and support local artisans')}
               </div>
             </div>
             <div className="flex items-start space-x-3">
               <span className="text-ethiopian-green">🎨</span>
               <div>
-                <strong>Artisan:</strong> Showcase your traditional crafts, share your cultural stories, and reach customers worldwide
+                <strong>{t('sidebar.artisan', 'Artisan')}:</strong> {t('auth.artisan_desc', 'Showcase your traditional crafts, share your cultural stories, and reach customers worldwide')}
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { EyeIcon, EyeSlashIcon, EnvelopeIcon, LockClosedIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +21,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   const { login, loading, isAuthenticated, getRedirectPath, user } = useAuth();
+  const { t } = useCustomTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [socialLoading, setSocialLoading] = useState(null); // 'google' | 'apple' | null
@@ -76,15 +78,15 @@ const Login = () => {
     const newErrors = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('errors.email_required', 'Email is required');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('errors.email_invalid', 'Please enter a valid email address');
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t('errors.password_required', 'Password is required');
     } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+      newErrors.password = t('errors.password_too_short', 'Password must be at least 8 characters');
     }
 
     setErrors(newErrors);
@@ -114,7 +116,7 @@ const Login = () => {
       let errorMessage = result.error;
       if (!result.locked) {
         if (errorMessage.includes('Invalid') || errorMessage.includes('password')) {
-          errorMessage = 'Invalid email or password. Please verify your credentials.';
+          errorMessage = t('errors.invalid_credentials', 'Invalid email or password. Please verify your credentials.');
         }
       }
       setErrors({ general: errorMessage });
@@ -172,10 +174,10 @@ const Login = () => {
             </div>
 
             <h2 className="text-3xl sm:text-4xl font-display font-bold text-slate-900 mb-2">
-              Welcome Back
+              {t('auth.welcome_back_title', 'Welcome Back')}
             </h2>
             <p className="text-slate-500 text-sm">
-              Enter your credentials to access your account
+              {t('auth.login_subtitle', 'Enter your credentials to access your account')}
             </p>
           </div>
 
@@ -200,7 +202,7 @@ const Login = () => {
                 </svg>
               )}
               <span className="text-xs font-semibold text-slate-600">
-                {socialLoading === 'google' ? 'Redirecting…' : 'Google'}
+                {socialLoading === 'google' ? t('common.redirecting', 'Redirecting…') : 'Google'}
               </span>
             </button>
 
@@ -220,7 +222,7 @@ const Login = () => {
                 </svg>
               )}
               <span className="text-xs font-semibold text-slate-600">
-                {socialLoading === 'apple' ? 'Redirecting…' : 'Apple'}
+                {socialLoading === 'apple' ? t('common.redirecting', 'Redirecting…') : 'Apple'}
               </span>
             </button>
           </div>
@@ -238,7 +240,7 @@ const Login = () => {
               <div className="w-full border-t border-slate-200"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-3 bg-white text-slate-400">Or continue with email</span>
+              <span className="px-3 bg-white text-slate-400">{t('auth.continue_email', 'Or continue with email')}</span>
             </div>
           </div>
 
@@ -254,7 +256,7 @@ const Login = () => {
             {/* Email Field */}
             <div className="space-y-1.5">
               <label htmlFor="email" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Email Address
+                {t('auth.email_address', 'Email Address')}
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -280,10 +282,10 @@ const Login = () => {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Password
+                  {t('auth.password', 'Password')}
                 </label>
-                <Link to="/forgot-password" className="text-xs font-medium text-ethiopian-gold hover:text-amber-600 transition-colors">
-                  Forgot password?
+                <Link to="/forgot-password" title={t('auth.forgot_password', 'Forgot password?')} className="text-xs font-medium text-ethiopian-gold hover:text-amber-600 transition-colors">
+                  {t('auth.forgot_password', 'Forgot password?')}
                 </Link>
               </div>
               <div className="relative group">
@@ -346,7 +348,7 @@ const Login = () => {
                 </div>
               ) : (
                 <>
-                  <span>Sign In</span>
+                  <span>{t('auth.sign_in', 'Sign In')}</span>
                   <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -356,12 +358,12 @@ const Login = () => {
           {/* Register Link */}
           <div className="mt-6 text-center">
             <p className="text-xs text-slate-500">
-              Don't have an account?{' '}
+              {t('auth.no_account', "Don't have an account?")}{' '}
               <Link
                 to="/register"
                 className="font-semibold text-ethiopian-gold hover:text-amber-600 transition-colors"
               >
-                Create account
+                {t('auth.create_account', 'Create account')}
               </Link>
             </p>
           </div>
@@ -369,7 +371,7 @@ const Login = () => {
           {/* Ethiopian Motto */}
           <div className="mt-6 pt-4 border-t border-slate-100 text-center">
             <p className="text-[10px] text-slate-400 tracking-wider">
-              በእጅ ጥበብ የተሰራ • Handcrafted with Heritage
+              {t('auth.handcrafted_heritage', 'በእጅ ጥበብ የተሰራ • Handcrafted with Heritage')}
             </p>
           </div>
         </div>

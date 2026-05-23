@@ -122,6 +122,14 @@ const ManageOrders = () => {
     newSocket.on('newOrder', (data) => {
       playNotificationSound();
       toast.success(`🛍️ New order #${data.orderNumber || data.orderId?.slice(-8)}`, { duration: 10000 });
+      
+      // Browser notification
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('New Order on EthioCraft Global', {
+          body: `A new order has been placed! Order #${data.orderNumber || data.orderId?.slice(-8)}`,
+        });
+      }
+
       fetchOrders(1);
     });
     newSocket.on('newCustomOrder', (data) => {
@@ -140,13 +148,19 @@ const ManageOrders = () => {
       if (filter === 'custom') fetchCustomOrders();
       else fetchOrders(1);
     });
+
+    // Request browser notification permissions if not set
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     return () => {
       newSocket.off('newOrder');
       newSocket.off('newCustomOrder');
       newSocket.off('customOrderPaid');
       newSocket.disconnect();
     };
-  }, [user?._id]);
+  }, [user?._id, filter]);
 
   useEffect(() => {
     fetchOrders(currentPage);
@@ -495,7 +509,7 @@ const ManageOrders = () => {
       <button
         onClick={onClick}
         disabled={disabled || isLoading}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 
+        className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-all duration-200 
           ${color === 'gold' ? 'bg-ethiopian-gold text-white hover:bg-ethiopian-gold/90 shadow-sm' :
             color === 'red' ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' :
             color === 'gray' ? 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' :
@@ -605,59 +619,59 @@ const ManageOrders = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{t('artisan_panel.total_revenue')}</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalEarnings.toFixed(2)} ETB</p>
-                <p className="text-xs text-green-600 mt-1">+8.2% vs last month</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-5 transition-all hover:shadow-md flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0 pr-2">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{t('artisan_panel.total_revenue')}</p>
+                <p className="text-sm sm:text-2xl font-bold text-gray-900 mt-1 truncate">{stats.totalEarnings.toFixed(2)} ETB</p>
+                <p className="text-[9px] sm:text-xs text-green-600 mt-1 truncate">+8.2% vs last month</p>
               </div>
-              <div className="p-3 bg-ethiopian-gold/10 rounded-xl">
-                <CurrencyDollarIcon className="w-5 h-5 text-ethiopian-gold" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{t('common.status_pending', 'Pending Orders')}</p>
-                <p className="text-2xl font-bold text-amber-600 mt-1">{stats.pending}</p>
-                <p className="text-xs text-gray-500 mt-1">{t('common.awaiting_action', 'Awaiting action')}</p>
-              </div>
-              <div className="p-3 bg-amber-50 rounded-xl">
-                <ClockIcon className="w-5 h-5 text-amber-600" />
+              <div className="p-2 sm:p-3 bg-ethiopian-gold/10 rounded-lg sm:rounded-xl shrink-0">
+                <CurrencyDollarIcon className="w-4 h-4 sm:w-5 sm:h-5 text-ethiopian-gold" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{t('common.status_processing', 'Processing')}</p>
-                <p className="text-2xl font-bold text-blue-600 mt-1">{stats.processing}</p>
-                <p className="text-xs text-gray-500 mt-1">{t('common.in_progress', 'In progress')}</p>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-5 transition-all hover:shadow-md flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0 pr-2">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{t('common.status_pending', 'Pending')}</p>
+                <p className="text-lg sm:text-2xl font-bold text-amber-600 mt-1">{stats.pending}</p>
+                <p className="text-[9px] sm:text-xs text-gray-500 mt-1 truncate">{t('common.awaiting_action', 'Awaiting action')}</p>
               </div>
-              <div className="p-3 bg-blue-50 rounded-xl">
-                <CubeIcon className="w-5 h-5 text-blue-600" />
+              <div className="p-2 sm:p-3 bg-amber-50 rounded-lg sm:rounded-xl shrink-0">
+                <ClockIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 transition-all hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">{t('common.status_completed', 'Completed')}</p>
-                <p className="text-2xl font-bold text-emerald-600 mt-1">{stats.completed}</p>
-                <p className="text-xs text-gray-500 mt-1">{t('success', 'Successfully delivered')}</p>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-5 transition-all hover:shadow-md flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0 pr-2">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{t('common.status_processing', 'Processing')}</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-600 mt-1">{stats.processing}</p>
+                <p className="text-[9px] sm:text-xs text-gray-500 mt-1 truncate">{t('common.in_progress', 'In progress')}</p>
               </div>
-              <div className="p-3 bg-emerald-50 rounded-xl">
-                <CheckCircleIcon className="w-5 h-5 text-emerald-600" />
+              <div className="p-2 sm:p-3 bg-blue-50 rounded-lg sm:rounded-xl shrink-0">
+                <CubeIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-5 transition-all hover:shadow-md flex flex-col justify-between">
+            <div className="flex items-start justify-between">
+              <div className="flex-1 min-w-0 pr-2">
+                <p className="text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wide truncate">{t('common.status_completed', 'Completed')}</p>
+                <p className="text-lg sm:text-2xl font-bold text-emerald-600 mt-1">{stats.completed}</p>
+                <p className="text-[9px] sm:text-xs text-gray-500 mt-1 truncate">{t('common.success_delivery', 'Successfully delivered')}</p>
+              </div>
+              <div className="p-2 sm:p-3 bg-emerald-50 rounded-lg sm:rounded-xl shrink-0">
+                <CheckCircleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Search and Bulk Actions */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
           <div className="relative flex-1 max-w-md">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -665,10 +679,10 @@ const ManageOrders = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={t('common.search')}
-              className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent bg-white text-sm"
+              className="w-full pl-9 pr-4 py-2 sm:py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent bg-white text-xs sm:text-sm"
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             {bulkDeleteMode ? (
               <>
                 <button
@@ -708,8 +722,9 @@ const ManageOrders = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-x-auto">
-          <div className="flex px-2 py-1 gap-1">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex w-max px-2 py-1 gap-2">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const count = tab.key === 'all' ? summary.all :
@@ -722,7 +737,7 @@ const ManageOrders = () => {
                 <button
                   key={tab.key}
                   onClick={() => setFilter(tab.key)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                     filter === tab.key
                       ? 'bg-ethiopian-gold/10 text-ethiopian-gold'
                       : 'text-gray-600 hover:bg-gray-50'
@@ -739,32 +754,90 @@ const ManageOrders = () => {
               );
             })}
           </div>
+          </div>
         </div>
 
         {/* Custom Orders View - Table Format */}
         {filter === 'custom' && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="space-y-4">
             {customOrders.length === 0 ? (
-              <div className="p-12 text-center border-2 border-dashed border-gray-100 m-6 rounded-3xl">
+              <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-12 text-center">
                 <SparklesIcon className="w-12 h-12 mx-auto text-gray-300 mb-4" />
                 <p className="text-gray-500 font-bold">No custom design requests yet.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Design Photo</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Request ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Design Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Request Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price Quote</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
+              <>
+                <div className="md:hidden space-y-4">
+                  {customOrders.map((order) => (
+                    <div key={order._id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3">
+                          {order.photos && (order.photos.front || order.photos.back) ? (
+                            <img
+                              src={getFileUrl(order.photos.front || order.photos.back)}
+                              alt="Design"
+                              className="w-14 h-14 rounded-2xl object-cover bg-gray-100 border border-gray-200"
+                              crossOrigin="anonymous"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100 italic text-[10px] text-amber-400 text-center px-1 font-black">
+                              NO PHOTO
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">#{order._id.slice(-8).toUpperCase()}</p>
+                            <p className="text-xs text-gray-500 mt-1">{order.customer?.profile?.firstName} {order.customer?.profile?.lastName}</p>
+                          </div>
+                        </div>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                          order.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
+                          order.status === 'accepted' || order.status === 'price_quoted' ? 'bg-green-50 text-green-600 border-green-100' : 
+                          'bg-gray-50 text-gray-600 border-gray-100'
+                        }`}>
+                          {order.status}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mb-4 text-xs text-gray-500">
+                        <div>
+                          <p className="font-semibold text-gray-700">Design</p>
+                          <p className="mt-1 text-gray-600 capitalize">{order.gender} {order.itemType}</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-700">Requested</p>
+                          <p className="mt-1 text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-sm font-bold text-amber-600">{order.price ? `${order.price.toFixed(2)} ETB` : 'Not Quoted'}</p>
+                        <button 
+                          onClick={() => {
+                            setSelectedCustomOrder(order);
+                            setShowCustomDetailModal(true);
+                          }}
+                          className="text-ethiopian-gold hover:text-amber-700 font-bold text-[10px] sm:text-xs uppercase tracking-widest px-3 py-1.5 bg-ethiopian-gold/10 rounded-xl sm:rounded-2xl border border-ethiopian-gold/20 transition-all"
+                        >
+                          Review
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Design Photo</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Request ID</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Design Type</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Request Date</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price Quote</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
                     {customOrders.map((order) => (
                       <tr 
                         key={order._id} 
@@ -845,6 +918,8 @@ const ManageOrders = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+            </>
             )}
           </div>
         )}
@@ -869,10 +944,93 @@ const ManageOrders = () => {
                 </button>
               </div>
             ) : (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+              <>
+                <div className="space-y-4 md:hidden">
+                  {filtered.map((order) => {
+                    const isDeletable = ['rejected', 'cancelled'].includes(order.status);
+                    return (
+                      <div key={order._id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 ring-1 ring-gray-100">
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
+                            <p className="text-xs text-gray-500 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          </div>
+                          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold border ${
+                            order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-100' :
+                            order.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                            order.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                            order.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                            order.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
+                            'bg-gray-50 text-gray-600 border-gray-100'
+                          }`}>
+                            <span className="h-2.5 w-2.5 rounded-full bg-current" />
+                            {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mb-3 text-xs sm:text-sm text-gray-600">
+                          <div className="rounded-2xl bg-gray-50 p-3">
+                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Customer</p>
+                            <p className="mt-2 font-semibold text-gray-900">{order.customer?.profile?.firstName} {order.customer?.profile?.lastName}</p>
+                          </div>
+                          <div className="rounded-2xl bg-gray-50 p-3">
+                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Net Earnings</p>
+                            <p className="mt-2 font-semibold text-gray-900">{(order.totals?.artisanEarning || (order.totals?.total * 0.85))?.toFixed(2)} ETB</p>
+                          </div>
+                          <div className="rounded-2xl bg-gray-50 p-3">
+                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Payment</p>
+                            <p className="mt-2 font-semibold text-gray-900">{order.payment?.method || 'Unknown'}</p>
+                          </div>
+                          <div className="rounded-2xl bg-gray-50 p-3">
+                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Payout</p>
+                            <p className="mt-2 font-semibold text-gray-900">{order.payoutStatus || 'Pending'}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center gap-3 rounded-3xl bg-indigo-50/50 p-3 text-[12px] text-indigo-700">
+                            <TruckIcon className="w-4 h-4" />
+                            <span>{order.isCustom ? 'Custom order' : 'Standard order'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {order.isCustom && order.photos?.front ? (
+                              <img
+                                src={getFileUrl(order.photos.front)}
+                                alt="Custom Design"
+                                className="w-14 h-14 rounded-3xl object-cover bg-amber-50 border border-amber-100"
+                                crossOrigin="anonymous"
+                              />
+                            ) : order.items?.[0]?.product?.images?.[0] ? (
+                              <img
+                                src={getFileUrl(
+                                  typeof order.items[0].product.images[0] === 'string'
+                                    ? order.items[0].product.images[0]
+                                    : order.items[0].product.images[0].url
+                                )}
+                                alt="Product"
+                                className="w-14 h-14 rounded-3xl object-cover bg-gray-100 border border-gray-100"
+                                crossOrigin="anonymous"
+                              />
+                            ) : (
+                              <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-gray-100 text-[11px] text-gray-400">No image</div>
+                            )}
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">{order.isCustom ? 'Special Clothing Design' : order.items?.[0]?.product?.name || 'Product'}</p>
+                              <p className="text-xs text-gray-500 mt-1 truncate">
+                                {order.items?.[0]?.color ? `${order.items[0].color} • ` : ''}{order.items?.[0]?.size || 'Size N/A'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 pt-2 mt-2 border-t border-gray-50">
+                            {renderActions(order)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
                       <tr>
                         {bulkDeleteMode && (
                           <th className="px-4 py-3 w-10">
@@ -1026,6 +1184,7 @@ const ManageOrders = () => {
                   </table>
                 </div>
               </div>
+              </>
             )}
           </>
         )}

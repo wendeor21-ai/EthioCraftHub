@@ -320,22 +320,22 @@ const ShippingDelivery = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px space-x-8 overflow-x-auto px-6">
+        <div className="bg-white rounded-2xl md:rounded-3xl border border-gray-100 shadow-sm mb-6 overflow-hidden">
+          <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
+            <nav className="flex w-max -mb-px space-x-4 sm:space-x-8 px-4 sm:px-6">
               {tabs.map(tab => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    className={`flex items-center gap-1.5 sm:gap-2 py-3 sm:py-4 px-1 border-b-2 font-medium text-[11px] sm:text-sm whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-amber-500 text-amber-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     {tab.label}
                   </button>
                 );
@@ -348,26 +348,26 @@ const ShippingDelivery = () => {
             {activeTab === 'settings' ? (
               <ShippingSettings />
             ) : (
-              <>
+               <div className="space-y-6">
                 {/* Search and Filter Bar */}
-                <div className="mb-6 flex flex-col sm:flex-row gap-4">
+                <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <div className="flex-1 relative">
-                    <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
                     <input
                       type="text"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder="Search by order number, customer name, or tracking..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-xs sm:text-sm"
                     />
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-gray-400" />
+                    <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                      className="flex-1 sm:flex-none px-3 py-2 sm:px-4 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-xs sm:text-sm"
                     >
                       <option value="all">All Status</option>
                       <option value="Pending">Pending</option>
@@ -411,9 +411,50 @@ const ShippingDelivery = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                   <div className="space-y-4">
+                     <div className="space-y-4 md:hidden">
+                       {filteredOrders.map(order => (                          <div key={order._id || order._1} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-3">
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{order.orderNumber || 'N/A'}</p>
+                              <p className="text-[11px] text-gray-500 mt-0.5">{order.shippingAddress?.firstName || ''} {order.shippingAddress?.lastName || ''}</p>
+                            </div>
+                            <div className="shrink-0">{getStatusBadge(order.shipping?.deliveryStatus || 'Pending')}</div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-500 mb-4 bg-gray-50 rounded-xl p-3 border border-gray-100">
+                            <div>
+                              <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Tracking</p>
+                              <p className="mt-1 text-gray-900 font-medium truncate">{order.shipping?.trackingNumber || '-'}</p>
+                            </div>
+                            <div>
+                              <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Date</p>
+                              <p className="mt-1 text-gray-900 font-medium">{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                            <div className="col-span-2 pt-1 border-t border-gray-200 mt-1">
+                              <p className="font-semibold text-gray-400 uppercase tracking-wide text-[9px]">Courier</p>
+                              <p className="mt-1 text-gray-900 font-medium">{order.shipping?.courierName || 'Not set'}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <button
+                              onClick={() => handleViewOrder(order)}
+                              className="flex-1 px-3 py-1.5 sm:py-2 bg-amber-600 text-white rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-semibold uppercase tracking-widest hover:bg-amber-700 transition"
+                            >
+                              Manage
+                            </button>
+                            <button
+                              onClick={() => handlePrintLabel(order)}
+                              className="px-3 py-1.5 sm:py-2 bg-gray-100 text-gray-700 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-semibold uppercase tracking-widest hover:bg-gray-200 transition"
+                            >
+                              Label
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           {activeTab === 'active' && (
                             <th className="px-4 py-3 text-left">
@@ -511,8 +552,9 @@ const ShippingDelivery = () => {
                       </tbody>
                     </table>
                   </div>
+                </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>

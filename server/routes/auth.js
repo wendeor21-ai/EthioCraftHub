@@ -176,6 +176,14 @@ router.post(
 
     console.log(`[forgot-password] Reset link generated for ${email}: ${resetLink}`);
 
+    // If we're in development, print a large noticeable output for the reset link
+    if (process.env.NODE_ENV !== "production") {
+      console.log('\n' + '='.repeat(60));
+      console.log('🔗 DEVELOPMENT MODE: Password Reset Link');
+      console.log(resetLink);
+      console.log('='.repeat(60) + '\n');
+    }
+
     // ── Branded HTML Email Template ─────────────────────────────────────────
     const subject = "Reset Your EthioCraft Global Password";
     const html = `

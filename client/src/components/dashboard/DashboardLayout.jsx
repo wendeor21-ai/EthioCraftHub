@@ -13,7 +13,7 @@ const DashboardLayout = ({ children, hideSidebar = false }) => {
       )}
       <main
         className={`flex-1 overflow-x-hidden min-w-0 transition-all duration-300
-          ${!hideSidebar ? 'pt-16 lg:pt-0' : ''}
+          ${!hideSidebar ? 'pt-14 lg:pt-0' : ''}
         `}
       >
         {children}

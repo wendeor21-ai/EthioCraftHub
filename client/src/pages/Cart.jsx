@@ -95,13 +95,13 @@ const Cart = () => {
           <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <ShoppingBagIcon className="w-12 h-12 text-gray-400" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Your cart is empty</h2>
-          <p className="text-gray-500 mb-6">Looks like you haven't added any items yet.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">{t("cart.empty_title", "Your cart is empty")}</h2>
+          <p className="text-gray-500 mb-6">{t("cart.empty_subtitle", "Explore our collection and add some magic to your bag!")}</p>
           <button
             onClick={() => navigate('/products')}
             className="px-6 py-3 bg-ethiopian-gold text-white rounded-xl font-medium hover:bg-amber-600 transition shadow-md"
           >
-            Start Shopping
+            {t("cart.start_shopping", "Start Shopping")}
           </button>
         </div>
       </div>
@@ -110,36 +110,36 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-10">
         
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-ethiopian-gold transition-colors mb-4"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-ethiopian-gold transition-colors mb-3 sm:mb-4"
           >
             <ArrowLeftIcon className="w-4 h-4" />
-            <span className="text-sm">Continue Shopping</span>
+            <span className="text-sm">{t("common.continue_shopping", "Continue Shopping")}</span>
           </button>
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center justify-between flex-wrap gap-2 sm:gap-4">
             <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Shopping Cart</h1>
-              <p className="text-gray-500 mt-1">
-                <span className="font-semibold text-ethiopian-gold">{totalItems}</span> items
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">{t("cart.title", "Shopping Cart")}</h1>
+              <p className="text-gray-500 mt-0.5 sm:mt-1 text-sm">
+                <span className="font-semibold text-ethiopian-gold">{totalItems}</span> {totalItems === 1 ? t("checkout.item", "item") : t("checkout.items", "items")}
               </p>
             </div>
             <button
               onClick={() => setShowClearConfirm(true)}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition text-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-red-600 hover:bg-red-50 rounded-lg transition text-xs sm:text-sm"
             >
-              <TrashIcon className="w-4 h-4" />
-              Clear Cart
+              <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              {t("cart.clear_cart", "Clear Cart")}
             </button>
           </div>
         </div>
 
         {/* Main two-column grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           
           {/* Left: Cart items */}
           <div className="lg:col-span-2 space-y-5">
@@ -151,7 +151,7 @@ const Cart = () => {
                     <div className="w-6 h-6 rounded-full bg-ethiopian-gold/20 flex items-center justify-center">
                       <SparklesIcon className="w-3 h-3 text-ethiopian-gold" />
                     </div>
-                    <span className="text-sm font-medium text-gray-700">Sold by: {group.name}</span>
+                    <span className="text-sm font-medium text-gray-700">{t("cart.from_artisan", { name: group.name, defaultValue: `From ${group.name}` })}</span>
                   </div>
                 </div>
                 
@@ -166,34 +166,29 @@ const Cart = () => {
                     const imageUrl = getBestProductImage(product);
                     
                     return (
-                      <div key={idx} className="p-5 flex flex-col sm:flex-row gap-4">
+                      <div key={idx} className="p-3 sm:p-5 flex flex-row gap-3 sm:gap-4">
                         {/* Product image */}
-                        <Link to={`/products/${product._id}`} className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
+                        <Link to={`/products/${product._id}`} className="w-16 h-16 sm:w-24 sm:h-24 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity">
                           <img src={imageUrl} alt={product.name} className="w-full h-full object-cover" />
                         </Link>
                         
                         {/* Product details */}
-                        <div className="flex-1">
-                          <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
-                            <div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:justify-between gap-1 sm:gap-2">
+                            <div className="flex-1 min-w-0">
                               <Link to={`/products/${product._id}`}>
-                                <h3 className="font-medium text-gray-800 hover:text-ethiopian-gold transition cursor-pointer">
+                                <h3 className="font-medium text-gray-800 hover:text-ethiopian-gold transition cursor-pointer text-sm sm:text-base truncate">
                                   {product.name}
                                 </h3>
                               </Link>
                               {variant && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                  Color: {variant.color} | Size: {variant.size}
-                                </p>
-                              )}
-                              {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 && (
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {Object.entries(item.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(' | ')}
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {variant.color} | {variant.size}
                                 </p>
                               )}
                             </div>
-                            <div className="text-right">
-                              <div className="font-bold text-gray-900">{formatCurrency(price)}</div>
+                            <div className="text-left sm:text-right shrink-0">
+                              <div className="font-bold text-gray-900 text-sm sm:text-base">{formatCurrency(price)}</div>
                               {product.comparePrice && product.comparePrice > price && (
                                 <div className="text-xs text-gray-400 line-through">{formatCurrency(product.comparePrice)}</div>
                               )}
@@ -201,29 +196,29 @@ const Cart = () => {
                           </div>
                           
                           {/* Quantity & remove */}
-                          <div className="flex items-center justify-between mt-4">
+                          <div className="flex items-center justify-between mt-2 sm:mt-4">
                             <div className="flex items-center border border-gray-200 rounded-lg">
                               <button
                                 onClick={() => handleQuantityUpdate(item, Math.max(1, item.quantity - 1))}
                                 disabled={isUpdatingThis}
-                                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                               >
                                 <MinusIcon className="w-3 h-3" />
                               </button>
-                              <span className="w-10 text-center text-sm font-medium">{item.quantity}</span>
+                              <span className="w-8 sm:w-10 text-center text-xs sm:text-sm font-medium">{item.quantity}</span>
                               <button
                                 onClick={() => handleQuantityUpdate(item, item.quantity + 1)}
                                 disabled={isUpdatingThis}
-                                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                               >
                                 <PlusIcon className="w-3 h-3" />
                               </button>
                             </div>
                             <button
                               onClick={() => handleRemoveItem(item)}
-                              className="text-gray-400 hover:text-red-500 transition p-2"
+                              className="text-gray-400 hover:text-red-500 transition p-1.5 sm:p-2"
                             >
-                              <TrashIcon className="w-4 h-4" />
+                              <TrashIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             </button>
                           </div>
                         </div>
@@ -235,19 +230,19 @@ const Cart = () => {
             ))}
             
             {/* Trust badges */}
-            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl p-3 sm:p-5 border border-gray-100 shadow-sm">
+              <div className="grid grid-cols-2 gap-2 sm:gap-4">
                 {[
-                  { icon: ShieldCheckIcon, text: 'Secure Payment', color: 'text-green-600', bg: 'bg-green-50' },
-                  { icon: TruckIcon, text: 'Free Shipping Over 5000 ETB', color: 'text-blue-600', bg: 'bg-blue-50' },
-                  { icon: CreditCardIcon, text: 'Multiple Payment Options', color: 'text-purple-600', bg: 'bg-purple-50' },
-                  { icon: SparklesIcon, text: 'Authentic Ethiopian Crafts', color: 'text-ethiopian-gold', bg: 'bg-amber-50' }
+                  { icon: ShieldCheckIcon, text: t("cta_section.secure_payments", "Secure Payments"), color: 'text-green-600', bg: 'bg-green-50' },
+                  { icon: TruckIcon, text: t("cart.free_shipping", "Free Shipping Over 5000 ETB"), color: 'text-blue-600', bg: 'bg-blue-50' },
+                  { icon: CreditCardIcon, text: t("checkout.payment_method", "Payment Method"), color: 'text-purple-600', bg: 'bg-purple-50' },
+                  { icon: SparklesIcon, text: t("product.authentic_origin", "Authentic Ethiopian Crafts"), color: 'text-ethiopian-gold', bg: 'bg-amber-50' }
                 ].map((badge, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className={`w-8 h-8 ${badge.bg} rounded-full flex items-center justify-center`}>
-                      <badge.icon className={`w-4 h-4 ${badge.color}`} />
+                  <div key={i} className="flex items-center gap-2">
+                    <div className={`w-7 h-7 sm:w-8 sm:h-8 ${badge.bg} rounded-full flex items-center justify-center shrink-0`}>
+                      <badge.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${badge.color}`} />
                     </div>
-                    <span className="text-xs text-gray-600">{badge.text}</span>
+                    <span className="text-[10px] sm:text-xs text-gray-600 leading-tight">{badge.text}</span>
                   </div>
                 ))}
               </div>
@@ -259,24 +254,24 @@ const Cart = () => {
             <div className="sticky top-24 space-y-5">
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
-                  <h2 className="font-semibold text-gray-800">Order Summary</h2>
+                  <h2 className="font-semibold text-gray-800">{t("cart.order_summary", "Order Summary")}</h2>
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Subtotal</span>
+                      <span className="text-gray-600">{t("common.subtotal", "Subtotal")}</span>
                       <span className="font-medium text-gray-800">{formatCurrency(cartSummary.subtotal)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Shipping</span>
+                      <span className="text-gray-600">{t("common.shipping_fee", "Shipping Fee")}</span>
                       <span className="font-medium text-gray-800">{formatCurrency(cartSummary.shipping)}</span>
                     </div>
                     <div className="flex justify-between text-sm border-b border-gray-100 pb-2">
-                      <span className="text-gray-600">VAT (15%)</span>
+                      <span className="text-gray-600">{t("common.vat", "VAT (15%)")}</span>
                       <span className="font-medium text-gray-800">{formatCurrency(cartSummary.tax)}</span>
                     </div>
                     <div className="flex justify-between text-base font-bold pt-2">
-                      <span className="text-gray-900">Total</span>
+                      <span className="text-gray-900">{t("common.final_amount", "Total Amount")}</span>
                       <span className="text-ethiopian-gold">{formatCurrency(cartSummary.total)}</span>
                     </div>
                   </div>
@@ -285,11 +280,11 @@ const Cart = () => {
                     onClick={handleCheckout}
                     className="w-full py-3 bg-ethiopian-gold text-white font-semibold rounded-lg hover:bg-amber-600 transition shadow-md"
                   >
-                    Proceed to Checkout
+                    {t("checkout.complete_order", "Complete Order")}
                   </button>
                   
                   <p className="text-center text-xs text-gray-400">
-                    Taxes and shipping calculated at checkout
+                    {t("cart.taxes_info", "Taxes and shipping calculated at checkout")}
                   </p>
                 </div>
               </div>
@@ -332,20 +327,20 @@ const Cart = () => {
                   <XMarkIcon className="w-5 h-5" />
                 </button>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Clear your cart?</h3>
-              <p className="text-gray-500 mb-6">All items will be permanently removed. This action cannot be undone.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{t("cart.clear_confirm_title", "Clear Cart?")}</h3>
+              <p className="text-gray-500 mb-6">{t("cart.clear_confirm_message", "Are you sure you want to remove all items from your cart? This action cannot be undone.")}</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowClearConfirm(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                 >
-                  Cancel
+                  {t("common.cancel", "Cancel")}
                 </button>
                 <button
                   onClick={handleClearCart}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
                 >
-                  Yes, Clear
+                  {t("cart.clear_cart", "Clear Cart")}
                 </button>
               </div>
             </motion.div>

@@ -381,22 +381,22 @@ const Settings = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px space-x-8 overflow-x-auto px-6">
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="border-b border-gray-200 overflow-x-auto scrollbar-hide">
+            <nav className="flex w-max -mb-px space-x-4 sm:space-x-8 px-4 sm:px-6">
               {tabs.map(tab => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    className={`flex items-center gap-1.5 sm:gap-2 py-3 sm:py-4 px-1 border-b-2 font-medium text-[11px] sm:text-sm whitespace-nowrap ${
                       activeTab === tab.id
                         ? 'border-ethiopian-gold text-ethiopian-gold'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                   >
-                    <Icon className="w-5 h-5" />
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                     {tab.label}
                   </button>
                 );
@@ -741,11 +741,11 @@ const ProfileTab = ({ data, setData, onSave, saving, errors, setErrors }) => {
         </div>
       </div>
 
-      <div className="pt-6 border-t border-gray-100 flex justify-end">
+      <div className="pt-6 border-t border-gray-100 flex flex-col justify-end">
         <button
           onClick={onSave}
           disabled={saving || !isValid}
-          className="px-10 py-4 bg-gray-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:shadow-2xl hover:shadow-gray-300 transition-all disabled:opacity-50 flex items-center gap-2"
+          className="w-full sm:w-auto px-4 sm:px-10 py-3 sm:py-4 bg-gray-900 text-white rounded-xl sm:rounded-2xl font-black uppercase tracking-widest text-[11px] sm:text-sm hover:shadow-xl hover:shadow-gray-300 transition-all disabled:opacity-50 flex justify-center items-center gap-2"
         >
           {saving && <LoadingSpinner size="small" />}
           {saving ? 'Synchronizing...' : 'Save Artisan Profile'}
@@ -950,7 +950,7 @@ const BankTab = ({ data, setData, onSave, saving, verificationStatus, errors, se
         <button
           onClick={onSave}
           disabled={saving || !isValid}
-          className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-ethiopian-gold text-white rounded-xl hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base"
         >
           {saving ? 'Saving...' : 'Save Bank Details'}
         </button>
@@ -1037,7 +1037,7 @@ const NotificationsTab = ({ data, setData, onSave, saving }) => (
       <button
         onClick={onSave}
         disabled={saving}
-        className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-ethiopian-gold text-white rounded-xl hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base"
       >
         {saving ? 'Saving...' : 'Save Preferences'}
       </button>
@@ -1167,7 +1167,7 @@ const SecurityTab = ({ data, setData, onChangePassword, saving, errors, setError
         <button
           onClick={onChangePassword}
           disabled={saving || !isValid}
-          className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-ethiopian-gold text-white rounded-xl hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base"
         >
           {saving ? 'Changing...' : 'Change Password'}
         </button>
@@ -1237,7 +1237,7 @@ const SocialTab = ({ socialLinks, setSocialLinks, vacationMode, onToggleVacation
       <button
         onClick={onSaveSocial}
         disabled={saving}
-        className="px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full sm:w-auto px-4 sm:px-6 py-3 bg-ethiopian-gold text-white rounded-xl hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base"
       >
         {saving ? 'Saving...' : 'Save Social Links'}
       </button>

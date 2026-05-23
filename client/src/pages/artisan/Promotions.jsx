@@ -416,6 +416,47 @@ const Promotions = () => {
           .header-actions {
             width: 100%;
             flex-direction: column;
+            gap: 0.5rem;
+          }
+
+          .btn-flash-sale, .btn-primary {
+            width: 100%;
+            text-align: center;
+          }
+
+          .stats-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+          }
+
+          .stat-card {
+            padding: 1rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            border-left: 3px solid;
+            border-radius: 12px;
+          }
+
+          .stat-card.expired {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            align-items: center;
+          }
+
+          .stat-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+          }
+
+          .stat-content h3 {
+            font-size: 1.25rem;
+          }
+
+          .stat-content p {
+            font-size: 0.75rem;
           }
 
           .promotions-grid {

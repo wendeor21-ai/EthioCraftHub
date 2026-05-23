@@ -267,11 +267,11 @@ const MyProducts = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {filteredProducts.map(product => (
-              <div key={product._id} className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
+              <div key={product._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow">
                 {/* Product Image */}
-                <div className="relative h-48 bg-gray-200">
+                <div className="relative h-40 sm:h-44 bg-gray-200">
                   <img
                     src={
                       getImageUrl(product.images?.[0]?.url) ||

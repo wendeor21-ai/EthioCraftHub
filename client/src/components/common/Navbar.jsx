@@ -191,37 +191,38 @@ function Navbar() {
         (() => {
           const relevant = broadcasts.find(b => b.target === 'all' || (user && (b.target === user.role || (b.target === 'artisans' && user.role === 'artisan'))));
           return relevant ? (
-            <div className="bg-ethiopian-gold text-white text-center py-2 text-sm">
+            <div className="bg-ethiopian-gold text-white text-center py-1.5 sm:py-2 text-xs sm:text-sm px-4">
               {relevant.message}
             </div>
           ) : null;
         })()
       )}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-13 sm:h-16">
           {/* Logo and Brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center space-x-2 text-ethiopian-brown hover:text-ethiopian-gold transition-colors duration-200">
-              <div className="w-10 h-10 bg-gradient-to-br from-ethiopian-gold to-ethiopian-earth rounded-lg flex items-center justify-center overflow-hidden shadow-sm">
+            <Link to="/" className="flex items-center space-x-1.5 sm:space-x-2 text-ethiopian-brown hover:text-ethiopian-gold transition-colors duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-ethiopian-gold to-ethiopian-earth rounded-lg flex items-center justify-center overflow-hidden shadow-sm">
                 {headerLogo || settings.logoUrl ? (
                   (() => {
                     const url = headerLogo || settings.logoUrl;
-                    // If it's already a full URL (starts with http), use it as is
                     if (url.startsWith('http')) {
                       return <img src={url} alt="logo" className="w-full h-full object-contain" />;
                     }
-                    // Otherwise, construct using apiRoot
                     const apiRoot = api.defaults.baseURL.replace(/\/api\/?$/, '');
                     const src = url.startsWith('/') ? `${apiRoot}${url}` : `${apiRoot}/${url}`;
                     return <img src={src} alt="logo" className="w-full h-full object-contain" />;
                   })()
                 ) : (
-                  <SparklesIcon className="w-6 h-6 text-white" />
+                  <SparklesIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 )}
               </div>
               <div className="hidden sm:block">
-                <span className="font-display font-bold text-xl">{settings.name || 'EthioCraft'}</span>
-                <span className="text-ethiopian-gold font-display font-bold text-xl ml-1">Global</span>
+                <span className="font-display font-bold text-lg sm:text-xl">{settings.name || 'EthioCraft'}</span>
+                <span className="text-ethiopian-gold font-display font-bold text-lg sm:text-xl ml-1">Global</span>
+              </div>
+              <div className="sm:hidden">
+                <span className="font-display font-bold text-base">{settings.name || 'EthioCraft'}</span>
               </div>
             </Link>
           </div>
@@ -499,15 +500,20 @@ function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-2">
+          <div className="md:hidden flex items-center space-x-1">
+            {/* Language Switcher — mobile top bar */}
+            <div className="mr-0.5">
+              <LanguageSwitcher compact />
+            </div>
+
             {/* Mobile Cart Icon */}
             <Link
               to="/cart"
-              className="relative p-2 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
+              className="relative p-1.5 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
             >
-              <ShoppingCartIcon className="w-6 h-6" />
+              <ShoppingCartIcon className="w-5 h-5" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 bg-ethiopian-red text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                <span className="absolute -top-0.5 -right-0.5 bg-ethiopian-red text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
                   {totalItems > 99 ? '99+' : totalItems}
                 </span>
               )}
@@ -517,11 +523,11 @@ function Navbar() {
             {isAuthenticated && (
               <Link
                 to="/messages"
-                className="relative p-2 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
+                className="relative p-1.5 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
               >
-                <BellIcon className="w-6 h-6" />
+                <BellIcon className="w-5 h-5" />
                 {unreadMessages > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium animate-pulse">
+                  <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium animate-pulse">
                     {unreadMessages > 99 ? '99+' : unreadMessages}
                   </span>
                 )}
@@ -531,12 +537,12 @@ function Navbar() {
             {/* Menu Toggle */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
+              className="p-1.5 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
             >
               {isMenuOpen ? (
-                <XMarkIcon className="w-6 h-6" />
+                <XMarkIcon className="w-5 h-5" />
               ) : (
-                <Bars3Icon className="w-6 h-6" />
+                <Bars3Icon className="w-5 h-5" />
               )}
             </button>
           </div>

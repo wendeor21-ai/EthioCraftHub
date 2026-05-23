@@ -184,6 +184,7 @@ router.get(
       region,
       zone,
       search,
+      artisan,
       minPrice,
       maxPrice,
       page = 1,
@@ -215,6 +216,10 @@ router.get(
 
     if (zone) {
       filters.originZone = zone;
+    }
+
+    if (artisan) {
+      filters.artisan = artisan;
     }
 
     if (minPrice || maxPrice) {

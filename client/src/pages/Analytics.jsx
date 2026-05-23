@@ -303,8 +303,8 @@ const Analytics = () => {
         {hasData && (
           <>
             {/* Overview Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-emerald-500">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+              <div className="bg-white rounded-2xl shadow-lg p-4 border-l-4 border-emerald-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">{t('artisan_panel.total_revenue', 'Total Revenue')}</p>
@@ -318,7 +318,7 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
+              <div className="bg-white rounded-2xl shadow-lg p-4 border-l-4 border-blue-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">{t('artisan_panel.orders', 'Total Orders')}</p>
@@ -330,7 +330,7 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-cyan-500">
+              <div className="bg-white rounded-2xl shadow-lg p-4 border-l-4 border-cyan-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">{t('dashboard.store_views', 'Store Visits')}</p>
@@ -342,7 +342,7 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-amber-500">
+              <div className="bg-white rounded-2xl shadow-lg p-4 border-l-4 border-amber-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">{t('dashboard.conversion_rate', 'Conversion Rate')}</p>
@@ -368,7 +368,7 @@ const Analytics = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
+              <div className="bg-white rounded-2xl shadow-lg p-4 border-l-4 border-red-500">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">{t('analytics.return_cancel_rate', 'Return & Cancel Rate')}</p>
@@ -385,9 +385,9 @@ const Analytics = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Sales Chart */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('artisan_panel.sales_trend', 'Sales Trend')}</h3>
-            <div className="h-64">
+            <div className="h-56 sm:h-64">
               <Line
                 data={salesChartData}
                 options={{
@@ -404,9 +404,9 @@ const Analytics = () => {
           </div>
 
           {/* Top Products */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('artisan_panel.top_selling_products', 'Top Selling Products')}</h3>
-            <div className="h-64">
+            <div className="h-56 sm:h-64">
               <Bar
                 data={topProductsData}
                 options={{
@@ -420,9 +420,9 @@ const Analytics = () => {
           </div>
 
           {/* Top Locations (Pie Chart) */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('artisan_panel.top_customer_locations', 'Top Customer Locations')}</h3>
-            <div className="h-64 flex items-center justify-center">
+            <div className="h-56 sm:h-64 flex items-center justify-center">
               <div className="w-48 h-48">
                 <Doughnut
                   data={locationsData}

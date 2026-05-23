@@ -396,7 +396,7 @@ exports.markAsDelivered = asyncHandler(async (req, res) => {
   // Record earnings for each artisan (only if not already created)
   for (const item of order.items) {
     // Check for existing earning for this item to prevent duplicates
-    const existingEarning = await Earning.findOne({ orderItem: item._id });
+    const existingEarning = await Earning.findOne({ orderId: order._id, productId: item.product._id || item.product });
     if (!existingEarning) {
       const saleAmount = item.price * item.quantity;
       const platformFee = (saleAmount * PLATFORM_FEE_PERCENTAGE) / 100;

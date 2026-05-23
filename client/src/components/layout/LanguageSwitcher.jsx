@@ -11,12 +11,11 @@ import { useCustomTranslation } from '../../hooks/useCustomTranslation';
  * - Smooth transition and Lucide icons
  * - Professional layout with native language names
  */
-const LanguageSwitcher = () => {
+const LanguageSwitcher = ({ compact = false }) => {
   const { i18n, changeLanguage, supportedLanguages } = useCustomTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -33,6 +32,51 @@ const LanguageSwitcher = () => {
   };
 
   const currentLng = supportedLanguages.find(l => l.code === i18n.language) || supportedLanguages[0];
+
+  // Compact mode: small globe + 2-letter code, used in mobile navbar
+  if (compact) {
+    return (
+      <div className="relative" ref={dropdownRef}>
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-50 border border-gray-200 hover:border-ethiopian-gold transition-all"
+          aria-label="Select Language"
+        >
+          <Globe className="w-3.5 h-3.5 text-gray-500" />
+          <span className="text-[11px] font-bold text-gray-700 uppercase leading-none">
+            {currentLng.code.slice(0, 2)}
+          </span>
+          <ChevronDown className={`w-2.5 h-2.5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isOpen && (
+          <div className="absolute right-0 mt-1.5 w-44 bg-white rounded-xl shadow-2xl border border-gray-100 py-1.5 z-[9999]">
+            <div className="px-3 py-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
+              Language
+            </div>
+            {supportedLanguages.map((language) => {
+              const isActive = i18n.language === language.code;
+              return (
+                <button
+                  key={language.code}
+                  onClick={() => handleLanguageChange(language.code)}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-amber-50 ${isActive ? 'bg-amber-50/40' : ''}`}
+                >
+                  <div className="flex flex-col items-start">
+                    <span className={`text-xs font-bold ${isActive ? 'text-ethiopian-gold' : 'text-gray-800'}`}>
+                      {language.nativeName}
+                    </span>
+                    <span className="text-[9px] text-gray-400">{language.name}</span>
+                  </div>
+                  {isActive && <Check className="w-3.5 h-3.5 text-ethiopian-gold shrink-0" />}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative" ref={dropdownRef}>

@@ -150,10 +150,10 @@ const Reviews = () => {
 
         {/* Analytics Cards */}
         {analytics && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {/* Average Rating */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Average Rating</p>
                   <div className="flex items-center mt-2">
@@ -168,8 +168,8 @@ const Reviews = () => {
             </div>
 
             {/* Total Reviews */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Reviews</p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.totalReviews}</p>
@@ -181,8 +181,8 @@ const Reviews = () => {
             </div>
 
             {/* 5-Star Reviews */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-600">5-Star Reviews</p>
                   <p className="text-3xl font-bold text-green-600 mt-2">
@@ -196,8 +196,8 @@ const Reviews = () => {
             </div>
 
             {/* 1-Star Reviews */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-600">1-Star Reviews</p>
                   <p className="text-3xl font-bold text-red-600 mt-2">
@@ -214,7 +214,7 @@ const Reviews = () => {
 
         {/* Rating Distribution */}
         {analytics && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Rating Distribution</h3>
             <div className="space-y-3">
               {[5, 4, 3, 2, 1].map(rating => {
@@ -249,12 +249,12 @@ const Reviews = () => {
 
         {/* Top Rated Products */}
         {analytics && analytics.topRatedProducts.length > 0 && (
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
+          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 mb-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
               <Award className="w-5 h-5 text-ethiopian-gold" />
               Top Rated Products
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {analytics.topRatedProducts.map(product => (
                 <div key={product.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                   {product.image && (
@@ -279,9 +279,9 @@ const Reviews = () => {
         )}
 
         {/* Filter Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm mb-6">
           <div className="border-b border-gray-200">
-            <nav className="flex -mb-px overflow-x-auto">
+            <nav className="flex flex-nowrap -mb-px overflow-x-auto px-3">
               {[
                 { key: 'all', label: 'All Reviews', count: reviews.length },
                 { key: '5star', label: '5 Stars', count: reviews.filter(r => r.rating === 5).length },
@@ -312,7 +312,7 @@ const Reviews = () => {
         {/* Reviews List */}
         <div className="space-y-4">
           {filteredReviews.length === 0 ? (
-            <div className="bg-white rounded-lg shadow p-12 text-center">
+            <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-12 text-center">
               <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">No Reviews Yet</h3>
               <p className="text-gray-600">
@@ -323,9 +323,9 @@ const Reviews = () => {
             </div>
           ) : (
             filteredReviews.map(review => (
-              <div key={review._id} className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start gap-4 flex-1">
+              <div key={review._id} className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+                <div className="flex flex-col lg:flex-row items-start justify-between mb-4 gap-4">
+                  <div className="flex flex-col sm:flex-row items-start gap-4 flex-1">
                     {review.productImage && (
                       <img
                         src={review.productImage}

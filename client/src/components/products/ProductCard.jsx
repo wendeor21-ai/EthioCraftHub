@@ -315,14 +315,14 @@ function ProductCard({ product, showArtisan = true, className = '', lazyLoad = t
   }
 
   return (
-    <div className={`group cursor-pointer flex flex-col h-full bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 ${className}`} style={{ minHeight: '420px' }}>
-      <Link to={`/products/${product._id}`} className="block h-full flex flex-col relative overflow-hidden rounded-t-lg">
-        {/* Product Image - Full Bleed */}
+    <div className={`product-card-mobile group cursor-pointer flex flex-col ${className}`}>
+      <Link to={`/products/${product._id}`} className="block flex flex-col relative overflow-hidden">
+        {/* Product Image - Responsive aspect ratio */}
         <div
           ref={imageRef}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          className={`relative overflow-hidden bg-gray-50 aspect-[4/5] w-full shrink-0 ${showUnavailableStyling && product.inventory && product.inventory.quantity === 0 ? 'opacity-80' : ''}`}
+          className={`relative overflow-hidden bg-gray-100 aspect-square w-full shrink-0 ${showUnavailableStyling && product.inventory && product.inventory.quantity === 0 ? 'opacity-80' : ''}`}
         >
           {isIntersecting ? (
             <>
@@ -334,12 +334,12 @@ function ProductCard({ product, showArtisan = true, className = '', lazyLoad = t
                   <img
                     src={showBack ? backImg : primaryImage}
                     alt={product?.name || 'Ethiopian craft product'}
-                    className={`w-full h-full object-cover transition-all duration-700 ${showBack ? 'scale-105 transform translate-y-1' : 'group-hover:scale-110'} ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                    className={`w-full h-full object-cover transition-all duration-300 ${showBack ? 'scale-105' : 'md:group-hover:scale-105'} ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                     onLoad={handleImageLoad}
                     onError={handleImageError}
                     loading={lazyLoad ? 'lazy' : 'eager'}
                     crossOrigin="anonymous"
-                    style={{ display: 'block', minHeight: '200px' }}
+                    style={{ display: 'block' }}
                   />
                 );
               })()}
@@ -347,75 +347,62 @@ function ProductCard({ product, showArtisan = true, className = '', lazyLoad = t
               {/* Loading placeholder */}
               {!imageLoaded && (
                 <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center">
-                  <SparklesIcon className="w-8 h-8 text-ethiopian-gold animate-pulse" />
-                  <span className="ml-2 text-xs text-gray-600">Loading...</span>
+                  <SparklesIcon className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 text-ethiopian-gold animate-pulse" />
+                  <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs text-gray-600 hidden sm:inline">Loading...</span>
                 </div>
               )}
             </>
           ) : (
             // Lazy loading placeholder
             <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
-              <div className="text-gray-400 text-sm text-center">
-                <SparklesIcon className="w-8 h-8 mx-auto mb-2 animate-pulse" />
-                <div>Image will load when visible</div>
+              <div className="text-gray-400 text-center">
+                <SparklesIcon className="w-4 h-4 sm:w-6 sm:h-6 md:w-8 md:h-8 mx-auto mb-1 sm:mb-2 animate-pulse" />
+                <div className="text-[10px] sm:text-sm hidden sm:block">Loading...</div>
               </div>
             </div>
           )}
 
           {/* Overlay with actions */}
-          <div className="absolute inset-0 bg-black/5 group-hover:bg-black/20 transition-all duration-300 z-10">
-            {/* Top Right Like Button - Hover Only */}
+          <div className="absolute inset-0 bg-black/0 md:group-hover:bg-black/20 transition-all duration-300 z-10">
+            {/* Like Button - always visible on mobile, hover on desktop */}
             <button
               onClick={handleLike}
-              className="absolute top-3 right-3 p-2 bg-white/95 rounded-full text-gray-400 hover:text-red-500 shadow-md opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:scale-105 z-20"
+              className="absolute top-1 right-1 sm:top-2 sm:right-2 p-1 sm:p-1.5 bg-white/90 rounded-full text-gray-400 hover:text-red-500 shadow-sm md:opacity-0 md:group-hover:opacity-100 transition-all duration-300 z-20"
               title={isInWishlist(product._id) ? 'Remove from favorites' : 'Add to favorites'}
             >
-              {isInWishlist(product._id) ? <HeartSolidIcon className="w-5 h-5 text-red-500" /> : <HeartIcon className="w-5 h-5" />}
+              {isInWishlist(product._id) ? 
+                <HeartSolidIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 text-red-500" /> : 
+                <HeartIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4" />
+              }
             </button>
 
-            {/* View Details Call to Action Hover */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {/* View Details - desktop hover only */}
+            <div className="hidden md:flex absolute inset-0 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <button
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   window.location.href = `/products/${product._id}`;
                 }}
-                className="px-6 py-3 bg-white text-[#1e293b] font-bold rounded-full shadow-2xl hover:bg-[#1e293b] hover:text-white transition-all duration-300 transform translate-y-4 group-hover:translate-y-0 flex items-center gap-2"
+                className="px-3 py-1.5 md:px-4 md:py-2 bg-white text-gray-800 font-bold rounded-full shadow-lg hover:bg-gray-800 hover:text-white transition-all duration-300 flex items-center gap-1.5 text-xs md:text-sm"
               >
-                <EyeIcon className="w-5 h-5" />
-                <span>View Details</span>
+                <EyeIcon className="w-3 h-3 md:w-4 md:h-4" />
+                <span>View</span>
               </button>
             </div>
           </div>
 
-          {/* Status badges - Bottom Left */}
-          <div className="absolute bottom-2 left-2 flex flex-col space-y-1 z-20">
-            {/* Promotion Urgency Badge */}
+          {/* Status badges - Bottom Left - responsive sizing */}
+          <div className="absolute bottom-1 left-1 sm:bottom-1.5 sm:left-1.5 flex flex-col space-y-0.5 z-20">
+            {/* Promotion Badge */}
             {product.promotionActive && product.promotionId && typeof product.promotionId === 'object' && product.promotionId.urgencyBadge && (
-              <span className="px-2 py-0.5 bg-white/50 backdrop-blur-sm border border-pink-500 text-pink-600 text-[10px] font-bold rounded shadow-sm animate-pulse">
-                🔥 {product.promotionId.badgeText || 'Limited Time!'}
+              <span className="px-1 py-0.5 sm:px-1.5 bg-[#e43a3a] text-white text-[7px] sm:text-[8px] font-bold rounded">
+                🔥 {product.promotionId.badgeText || 'Sale'}
               </span>
             )}
             {badge && (
-              <span className="px-2 py-0.5 bg-white/50 backdrop-blur-sm border border-orange-500 text-orange-600 text-[10px] font-bold rounded shadow-sm animate-pulse">
+              <span className="px-1 py-0.5 sm:px-1.5 bg-[#e43a3a] text-white text-[7px] sm:text-[8px] font-bold rounded">
                 {badge}
-              </span>
-            )}
-            {/* Stock Status Badges */}
-            {product.inventory && product.inventory.quantity > 0 && product.inventory.quantity < 5 && (
-              <span className="px-2 py-0.5 bg-white/60 backdrop-blur-sm border border-orange-400 text-orange-600 text-[10px] font-bold rounded shadow-sm">
-                Limited Stock
-              </span>
-            )}
-            {product.inventory && product.inventory.quantity === 0 && (
-              <span className="px-2 py-0.5 bg-white/60 backdrop-blur-sm border border-red-500 text-red-600 text-[10px] font-bold rounded shadow-sm">
-                Out of Stock
-              </span>
-            )}
-            {product.inventory && product.inventory.quantity >= 5 && (
-              <span className="px-2 py-0.5 bg-white/60 backdrop-blur-sm border border-emerald-500 text-emerald-600 text-[10px] font-bold rounded shadow-sm">
-                In Stock
               </span>
             )}
           </div>
@@ -423,86 +410,71 @@ function ProductCard({ product, showArtisan = true, className = '', lazyLoad = t
           {/* Unavailable overlay when requested */}
           {showUnavailableStyling && product.inventory && product.inventory.quantity === 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <span className="px-3 py-1 bg-gray-800 bg-opacity-60 text-white text-sm font-semibold rounded-md">
+              <span className="px-2 py-1 sm:px-3 bg-gray-800 bg-opacity-60 text-white text-[10px] sm:text-sm font-semibold rounded-md">
                 Unavailable
               </span>
             </div>
           )}
-
-          {/* View count */}
-          {product.metrics?.views > 0 && (
-            <div className="absolute top-2 right-2 flex items-center space-x-1 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
-              <EyeIcon className="w-3 h-3" />
-              <span>{product.metrics.views}</span>
-            </div>
-          )}
         </div>
 
-        {/* Product Information */}
-        <div className="px-5 py-4 flex flex-col flex-grow bg-white z-20">
-          {/* Category Badges & Rating Row */}
-          <div className="flex items-center justify-between mb-3">
-            <span className="px-3 py-1 bg-gray-100 text-ethiopian-gold text-[10px] uppercase tracking-wider font-bold rounded-full border border-gray-100">
-              {product.category}
-            </span>
-            <div className="flex items-center space-x-1 border border-gray-100 px-2.5 py-1 rounded-full bg-gray-50">
-              <span className="text-ethiopian-gold text-xs">★</span>
-              <span className="text-xs font-bold text-[#1e293b]">
-                {product.rating ? parseFloat(product.rating).toFixed(1) : (product.metrics?.averageRating ? parseFloat(product.metrics.averageRating).toFixed(1) : '5.0')}
-              </span>
-              <span className="text-[10px] text-gray-400 font-medium ml-1">
-                ({product.metrics?.reviewCount || (Array.isArray(product.reviews) ? product.reviews.length : product.reviews) || Math.floor(Math.random() * 50) + 5})
-              </span>
-            </div>
-          </div>
+        {/* Product Information - Mobile-first responsive design */}
+        <div className="p-1.5 sm:p-2 md:p-4 flex flex-col bg-white z-20">
 
-          {/* Product Name */}
-          <h3 className="font-['Playfair_Display',serif] font-bold text-lg text-gray-900 mb-1 line-clamp-1 group-hover:text-ethiopian-gold transition-colors duration-200 leading-snug">
-            {product.name}
-          </h3>
-
-          {/* Artisan Information */}
-          {showArtisan && (
-            <div className="mb-2">
-              <span className="text-[11px] text-gray-500 uppercase tracking-widest font-semibold flex items-center gap-1">
-                <span className="w-3 h-[1px] bg-gray-300"></span>
-                {artisanName}
-              </span>
-            </div>
-          )}
-
-          {/* 2-Line Product Description */}
-          <p className="text-sm text-gray-600 font-sans leading-relaxed line-clamp-2 mb-4 flex-grow">
-            {product.description || `Authentic ${product.category} handcrafted with premium materials by local Ethiopian artisans.`}
-          </p>
-
-          {/* Price Bar */}
-          <div className="pt-3 mt-auto flex items-center justify-between">
-            <div className="flex items-baseline gap-2 font-['Inter',sans-serif]">
-              {product.promotionActive && discountedPrice ? (
-                <>
-                  <span className="text-xl font-bold text-red-600 tracking-tight">
-                    {formatCurrency(discountedPrice)}
-                  </span>
-                  <span className="text-sm text-gray-400 line-through font-medium">
-                    {formatCurrency(product.price)}
-                  </span>
-                </>
-              ) : (
-                <span className="text-xl font-bold tracking-tight text-gray-900">
+          {/* Price - Most prominent element */}
+          <div className="flex items-baseline gap-1 mb-0.5 sm:mb-1">
+            {product.promotionActive && discountedPrice ? (
+              <>
+                <span className="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-[#e43a3a] leading-none">
+                  {formatCurrency(discountedPrice)}
+                </span>
+                <span className="text-[8px] sm:text-[10px] md:text-xs text-gray-400 line-through leading-none">
                   {formatCurrency(product.price)}
                 </span>
-              )}
-            </div>
+              </>
+            ) : (
+              <span className="text-xs sm:text-sm md:text-lg lg:text-xl font-bold text-[#e43a3a] leading-none">
+                {formatCurrency(product.price)}
+              </span>
+            )}
+          </div>
 
-            {/* Quick Add To Cart Button Component replacement */}
+          {/* Product Name - Responsive text sizing */}
+          <p className="text-[9px] sm:text-[11px] md:text-sm text-gray-700 line-clamp-2 leading-tight mb-0.5 sm:mb-1">
+            {product.name}
+          </p>
+
+          {/* Rating + sold count row - tablet and desktop only */}
+          <div className="hidden md:flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-0.5">
+              <span className="text-ethiopian-gold text-xs">★</span>
+              <span className="text-xs text-gray-500">
+                {product.rating ? parseFloat(product.rating).toFixed(1) : '5.0'}
+              </span>
+            </div>
+            <span className="text-xs text-gray-400">
+              {product.metrics?.reviewCount || 0} sold
+            </span>
+          </div>
+
+          {/* Bottom row - Stock info + Cart button */}
+          <div className="flex items-center justify-between mt-0.5 sm:mt-1">
+            {/* Stock/Category info */}
+            {product.inventory && product.inventory.quantity === 0 ? (
+              <span className="text-[8px] sm:text-[9px] text-red-500 font-medium">Out of stock</span>
+            ) : product.inventory && product.inventory.quantity < 5 ? (
+              <span className="text-[8px] sm:text-[9px] text-orange-500 font-medium">Only {product.inventory.quantity} left</span>
+            ) : (
+              <span className="text-[8px] sm:text-[9px] text-gray-400 truncate max-w-[60px] sm:max-w-none">{product.category}</span>
+            )}
+
+            {/* Cart button - responsive sizing */}
             <button
               onClick={handleAddToCart}
               disabled={!product.inventory || product.inventory.quantity < 1}
-              className={`w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-600 hover:bg-[#1e293b] hover:text-white transition-all shadow-sm disabled:opacity-50 ${isShaking ? 'animate-shake' : ''}`}
-              title="Quick Add to Cart"
+              className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 lg:w-9 lg:h-9 bg-[#e43a3a] rounded-full flex items-center justify-center text-white disabled:opacity-40 shrink-0 transition-transform active:scale-95 ${isShaking ? 'animate-shake' : ''}`}
+              title="Add to Cart"
             >
-              <ShoppingCartIcon className="w-5 h-5" />
+              <ShoppingCartIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" />
             </button>
           </div>
         </div>

@@ -1,0 +1,604 @@
+﻿/* ============================================================
+   EthioCraft Global - Mobile-First Responsive Design System
+   AliExpress-style mobile UI
+   Breakpoints:
+     Mobile:  320px - 767px  (default styles)
+     Tablet:  768px - 1023px (md: prefix)
+     Desktop: 1024px+        (lg: prefix - UNCHANGED)
+   ============================================================ */
+
+/* ── GLOBAL MOBILE BASE ── */
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ── PREVENT HORIZONTAL SCROLL ── */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ── SMOOTH TAP ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── BOTTOM NAV SAFE AREA ── */
+.mobile-bottom-nav {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── SCROLLBAR HIDE ── */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── FILTER SHEET ANIMATION ── */
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-slide-up-sheet {
+  animation: slideUpSheet 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ── NAVBAR MOBILE ── */
+@media (max-width: 767px) {
+  nav .max-w-7xl {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
+  }
+  /* Compact navbar height */
+  nav .h-13 {
+    height: 3rem;
+  }
+  nav .h-16 {
+    height: 3rem !important;
+  }
+  /* Broadcast banner */
+  nav .bg-ethiopian-gold {
+    font-size: 0.65rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+  /* Mobile menu scroll */
+  nav .md\:hidden.border-t {
+    max-height: calc(100dvh - 3rem);
+    overflow-y: auto;
+  }
+}
+
+/* ── HERO SECTION MOBILE ── */
+@media (max-width: 767px) {
+  .h-\[280px\] { height: 220px !important; }
+  .sm\:h-\[480px\] { height: 220px; }
+}
+
+/* ── PRODUCT GRID ── */
+/* Mobile: 2 col, no gap (AliExpress style) */
+@media (max-width: 767px) {
+  .grid.grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1px !important;
+    background-color: #e5e7eb;
+  }
+  .grid.grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 > * {
+    background-color: #fff;
+  }
+}
+
+/* Tablet: 3 col */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .grid.grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4 {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1rem !important;
+    background-color: transparent;
+  }
+}
+
+/* ── PRODUCT CARD MOBILE (AliExpress style) ── */
+@media (max-width: 767px) {
+  /* Square image */
+  .aspect-square { aspect-ratio: 1/1; }
+
+  /* Card no border-radius on mobile (AliExpress) */
+  .group.cursor-pointer.flex.flex-col.bg-white {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  /* Card info tight padding */
+  .group .p-1\.5 {
+    padding: 0.375rem !important;
+  }
+}
+
+/* ── PRODUCTS PAGE MOBILE ── */
+@media (max-width: 767px) {
+  /* Hide hero section on mobile - save space */
+  .relative.bg-gradient-to-r.from-ethiopian-gold\/5.py-6 {
+    display: none !important;
+  }
+
+  /* Search bar sticky */
+  .sticky.top-\[52px\] {
+    top: 48px !important;
+  }
+
+  /* Search bar compact */
+  .sticky.top-\[52px\].sm\:top-16 .py-2 {
+    padding-top: 0.375rem !important;
+    padding-bottom: 0.375rem !important;
+  }
+
+  /* Main content no top padding */
+  .container.mx-auto.px-3.sm\:px-4.py-4 {
+    padding-top: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* ── HOME PAGE MOBILE ── */
+@media (max-width: 767px) {
+  /* Categories section compact */
+  .py-16.bg-white {
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+  }
+  .text-2xl.lg\:text-3xl.font-light {
+    font-size: 1rem !important;
+    margin-bottom: 0.75rem !important;
+  }
+  /* Category icons smaller */
+  .w-16.h-16 {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+  /* Recommended section */
+  .py-16.bg-gradient-to-br {
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+  }
+  .text-3xl.lg\:text-4xl.font-light {
+    font-size: 1.125rem !important;
+  }
+  /* CTA section */
+  .py-20.bg-gradient-to-r {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+  }
+  .bg-white.rounded-3xl.shadow-xl.p-10 {
+    padding: 1rem !important;
+    border-radius: 0.75rem !important;
+  }
+  .text-3xl.md\:text-4xl.font-light.text-gray-800 {
+    font-size: 1.125rem !important;
+  }
+  /* CTA buttons full width */
+  .flex.flex-col.sm\:flex-row.gap-4.justify-center a {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 0.8rem !important;
+  }
+  /* Trust badges */
+  .mt-8.pt-6.border-t.flex.items-center.justify-center.gap-6 {
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+    font-size: 0.6rem !important;
+  }
+}
+
+/* ── PRODUCT DETAIL MOBILE ── */
+@media (max-width: 767px) {
+  /* Breadcrumb compact */
+  .bg-white.border-b.sticky.top-0.z-40 .py-3 {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+  }
+  /* Main padding */
+  .max-w-7xl.mx-auto.px-4.py-8 {
+    padding: 0 !important;
+  }
+  /* Image gallery full width */
+  .lg\:col-span-7 .bg-white.rounded-xl {
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  /* Product info card */
+  .lg\:col-span-5 .bg-white.rounded-xl.p-6 {
+    border-radius: 0 !important;
+    border: none !important;
+    padding: 0.875rem !important;
+    box-shadow: none !important;
+  }
+  /* Price large */
+  .text-3xl.font-bold.text-gray-900 {
+    font-size: 1.5rem !important;
+  }
+  /* Action buttons full width stacked */
+  .flex.flex-col.sm\:flex-row.gap-3.py-2 button {
+    width: 100% !important;
+    padding-top: 0.875rem !important;
+    padding-bottom: 0.875rem !important;
+  }
+  /* Tabs scrollable */
+  .flex.flex-wrap.gap-1.mb-10 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+  .flex.flex-wrap.gap-1.mb-10::-webkit-scrollbar { display: none; }
+  .flex.flex-wrap.gap-1.mb-10 button {
+    flex-shrink: 0 !important;
+    padding: 0.5rem 0.875rem !important;
+    font-size: 0.75rem !important;
+  }
+  /* Bottom section */
+  .mt-20 { margin-top: 1rem !important; }
+  .bg-white.rounded-xl.border.p-8 {
+    padding: 1rem !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+}
+
+/* ── CART PAGE MOBILE ── */
+@media (max-width: 767px) {
+  .max-w-7xl.mx-auto.px-3 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  /* Cart header */
+  .mb-4.sm\:mb-6 {
+    padding: 0.75rem !important;
+    margin-bottom: 0 !important;
+  }
+  /* Cart items card */
+  .bg-white.rounded-xl.shadow-sm.border.border-gray-100.overflow-hidden {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin-bottom: 0.5rem !important;
+  }
+  /* Order summary not sticky */
+  .sticky.top-24 {
+    position: static !important;
+  }
+  /* Order summary card */
+  .lg\:col-span-1 .bg-white.rounded-xl {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+  /* Trust badges 2 col */
+  .grid.grid-cols-2.gap-2 {
+    gap: 0.375rem !important;
+  }
+}
+
+/* ── CHECKOUT PAGE MOBILE ── */
+@media (max-width: 767px) {
+  .max-w-7xl.mx-auto.px-4.py-6 {
+    padding: 0 !important;
+  }
+  /* Header */
+  .mb-8 {
+    padding: 0.75rem !important;
+    margin-bottom: 0 !important;
+  }
+  /* Cards */
+  .bg-white.rounded-xl.border.border-gray-200.shadow-sm.overflow-hidden {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin-bottom: 0.5rem !important;
+  }
+  /* Order summary not sticky */
+  .sticky.top-24 {
+    position: static !important;
+  }
+  /* Place order button */
+  .w-full.py-3\.5.bg-ethiopian-gold {
+    border-radius: 0.5rem !important;
+    font-size: 1rem !important;
+    padding: 1rem !important;
+  }
+  /* Address form grid */
+  .grid.grid-cols-2.gap-4 {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+}
+
+/* ── ORDERS PAGE MOBILE ── */
+@media (max-width: 767px) {
+  /* Hide table, show cards instead */
+  .overflow-x-auto table {
+    display: none !important;
+  }
+  /* Filter tabs scrollable */
+  .flex.flex-wrap.gap-2 {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+    padding-bottom: 0.25rem !important;
+  }
+  .flex.flex-wrap.gap-2::-webkit-scrollbar { display: none; }
+  .flex.flex-wrap.gap-2 button {
+    flex-shrink: 0 !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+  /* Page padding */
+  .container.mx-auto.px-4.max-w-6xl {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  /* Header */
+  .text-4xl.font-bold.text-gray-800 {
+    font-size: 1.375rem !important;
+  }
+}
+
+/* ── PROFILE PAGE MOBILE ── */
+@media (max-width: 767px) {
+  /* Header stack */
+  .mb-8.flex.justify-between.items-center {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  /* Avatar smaller */
+  .w-28.h-28 {
+    width: 5rem !important;
+    height: 5rem !important;
+  }
+  /* Name heading */
+  .text-3xl.font-bold.text-gray-800 {
+    font-size: 1.25rem !important;
+  }
+  /* Info grid single col */
+  .grid.md\:grid-cols-2.gap-4 {
+    grid-template-columns: 1fr !important;
+    gap: 0.625rem !important;
+  }
+  /* Edit buttons */
+  .flex.space-x-3 {
+    width: 100% !important;
+  }
+  .flex.space-x-3 button {
+    flex: 1 !important;
+    justify-content: center !important;
+  }
+  /* Name edit grid */
+  .grid.grid-cols-2.gap-3 {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* ── AUTH PAGES MOBILE ── */
+@media (max-width: 767px) {
+  .min-h-screen.bg-gradient-to-br.font-body.flex.items-center.justify-center.p-4 {
+    padding: 0.75rem !important;
+    align-items: flex-start !important;
+    padding-top: 1.5rem !important;
+  }
+  .relative.bg-white\/80.backdrop-blur-sm.rounded-3xl {
+    border-radius: 1rem !important;
+    padding: 1.25rem !important;
+  }
+  .text-3xl.sm\:text-4xl.font-display.font-bold {
+    font-size: 1.375rem !important;
+  }
+  /* Social buttons */
+  .grid.grid-cols-2.gap-3 {
+    gap: 0.5rem !important;
+  }
+}
+
+/* ── DASHBOARD SIDEBAR MOBILE ── */
+@media (max-width: 767px) {
+  main.flex-1.overflow-x-hidden {
+    padding-top: 3rem !important;
+  }
+}
+
+/* ── FOOTER MOBILE ── */
+@media (max-width: 767px) {
+  footer .grid {
+    gap: 1.25rem !important;
+  }
+  footer .pt-6.sm\:pt-10 {
+    padding-top: 1.25rem !important;
+  }
+  footer .pb-4.sm\:pb-6 {
+    padding-bottom: 1rem !important;
+  }
+  /* Bottom bar */
+  footer .flex.flex-col.sm\:flex-row.justify-between {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    text-align: center !important;
+  }
+  /* Newsletter form */
+  footer form.flex.flex-col {
+    gap: 0.5rem !important;
+  }
+}
+
+/* ── MODALS MOBILE ── */
+@media (max-width: 767px) {
+  .fixed.inset-0.bg-black\/50 .bg-white.rounded-2xl {
+    margin: 0.5rem !important;
+    max-height: calc(100dvh - 1rem) !important;
+    overflow-y: auto !important;
+  }
+  /* Dev modal */
+  .fixed.inset-0.z-\[300\] .relative.w-full.max-w-4xl {
+    max-height: 95dvh !important;
+    margin: 0.5rem !important;
+    border-radius: 1rem !important;
+  }
+}
+
+/* ── FORMS MOBILE ── */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+  button {
+    touch-action: manipulation;
+  }
+}
+
+/* ── TYPOGRAPHY MOBILE ── */
+@media (max-width: 767px) {
+  h1 { font-size: 1.375rem !important; line-height: 1.25 !important; }
+  h2 { font-size: 1.125rem !important; line-height: 1.3 !important; }
+  h3 { font-size: 1rem !important; }
+  h4 { font-size: 0.875rem !important; }
+  * { word-break: break-word; overflow-wrap: break-word; }
+}
+
+/* ── SPACING MOBILE ── */
+@media (max-width: 767px) {
+  .py-20 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+  .py-16 { padding-top: 1.5rem !important; padding-bottom: 1.5rem !important; }
+  .py-12 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+  .mb-12 { margin-bottom: 1.25rem !important; }
+  .mb-8  { margin-bottom: 0.875rem !important; }
+}
+
+/* ── WISHLIST MOBILE ── */
+@media (max-width: 767px) {
+  .grid.grid-cols-2.sm\:grid-cols-3.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1px !important;
+    background-color: #e5e7eb;
+  }
+  .grid.grid-cols-2.sm\:grid-cols-3.lg\:grid-cols-4 > * {
+    background-color: #fff;
+  }
+}
+
+/* ── MESSAGES PAGE MOBILE ── */
+@media (max-width: 767px) {
+  .w-80.border-r {
+    width: 100% !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    max-height: 35vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* ── DASHBOARD PAGES MOBILE ── */
+@media (max-width: 767px) {
+  .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+  .bg-white.rounded-xl.p-6 {
+    padding: 0.75rem !important;
+  }
+  canvas { max-height: 180px !important; }
+}
+
+/* ── ADMIN PAGES MOBILE ── */
+@media (max-width: 767px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  .overflow-x-auto table {
+    min-width: 560px;
+  }
+  .grid.grid-cols-2.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+  }
+}
+
+/* ── ZEMA AI MOBILE ── */
+@media (max-width: 767px) {
+  .flex.flex-col.h-screen {
+    height: calc(100dvh - 3rem) !important;
+  }
+  .sticky.bottom-0 {
+    padding: 0.5rem !important;
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* ── PAGINATION MOBILE ── */
+@media (max-width: 767px) {
+  .flex.justify-center.items-center.gap-1\.5 button {
+    min-width: 2rem !important;
+    height: 2rem !important;
+    font-size: 0.75rem !important;
+  }
+}
+
+/* ── UTILITY CLASSES ── */
+.hide-mobile { display: none !important; }
+@media (min-width: 768px) { .hide-mobile { display: block !important; } }
+
+.show-mobile { display: block !important; }
+@media (min-width: 768px) { .show-mobile { display: none !important; } }
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fluid text */
+.text-fluid-sm  { font-size: clamp(0.7rem, 2vw, 0.875rem); }
+.text-fluid-base{ font-size: clamp(0.8rem, 2.5vw, 1rem); }
+.text-fluid-lg  { font-size: clamp(1rem, 3vw, 1.25rem); }
+.text-fluid-xl  { font-size: clamp(1.125rem, 4vw, 1.5rem); }
+.text-fluid-2xl { font-size: clamp(1.25rem, 5vw, 2rem); }
+.text-fluid-3xl { font-size: clamp(1.5rem, 6vw, 2.5rem); }
+
+/* ── TABLET (768-1023) ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .py-20 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+  .py-16 { padding-top: 2.5rem !important; padding-bottom: 2.5rem !important; }
+}

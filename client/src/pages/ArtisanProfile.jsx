@@ -18,6 +18,7 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/solid';
 import { Ruler, Scissors } from 'lucide-react';
+import ProductList from '../components/products/ProductList';
 
 const ArtisanProfile = () => {
   const { id } = useParams();
@@ -357,6 +358,11 @@ const ArtisanProfile = () => {
             </div>
           </div>
         )}
+
+        {/* ─── Artisan Products ─── */}
+        <div className="mt-16 pt-10 border-t border-gray-100">
+          <ProductList artisanId={id} showFilters={false} title={`Products by ${name}`} />
+        </div>
 
       </main>
     </div>

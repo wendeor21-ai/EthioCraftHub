@@ -31,6 +31,9 @@ import { useSound } from '../../contexts/SoundContext';
 import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 import GuidelinesModal from '../../components/artisan/GuidelinesModal';
 import api from '../../utils/api';
+import io from 'socket.io-client';
+import { API_BASE_URL } from '../../config/api';
+import { playNotificationSound } from '../../utils/soundUtils';
 
 const ArtisanDashboard = ({ user }) => {
   const navigate = useNavigate();
@@ -173,43 +176,85 @@ const ArtisanDashboard = ({ user }) => {
   };
 
   // Load recent activities
-  useEffect(() => {
+  const loadActivity = useCallback(async () => {
     if (!token) return;
-    let cancelled = false;
-    const loadActivity = async () => {
-      try {
-        const res = await fetch('/api/users/audit-logs?limit=5', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) return;
-        const body = await res.json().catch(() => null) || {};
-        const logs = body?.data?.logs || body?.logs || (Array.isArray(body) ? body : []);
-        const mapped = logs.map((l) => {
-          const time = l.timestamp || l.createdAt || l.time || l.date || l.ts || '';
-          const when = time ? new Date(time) : null;
-          const rel = when ? formatRelativeTime(when) : '';
-          let action = l.message || l.event || l.action || l.description || l.type || 'Activity';
-          const details = l.details || {};
-          const productId = details.productId || l.productId || (l.product?._id || l.product?.id) || null;
-          const orderId = details.orderId || l.orderId || (l.order?._id || l.order?.id) || null;
-          let targetPath = '/artisan/activity';
-          if (productId) targetPath = `/products/${productId}`;
-          else if (orderId) targetPath = `/orders/${orderId}`;
-          return {
-            action,
-            meta: details.productName || details.orderNumber || l.info || l.description || '',
-            time: rel,
-            onClick: () => navigate(targetPath),
-          };
-        });
-        if (!cancelled) setRecentActivities(mapped);
-      } catch (err) {
-        console.error('Failed to load activity logs', err);
-      }
-    };
-    loadActivity();
-    return () => { cancelled = true; };
+    try {
+      const res = await fetch('/api/users/audit-logs?limit=5', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const body = await res.json().catch(() => null) || {};
+      const logs = body?.data?.logs || body?.logs || (Array.isArray(body) ? body : []);
+      const mapped = logs.map((l) => {
+        const time = l.timestamp || l.createdAt || l.time || l.date || l.ts || '';
+        const when = time ? new Date(time) : null;
+        const rel = when ? formatRelativeTime(when) : '';
+        let action = l.message || l.event || l.action || l.description || l.type || 'Activity';
+        const details = l.details || {};
+        const productId = details.productId || l.productId || (l.product?._id || l.product?.id) || null;
+        const orderId = details.orderId || l.orderId || (l.order?._id || l.order?.id) || null;
+        let targetPath = '/artisan/activity';
+        if (productId) targetPath = `/products/${productId}`;
+        else if (orderId) targetPath = `/orders/${orderId}`;
+        return {
+          action,
+          meta: details.productName || details.orderNumber || l.info || l.description || '',
+          time: rel,
+          onClick: () => navigate(targetPath),
+        };
+      });
+      if (isMounted.current) setRecentActivities(mapped);
+    } catch (err) {
+      console.error('Failed to load activity logs', err);
+    }
   }, [token, navigate]);
+
+  useEffect(() => {
+    loadActivity();
+  }, [loadActivity]);
+
+  // Socket.io for Real-time Dashboard Updates
+  useEffect(() => {
+    if (!user?._id) return;
+    const socketUrl = API_BASE_URL.replace('/api', '');
+    const newSocket = io(socketUrl, {
+      withCredentials: true,
+      transports: ['polling', 'websocket'],
+      reconnectionAttempts: 5
+    });
+    
+    newSocket.on('connect', () => {
+      newSocket.emit('join', user._id);
+    });
+    
+    newSocket.on('newOrder', (data) => {
+      playNotificationSound();
+      toast.success(`🛍️ New order #${data.orderNumber || data.orderId?.slice(-8)}`, { duration: 10000 });
+      
+      // Browser notification
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification('New Order on EthioCraft Global', {
+          body: `A new order has been placed! Order #${data.orderNumber || data.orderId?.slice(-8)}`,
+        });
+      }
+
+      // Reload stats and activities automatically
+      if (token && !fetchFailed) {
+        loadStats();
+        loadActivity();
+      }
+    });
+
+    // Request browser notification permissions if not set
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    return () => {
+      newSocket.off('newOrder');
+      newSocket.disconnect();
+    };
+  }, [user?._id, loadStats, loadActivity, token, fetchFailed]);
 
   function formatRelativeTime(date) {
     const diff = Date.now() - date.getTime();
@@ -232,31 +277,31 @@ const ArtisanDashboard = ({ user }) => {
   const quickActions = [
     { 
       icon: PlusCircle, 
-      label: 'Add Product', 
+      label: t('artisanDashboard.addProduct', 'Add Product'), 
       onClick: isVerified ? () => navigate('/artisan/add-product') : null, 
       color: isVerified ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-md transform active:scale-95 transition-all' : 'bg-gray-100 text-gray-400 cursor-not-allowed',
       disabled: !isVerified,
-      tooltip: !isVerified ? "Account approval required to add products" : null
+      tooltip: !isVerified ? t('artisanDashboard.accountApprovalRequired', "Account approval required to add products") : null
     },
-    { icon: ShoppingBag, label: 'View Orders', onClick: () => navigate('/artisan/orders'), color: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-md transform active:scale-95 transition-all' },
-    { icon: Tag, label: 'Manage Stock', onClick: () => navigate('/artisan/products'), color: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700 shadow-md transform active:scale-95 transition-all' },
-    { icon: BarChart3, label: 'Analytics', onClick: () => navigate('/artisan/analytics'), color: 'bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white hover:from-purple-600 hover:to-fuchsia-700 shadow-md transform active:scale-95 transition-all' },
+    { icon: ShoppingBag, label: t('artisanDashboard.viewOrders', 'View Orders'), onClick: () => navigate('/artisan/orders'), color: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-md transform active:scale-95 transition-all' },
+    { icon: Tag, label: t('artisanDashboard.manageStock', 'Manage Stock'), onClick: () => navigate('/artisan/inventory-alerts'), color: 'bg-gradient-to-r from-orange-500 to-amber-600 text-white hover:from-orange-600 hover:to-amber-700 shadow-md transform active:scale-95 transition-all' },
+    { icon: BarChart3, label: t('artisanDashboard.analytics', 'Analytics'), onClick: () => navigate('/artisan/analytics'), color: 'bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white hover:from-purple-600 hover:to-fuchsia-700 shadow-md transform active:scale-95 transition-all' },
   ];
 
   const performanceStats = [
-    { label: 'Store Views', value: stats.performance?.storeViews ?? 12, unit: '%', change: '+12%', positive: true },
-    { label: 'Conversion Rate', value: stats.performance?.conversionRate ?? 3.5, unit: '%', change: '+0.5%', positive: true },
-    { label: 'Customer Satisfaction', value: stats.rating ?? 4.2, unit: '/5', change: `${(stats.rating ?? 4.2).toFixed(1)}/5`, positive: true },
+    { label: t('artisanDashboard.storeViews', 'Store Views'), value: stats.performance?.storeViews ?? 12, unit: '%', change: '+12%', positive: true },
+    { label: t('artisanDashboard.conversionRate', 'Conversion Rate'), value: stats.performance?.conversionRate ?? 3.5, unit: '%', change: '+0.5%', positive: true },
+    { label: t('artisanDashboard.customerSatisfaction', 'Customer Satisfaction'), value: stats.rating ?? 4.2, unit: '/5', change: `${(stats.rating ?? 4.2).toFixed(1)}/5`, positive: true },
   ];
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-gray-50">
       {/* Artisan Guidelines Modal — Mandatory for all artisans */}
       {showGuidelines && (
         <GuidelinesModal onAccepted={handleGuidelinesAccepted} />
       )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-4 pb-8">
             {/* Modern Header Section */}
         <AnimatePresence>
           {showWelcome && (
@@ -268,21 +313,21 @@ const ArtisanDashboard = ({ user }) => {
               className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"
             >
               <div>
-                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
                   {t('dashboard.welcome_back', 'Welcome back, {{name}}', { name: user.profile?.firstName })} 👋
                 </h2>
-                <p className="text-sm text-gray-500 mt-1">Here's a standard overview of your craft business today.</p>
+                <p className="text-sm sm:text-base text-gray-500 mt-1 max-w-xl">{t('artisanDashboard.subtitle', "Here’s a compact, mobile-first overview of your craft business today.")}</p>
               </div>
               
               <div className="flex items-center gap-3">
                  <button
                   onClick={loadStats}
                   disabled={loading}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all disabled:opacity-50"
+                  className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all disabled:opacity-50"
                   title="Refresh Stats"
                 >
                   <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  <span>Refresh</span>
+                  <span>{t('artisanDashboard.refresh', "Refresh")}</span>
                 </button>
                 <button
                   onClick={toggleMute}
@@ -299,36 +344,36 @@ const ArtisanDashboard = ({ user }) => {
 
         {/* KPI Cards */}
         {loading && stats.products === 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white/60 backdrop-blur-md rounded-2xl border border-white/40 p-5 animate-pulse h-32"></div>
+              <div key={i} className="bg-white/60 backdrop-blur-md rounded-2xl border border-white/40 p-4 animate-pulse h-28"></div>
             ))}
           </div>
         ) : error && stats.products === 0 ? (
           <div className="bg-red-50/50 backdrop-blur-sm border border-red-100 rounded-2xl p-4 mb-6 flex items-center justify-between">
-            <span className="text-red-600 text-sm font-medium">Failed to load stats: {error}</span>
-            <button onClick={loadStats} className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors">Retry</button>
+            <span className="text-red-600 text-sm font-medium">{t('artisanDashboard.failedToLoad', "Failed to load stats: {{error}}", { error })}</span>
+            <button onClick={loadStats} className="px-4 py-1.5 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors">{t('artisanDashboard.retry', "Retry")}</button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
             <StatCard
-              label="Products"
+              label={t('artisanDashboard.products', "Products")}
               value={stats.products}
               icon={PackageOpen}
-              trend="+3 this month"
+              trend={"+3 " + t('artisanDashboard.thisMonth', "this month")}
               color="amber"
               onClick={() => navigate('/artisan/products')}
             />
             <StatCard
-              label="Orders"
+              label={t('artisanDashboard.orders', "Orders")}
               value={stats.orders}
               icon={ShoppingBag}
-              trend="+12% vs last month"
+              trend={"+12% " + t('artisanDashboard.vsLastMonth', "vs last month")}
               color="amber"
               onClick={() => navigate('/artisan/orders')}
             />
             <StatCard
-              label="Revenue"
+              label={t('artisanDashboard.revenue', "Revenue")}
               value={formatETB(stats.revenue)}
               icon={DollarSign}
               trend="+8.2%"
@@ -337,11 +382,11 @@ const ArtisanDashboard = ({ user }) => {
               onClick={() => navigate('/artisan/finance')}
             />
             <StatCard
-              label="Rating"
+              label={t('artisanDashboard.rating', "Rating")}
               value={stats.rating ? stats.rating.toFixed(1) : '—'}
-              subtitle={`${stats.reviews} reviews`}
+              subtitle={`${stats.reviews} ${t('artisanDashboard.reviews', "reviews")}`}
               icon={Star}
-              trend={stats.rating >= 4 ? "Excellent" : "Needs improvement"}
+              trend={stats.rating >= 4 ? t('artisanDashboard.excellent', "Excellent") : t('artisanDashboard.needsImprovement', "Needs improvement")}
               color={stats.rating >= 4 ? "emerald" : "amber"}
               trendPositive={stats.rating >= 4}
               onClick={() => navigate('/artisan/reviews')}
@@ -354,14 +399,14 @@ const ArtisanDashboard = ({ user }) => {
           <div className="mb-8 bg-red-50 border border-red-200 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-5 h-5 text-red-500" />
-              <h3 className="font-semibold text-red-800">Low Stock Alerts ({stats.lowStockAlerts.length})</h3>
+              <h3 className="font-semibold text-red-800">{t('artisanDashboard.lowStockAlerts', "Low Stock Alerts")} ({stats.lowStockAlerts.length})</h3>
             </div>
             <div className="space-y-2">
               {stats.lowStockAlerts.map((alert, idx) => (
                 <div key={alert.id || idx} className="flex items-center justify-between text-sm">
                   <span className="text-red-700">{alert.productName}</span>
                   <span className="text-red-600 font-medium">
-                    {alert.quantity} left (threshold: {alert.threshold})
+                    {alert.quantity} {t('artisanDashboard.leftThreshold', "left (threshold: {{threshold}})", { threshold: alert.threshold })}
                   </span>
                 </div>
               ))}
@@ -369,15 +414,15 @@ const ArtisanDashboard = ({ user }) => {
           </div>
         )}
 
-        {/* Main Grid: Recent Activity + Insights + Quick Actions */}
+        {/* Main Grid: Recent Activity + Insights + {t('artisanDashboard.quickActions', "Quick Actions")} */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Left Column (Quick Actions & Pro Tip) - Now 2/5 width (~40%) */}
           <div className="lg:col-span-2 space-y-6">
             {/* Quick Actions (Now on the left top) */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-full -mr-16 -mt-16 opacity-50 z-0"></div>
-              <h3 className="font-bold text-gray-900 mb-6 relative z-10 text-lg">Quick Actions</h3>
-              <div className="grid grid-cols-2 gap-4 relative z-10">
+            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-5 sm:p-6 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-28 h-28 bg-amber-50 rounded-full -mr-14 -mt-14 opacity-60 z-0"></div>
+              <h3 className="font-bold text-gray-900 mb-5 relative z-10 text-lg">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
                 {quickActions.map((action, idx) => (
                   <button
                     key={idx}
@@ -400,20 +445,20 @@ const ArtisanDashboard = ({ user }) => {
             </div>
 
             {/* Pro Tip (Below Quick Actions) */}
-            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden">
                <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
                   <LightBulbIcon className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-black uppercase tracking-widest text-xs mb-1 text-blue-100">Expert Pro Tip</h3>
+                  <h3 className="font-black uppercase tracking-widest text-xs mb-1 text-blue-100">{t('artisanDashboard.expertProTip', "Expert Pro Tip")}</h3>
                   <p className="text-sm font-bold leading-relaxed">
-                    "Add high‑quality photos and detailed descriptions to increase sales by up to 40%."
+                    "{t('artisanDashboard.proTipText', "Add high-quality photos and detailed descriptions to increase sales by up to 40%.")}"
                   </p>
                   <div className="mt-4 flex items-center gap-2">
                     <div className="w-8 h-0.5 bg-white/30"></div>
-                    <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Growth Guide</span>
+                    <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{t('artisanDashboard.growthGuide', "Growth Guide")}</span>
                   </div>
                 </div>
               </div>
@@ -428,7 +473,7 @@ const ArtisanDashboard = ({ user }) => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                       <h3 className="font-black uppercase tracking-widest text-xs">Action Required</h3>
+                       <h3 className="font-black uppercase tracking-widest text-xs">{t('artisanDashboard.actionRequired', "Action Required")}</h3>
                     </div>
                     <p className="text-sm font-bold leading-snug">
                       {missingDocs 
@@ -439,7 +484,7 @@ const ArtisanDashboard = ({ user }) => {
                       onClick={() => navigate('/artisan/verification')}
                       className="mt-4 w-full py-2.5 bg-white text-red-600 text-xs font-black rounded-xl hover:bg-gray-100 transition-colors shadow-lg"
                     >
-                      {missingDocs ? "Upload Documents" : "Verify Now"}
+                      {missingDocs ? t('artisanDashboard.uploadDocuments', "Upload Documents") : t('artisanDashboard.verifyNow', "Verify Now")}
                     </button>
                   </div>
                 </div>
@@ -449,9 +494,9 @@ const ArtisanDashboard = ({ user }) => {
 
           {/* Right Column (Performance & Recent Activity) - Now 3/5 width (~60%) */}
           <div className="lg:col-span-3 space-y-6">
-            {/* Performance Insights (Now on the right top) */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all">
-              <div className="flex items-center justify-between mb-6">
+            {/* {t('artisanDashboard.performanceInsights', "Performance Insights")} (Now on the right top) */}
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-5 sm:p-6 hover:shadow-md transition-all">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-emerald-100 rounded-lg">
                     <TrendingUp className="w-5 h-5 text-emerald-600" />
@@ -465,7 +510,7 @@ const ArtisanDashboard = ({ user }) => {
                   Detailed report
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {performanceStats.map((stat, idx) => (
                   <div key={idx} className="group cursor-default">
                     <div className="flex justify-between text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">
@@ -493,13 +538,13 @@ const ArtisanDashboard = ({ user }) => {
             </div>
 
             {/* Recent Activity (Below Performance Insights) */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
-              <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
+              <div className="px-4 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between bg-gray-50/50 gap-3">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-amber-100 rounded-lg">
                     <Clock className="w-5 h-5 text-amber-600" />
                   </div>
-                  <h3 className="font-bold text-gray-900">Recent Activity</h3>
+                  <h3 className="font-bold text-gray-900">{t('artisanDashboard.recentActivity', "Recent Activity")}</h3>
                 </div>
                 <button
                   onClick={() => navigate('/artisan/activity')}
@@ -514,7 +559,7 @@ const ArtisanDashboard = ({ user }) => {
                     <button
                       key={idx}
                       onClick={activity.onClick}
-                      className="w-full px-6 py-4 flex items-center justify-between hover:bg-amber-50 group transition-all text-left"
+                      className="w-full px-4 py-4 flex items-center justify-between hover:bg-amber-50 group transition-all text-left"
                     >
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-gray-900 group-hover:text-amber-700 transition-colors">{activity.action}</p>
@@ -552,15 +597,15 @@ const StatCard = ({ label, value, subtitle, icon: Icon, trend, trendPositive, co
     <motion.div
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       onClick={onClick}
-      className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden flex flex-col justify-between h-36"
+      className="bg-white rounded-3xl border border-gray-100 p-4 sm:p-5 shadow-sm hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden flex flex-col justify-between min-h-[150px] h-full"
     >
       <div className="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-full -mr-12 -mt-12 group-hover:bg-amber-50 transition-colors duration-500"></div>
       
-      <div className="flex items-start justify-between relative z-10">
-        <div>
-          <p className="text-[11px] text-gray-500 font-black uppercase tracking-widest">{label}</p>
-          <div className="flex items-baseline gap-1 mt-2">
-            <span className="text-3xl font-black text-gray-900 tracking-tighter">{value}</span>
+      <div className="flex items-start justify-between relative z-10 gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-[11px] text-gray-500 font-black uppercase tracking-widest">{label}</p>
+          <div className="flex flex-wrap items-baseline gap-1 mt-2">
+            <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tighter">{value}</span>
             {subtitle && <span className="text-[10px] text-gray-400 font-bold">({subtitle})</span>}
           </div>
         </div>

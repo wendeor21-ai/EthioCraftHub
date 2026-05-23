@@ -20,7 +20,7 @@ import Preloader from './components/common/Preloader';
 // Page Components
 import Home from './pages/Home';
 import Products from './pages/Products';
-import ProductDetail from './pages/ProductDetail';
+import ProductDetail from './pages/ProductDetailDesktop';
 import ArtisanProfile from './pages/ArtisanProfile';
 import ArtisanActivity from './pages/ArtisanActivity';
 import Cart from './pages/Cart';
@@ -95,6 +95,9 @@ import TradeLedger from './pages/admin/core/TradeLedger';
 
 // Protected Route Component
 import ProtectedRoute, { AdminRoute, ArtisanRoute, CustomerRoute } from './components/auth/ProtectedRoute';
+
+// Mobile Components
+import MobileBottomNav from './components/mobile/MobileBottomNav';
 
 // Styles
 import './App.css';
@@ -651,6 +654,9 @@ function App() {
 
                     {/* Footer */}
                     <Footer />
+
+                    {/* Mobile Bottom Navigation - AliExpress style */}
+                    <MobileBottomNav />
 
                     {/* Toast Notifications */}
                     <Toaster

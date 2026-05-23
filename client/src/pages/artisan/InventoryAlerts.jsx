@@ -168,21 +168,29 @@ const InventoryAlerts = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 space-y-6">
           <button
             onClick={() => navigate('/artisan/dashboard')}
-            className="text-ethiopian-gold hover:text-ethiopian-earth mb-4"
+            className="inline-flex items-center gap-2 text-ethiopian-gold hover:text-ethiopian-earth text-sm font-semibold"
           >
             ← Back to Dashboard
           </button>
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Inventory Alerts</h1>
-              <p className="text-gray-600 mt-2">Monitor stock levels and prevent missed sales</p>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-3 rounded-2xl bg-white border border-gray-200 px-4 py-3 shadow-sm">
+                <AlertTriangle className="w-5 h-5 text-red-500" />
+                <div>
+                  <p className="text-sm uppercase tracking-[0.2em] text-gray-500">Inventory Alerts</p>
+                  <h1 className="text-3xl font-bold text-gray-900">Stay ahead of low stock</h1>
+                </div>
+              </div>
+              <p className="text-gray-600 max-w-2xl text-sm sm:text-base">
+                Keep your store stocked, prevent lost sales, and restock faster with automated low-stock alerts and smart recommendations.
+              </p>
             </div>
             <button
               onClick={() => navigate('/artisan/products')}
-              className="bg-ethiopian-gold text-white px-6 py-3 rounded-lg hover:bg-ethiopian-earth transition-colors flex items-center gap-2"
+              className="inline-flex items-center justify-center rounded-full bg-ethiopian-gold text-white px-5 py-3 text-sm font-semibold shadow-lg shadow-ethiopian-gold/20 hover:bg-ethiopian-earth transition-colors"
             >
               <Package className="w-5 h-5" />
               Manage Products
@@ -208,51 +216,51 @@ const InventoryAlerts = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Products</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Total Products</p>
                 <p className="text-2xl font-bold text-gray-900 mt-2">{products.length}</p>
               </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <Package className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-blue-50 rounded-2xl text-blue-600">
+                <Package className="w-5 h-5" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-600">In Stock</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">In Stock</p>
                 <p className="text-2xl font-bold text-green-600 mt-2">{inStock.length}</p>
               </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-3 bg-green-50 rounded-2xl text-green-600">
+                <CheckCircle className="w-5 h-5" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-600">Low Stock</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Low Stock</p>
                 <p className="text-2xl font-bold text-orange-600 mt-2">{lowStock.length}</p>
               </div>
-              <div className="p-3 bg-orange-100 rounded-full">
-                <AlertTriangle className="w-6 h-6 text-orange-600" />
+              <div className="p-3 bg-orange-50 rounded-2xl text-orange-600">
+                <AlertTriangle className="w-5 h-5" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 sm:p-5">
+            <div className="flex items-center justify-between gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-600">Critical Stock</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Critical Stock</p>
                 <p className="text-2xl font-bold text-red-600 mt-2">{outOfStock.length}</p>
               </div>
-              <div className="p-3 bg-red-100 rounded-full">
-                <XCircle className="w-6 h-6 text-red-600" />
+              <div className="p-3 bg-red-50 rounded-2xl text-red-600">
+                <XCircle className="w-5 h-5" />
               </div>
             </div>
           </div>
@@ -325,7 +333,7 @@ const InventoryAlerts = () => {
         </div>
 
         {/* Products Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-3xl shadow overflow-hidden">
           {filteredProducts.length === 0 ? (
             <div className="p-12 text-center">
               <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -337,83 +345,131 @@ const InventoryAlerts = () => {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Product
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Current Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Total Sales
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredProducts.map((product) => (
-                    <tr key={product._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          {product.images?.[0] && (
-                            <img
-                              src={product.images[0].url}
-                              alt={product.name}
-                              className="h-10 w-10 rounded-lg object-cover mr-3"
-                            />
-                          )}
+            <>
+              <div className="md:hidden px-4 py-5 space-y-4">
+                {filteredProducts.map((product) => (
+                  <div key={product._id} className="rounded-3xl border border-gray-200 bg-gray-50 p-4 shadow-sm">
+                    <div className="flex items-start gap-4">
+                      <div className="h-16 w-16 rounded-3xl overflow-hidden bg-white shadow-sm flex-shrink-0">
+                        {product.images?.[0] ? (
+                          <img
+                            src={product.images[0].url}
+                            alt={product.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full bg-gray-200" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3">
                           <div>
-                            <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                            <p className="text-xs text-gray-500">{product.category}</p>
+                            <p className="text-base font-semibold text-gray-900 line-clamp-2">{product.name}</p>
+                            <p className="text-xs text-gray-500 mt-1">{product.category || 'Uncategorized'}</p>
+                          </div>
+                          <div>{getStockBadge(product.inventory?.quantity || 0)}</div>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-2 text-sm text-gray-600">
+                          <div className="rounded-2xl bg-white p-3 border border-gray-200">
+                            <p className="font-semibold text-gray-900">Stock</p>
+                            <p>{product.inventory?.quantity || 0}</p>
+                          </div>
+                          <div className="rounded-2xl bg-white p-3 border border-gray-200">
+                            <p className="font-semibold text-gray-900">Sales</p>
+                            <p>{product.metrics?.totalSales || 0}</p>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-2xl font-bold text-gray-900">
-                          {product.inventory?.quantity || 0}
-                        </p>
-                        <p className="text-xs text-gray-500">units</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        {getStockBadge(product.inventory?.quantity || 0)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-sm text-gray-900">
-                          {product.metrics?.totalSales || 0} units
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => quickRestock(product._id, product.inventory?.quantity || 0)}
-                            disabled={updatingStock === product._id}
-                            className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center gap-1 text-sm"
-                          >
-                            <Plus className="w-4 h-4" />
-                            Add Stock
-                          </button>
-                          <button
-                            onClick={() => navigate(`/artisan/edit-product/${product._id}`)}
-                            className="px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-1 text-sm"
-                          >
-                            <Edit className="w-4 h-4" />
-                            Edit
-                          </button>
-                        </div>
-                      </td>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex flex-col gap-3">
+                      <button
+                        onClick={() => quickRestock(product._id, product.inventory?.quantity || 0)}
+                        disabled={updatingStock === product._id}
+                        className="w-full rounded-2xl bg-ethiopian-gold px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-ethiopian-earth transition-colors disabled:opacity-60"
+                      >
+                        {updatingStock === product._id ? 'Updating...' : 'Quick Restock'}
+                      </button>
+                      <button
+                        onClick={() => navigate(`/artisan/edit-product/${product._id}`)}
+                        className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        Edit Product
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Product
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Current Stock
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Total Sales
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredProducts.map((product) => (
+                      <tr key={product._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            {product.images?.[0] && (
+                              <img
+                                src={product.images[0].url}
+                                alt={product.name}
+                                className="h-10 w-10 rounded-xl object-cover"
+                              />
+                            )}
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{product.name}</p>
+                              <p className="text-xs text-gray-500">{product.category}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-lg font-semibold text-gray-900">{product.inventory?.quantity || 0}</p>
+                          <p className="text-xs text-gray-500">units</p>
+                        </td>
+                        <td className="px-6 py-4">{getStockBadge(product.inventory?.quantity || 0)}</td>
+                        <td className="px-6 py-4">
+                          <p className="text-sm text-gray-900">{product.metrics?.totalSales || 0} units</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              onClick={() => quickRestock(product._id, product.inventory?.quantity || 0)}
+                              disabled={updatingStock === product._id}
+                              className="rounded-full bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+                            >
+                              Quick Restock
+                            </button>
+                            <button
+                              onClick={() => navigate(`/artisan/edit-product/${product._id}`)}
+                              className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 
