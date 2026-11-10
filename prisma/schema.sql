@@ -1,3 +1,3 @@
--- Reference copy of root schema.sql
--- Run: mysql -u username -p database_name < schema.sql
-
+-- Reference copy of root schema.sql with Admin & Sample Users Seed
+-- To import: mysql -u username -p database_name < schema.sql
+-- Or import via cPanel phpMyAdmin

@@ -532,6 +532,218 @@ ALTER TABLE `ai_chat_logs`
 ALTER TABLE `notification_settings` 
     ADD CONSTRAINT `notification_settings_adminUserId_fkey` FOREIGN KEY (`adminUserId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- ==============================================================================
+-- Initial Seed Data: Master Admin, Sample Artisan, and Customer Credentials
+-- ==============================================================================
+
+-- 1. Master Administrator Account
+-- Email: admin@ethiocraft.com
+-- Password: Admin123!
+INSERT INTO `users` (
+    `id`,
+    `email`,
+    `password`,
+    `authProvider`,
+    `role`,
+    `profile`,
+    `preferences`,
+    `wishlist`,
+    `cart`,
+    `shippingAddresses`,
+    `isActive`,
+    `isVerified`,
+    `isFlagged`,
+    `mustChangePassword`,
+    `hasAcceptedGuidelines`,
+    `flags`,
+    `alerts`,
+    `createdAt`,
+    `updatedAt`
+) VALUES (
+    '000000000000000000000001',
+    'admin@ethiocraft.com',
+    '$2a$12$jGxNSSAV95FPZKkGROjxduPP.NqPfk9XM53Pa7m8PL6IqiZUFuYZm',
+    'local',
+    'admin',
+    JSON_OBJECT(
+        'firstName', 'EthioCraft',
+        'lastName', 'Administrator',
+        'displayName', 'EthioCraft Admin',
+        'phone', '+251911234567',
+        'bio', 'Platform Master Administrator for EthioCraft Global marketplace'
+    ),
+    JSON_OBJECT('theme', 'system', 'language', 'en'),
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    true,
+    true,
+    false,
+    false,
+    true,
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    NOW(3),
+    NOW(3)
+) ON DUPLICATE KEY UPDATE 
+    `password` = VALUES(`password`),
+    `role` = 'admin',
+    `isActive` = true,
+    `isVerified` = true,
+    `updatedAt` = NOW(3);
+
+-- 2. Verified Master Artisan Account
+-- Email: artisan@test.com
+-- Password: Artisan123!
+INSERT INTO `users` (
+    `id`,
+    `email`,
+    `password`,
+    `authProvider`,
+    `role`,
+    `profile`,
+    `verification`,
+    `preferences`,
+    `wishlist`,
+    `cart`,
+    `shippingAddresses`,
+    `isActive`,
+    `isVerified`,
+    `isFlagged`,
+    `mustChangePassword`,
+    `hasAcceptedGuidelines`,
+    `flags`,
+    `alerts`,
+    `createdAt`,
+    `updatedAt`
+) VALUES (
+    '000000000000000000000002',
+    'artisan@test.com',
+    '$2a$12$18pfnjEzDtl/KzBPAlJaPuH29knwPfW7LxO/lH2GLAbb.QSzmquCK',
+    'local',
+    'artisan',
+    JSON_OBJECT(
+        'firstName', 'Almaz',
+        'lastName', 'Kebede',
+        'displayName', 'Almaz Traditional Weaving',
+        'phone', '+251922222222',
+        'bio', 'Master traditional Habesha Tibeb weaver with over 15 years of experience in Addis Ababa and Gondar styles.',
+        'culturalBackground', 'Traditional Ethiopian textile weaving from Addis Ababa and Gojjam',
+        'specialties', JSON_ARRAY('Textiles', 'Traditional Weaving', 'Netela', 'Gabi', 'Tibeb')
+    ),
+    JSON_OBJECT(
+        'status', 'approved',
+        'submittedAt', NOW(3),
+        'reviewedAt', NOW(3)
+    ),
+    JSON_OBJECT('theme', 'system', 'language', 'am'),
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    true,
+    true,
+    false,
+    false,
+    true,
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    NOW(3),
+    NOW(3)
+) ON DUPLICATE KEY UPDATE 
+    `password` = VALUES(`password`),
+    `role` = 'artisan',
+    `isActive` = true,
+    `isVerified` = true,
+    `updatedAt` = NOW(3);
+
+-- 3. Sample Customer Account
+-- Email: customer@test.com
+-- Password: Customer123!
+INSERT INTO `users` (
+    `id`,
+    `email`,
+    `password`,
+    `authProvider`,
+    `role`,
+    `profile`,
+    `preferences`,
+    `wishlist`,
+    `cart`,
+    `shippingAddresses`,
+    `isActive`,
+    `isVerified`,
+    `isFlagged`,
+    `mustChangePassword`,
+    `hasAcceptedGuidelines`,
+    `flags`,
+    `alerts`,
+    `createdAt`,
+    `updatedAt`
+) VALUES (
+    '000000000000000000000003',
+    'customer@test.com',
+    '$2a$12$pvs5HSK/Vqg6jbKpt2DcEeocgp1r0/ku3dW8qM2.0w4W360l3Ds66',
+    'local',
+    'customer',
+    JSON_OBJECT(
+        'firstName', 'Yared',
+        'lastName', 'Tesfaye',
+        'displayName', 'Yared T.',
+        'phone', '+251911111111',
+        'bio', 'Passionate collector of authentic Ethiopian handicrafts and handmade jewelry.'
+    ),
+    JSON_OBJECT('theme', 'system', 'language', 'en'),
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    true,
+    true,
+    false,
+    false,
+    true,
+    JSON_ARRAY(),
+    JSON_ARRAY(),
+    NOW(3),
+    NOW(3)
+) ON DUPLICATE KEY UPDATE 
+    `password` = VALUES(`password`),
+    `role` = 'customer',
+    `isActive` = true,
+    `updatedAt` = NOW(3);
+
+-- 4. Default Homepage Site Configuration (CMS & Branding)
+INSERT INTO `site_configs` (
+    `id`,
+    `configType`,
+    `heroSlides`,
+    `heritageTitle_en`,
+    `heritageTitle_am`,
+    `heritageDescription_en`,
+    `heritageDescription_am`,
+    `commissionRate`,
+    `createdAt`,
+    `updatedAt`
+) VALUES (
+    '000000000000000000000010',
+    'homepage',
+    JSON_ARRAY(
+        JSON_OBJECT(
+            'image', '/images/traditional_textiles.jpg',
+            'title', 'Authentic Ethiopian Heritage Crafts',
+            'subtitle', 'Handwoven textiles, pure leather, and traditional jewelry directly from verified Ethiopian artisans.',
+            'buttonText', 'Explore Collection',
+            'buttonLink', '/products'
+        )
+    ),
+    'Preserving Ethiopian Cultural Heritage',
+    'የኢትዮጵያን ባህላዊ ቅርሶች መጠበቅ እና ማስተዋወቅ',
+    'Connecting master artisans from across Ethiopia with global markets, preserving centuries of cultural craftsmanship.',
+    'የኢትዮጵያን ባህላዊ የእጅ ጥበብ ውጤቶች ከሀገር ውስጥ እና ከዓለም አቀፍ ገበያ ጋር በማገናኘት ባህላችንን እናስጠብቃለን።',
+    5.0,
+    NOW(3),
+    NOW(3)
+) ON DUPLICATE KEY UPDATE `updatedAt` = NOW(3);
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ==============================================================================
