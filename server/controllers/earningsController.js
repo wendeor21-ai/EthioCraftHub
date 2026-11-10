@@ -3,7 +3,7 @@
  * Handles artisan earnings, withdrawals, and financial analytics
  */
 
-const mongoose = require('mongoose');
+const mongoose = require('../lib/mongoose');
 const Earning = require('../models/Earning');
 const WithdrawalAuditLog = require('../models/WithdrawalAuditLog');
 const Product = require('../models/Product');
@@ -28,8 +28,8 @@ exports.getDashboard = asyncHandler(async (req, res) => {
 
   // Get pending withdrawals
   const pendingWithdrawals = await Earning.getPendingWithdrawals(artisanId);
-  const pendingAmount = pendingWithdrawals.length > 0 ? pendingWithdrawals[0].total : 0;
-  const pendingCount = pendingWithdrawals.length > 0 ? pendingWithdrawals[0].count : 0;
+  const pendingAmount = pendingWithdrawals.length > 0 ? (pendingWithdrawals[0].total || 0) : 0;
+  const pendingCount = pendingWithdrawals.length > 0 ? (pendingWithdrawals[0].count || 0) : 0;
 
   // Get pending commission payments waiting for approval
   const pendingCommissions = await CommissionPayment.find({ 

@@ -1,184 +1,96 @@
 /**
- * Earning Model for EthioCraft Global
- * Tracks artisan earnings, withdrawals, and financial transactions
+ * Earning Model - PostgreSQL/Prisma backend
  */
+const { prisma } = require('../lib/prisma');
+const { createModel } = require('../lib/mongoCompat/createModel');
+const { defaultTranslateWhere, defaultToPrisma } = require('../lib/mongoCompat/modelHelpers');
 
-const mongoose = require('mongoose');
+const earningModelDef = {
+  delegate: prisma.earning,
+  defaultInclude: { artisan: true, order: true, product: true, processedBy: true },
 
-const earningSchema = new mongoose.Schema(
-  {
-    artisan: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
-    
-    // Transaction details
-    transactionType: {
-      type: String,
-      enum: ['sale', 'withdrawal', 'refund', 'adjustment', 'fee'],
-      required: true,
-    },
-    
-    amount: {
-      type: Number,
-      required: true,
-    },
-    
-    platformFee: {
-      type: Number,
-      default: 0,
-    },
-    
-    netAmount: {
-      type: Number,
-      required: true,
-    },
-    
-    // Related references
-    orderId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Order',
-    },
-    
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-    },
-    
-    // Withdrawal specific fields
-    withdrawalMethod: {
-      type: String,
-      enum: ['telebirr', 'cbe_birr', 'bank_transfer', null],
-    },
-    
-    withdrawalStatus: {
-      type: String,
-      enum: ['pending', 'processing', 'completed', 'failed', 'cancelled', null],
-    },
-    
-    withdrawalAccountDetails: {
-      accountNumber: String,
-      accountName: String,
-      bankName: String,
-      phoneNumber: String,
-    },
-    
-    // Status tracking
-    status: {
-      type: String,
-      enum: ['pending', 'completed', 'failed', 'refunded'],
-      default: 'completed',
-    },
-    
-    description: {
-      type: String,
-      trim: true,
-    },
-    
-    // Audit trail
-    processedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
-    
-    processedAt: {
-      type: Date,
-    },
-    
-    failureReason: {
-      type: String,
-      trim: true,
-    },
-    
-    metadata: {
-      type: mongoose.Schema.Types.Mixed,
+  populateMap: {
+    artisan: { model: 'User' },
+    orderId: { model: 'Order' },
+    productId: { model: 'Product' },
+    processedBy: { model: 'User' },
+  },
+
+  async translateWhere(where, ops, rawFilter) {
+    const result = await defaultTranslateWhere(where, ops, rawFilter);
+    if (rawFilter.artisan) result.artisanId = String(rawFilter.artisan._id || rawFilter.artisan);
+    return result;
+  },
+
+  toPrisma(data) {
+    return defaultToPrisma(data, {
+      artisan: 'artisanId',
+      orderId: 'orderId',
+      productId: 'productId',
+      processedBy: 'processedById',
+    });
+  },
+
+  virtuals: {
+    formattedAmount: (data) => `${(data.amount || 0).toFixed(2)} ETB`,
+  },
+
+  methods: {
+    createAuditLog(action, userId, notes) {
+      return {
+        earningId: this._data._id,
+        action,
+        userId,
+        notes,
+        timestamp: new Date(),
+        previousStatus: this._data.withdrawalStatus,
+      };
     },
   },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
-);
+};
 
-// Indexes for efficient querying
-earningSchema.index({ artisan: 1, createdAt: -1 });
-earningSchema.index({ transactionType: 1, status: 1 });
-earningSchema.index({ withdrawalStatus: 1 });
+const Earning = createModel('Earning', earningModelDef);
 
-// Virtual for formatted amount
-earningSchema.virtual('formattedAmount').get(function () {
-  return `${this.amount.toFixed(2)} ETB`;
-});
-
-// Static method to calculate artisan balance
-earningSchema.statics.getArtisanBalance = async function (artisanId) {
-  const result = await this.aggregate([
-    {
-      $match: {
-        artisan: new mongoose.Types.ObjectId(artisanId),
-        status: 'completed',
-      },
-    },
-    {
-      $group: {
-        _id: '$transactionType',
-        total: { $sum: '$netAmount' },
-      },
-    },
+Earning.getArtisanBalance = async function (artisanId) {
+  const result = await Earning.aggregate([
+    { $match: { artisan: artisanId, status: 'completed' } },
+    { $group: { _id: '$transactionType', total: { $sum: '$netAmount' } } },
   ]);
 
   let totalEarnings = 0;
   let totalWithdrawals = 0;
-
   result.forEach((item) => {
-    if (item._id === 'sale') {
-      totalEarnings += item.total;
-    } else if (item._id === 'withdrawal') {
-      totalWithdrawals += Math.abs(item.total);
-    }
+    if (item._id === 'sale') totalEarnings += item.total;
+    else if (item._id === 'withdrawal') totalWithdrawals += Math.abs(item.total);
   });
-
-  const availableBalance = totalEarnings - totalWithdrawals;
 
   return {
     totalEarnings,
     totalWithdrawals,
-    availableBalance,
+    availableBalance: totalEarnings - totalWithdrawals,
   };
 };
 
-// Static method to get pending withdrawals
-earningSchema.statics.getPendingWithdrawals = async function (artisanId) {
-  return this.aggregate([
+Earning.getPendingWithdrawals = async function (artisanId) {
+  return Earning.aggregate([
     {
       $match: {
-        artisan: new mongoose.Types.ObjectId(artisanId),
+        artisan: artisanId,
         transactionType: 'withdrawal',
         withdrawalStatus: { $in: ['pending', 'processing'] },
       },
     },
-    {
-      $group: {
-        _id: null,
-        total: { $sum: { $abs: '$netAmount' } },
-        count: { $sum: 1 },
-      },
-    },
+    { $group: { _id: null, total: { $sum: { $abs: '$netAmount' } }, count: { $sum: 1 } } },
   ]);
 };
 
-// Static method to get monthly earnings
-earningSchema.statics.getMonthlyEarnings = async function (artisanId, months = 6) {
+Earning.getMonthlyEarnings = async function (artisanId, months = 6) {
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);
-
-  return this.aggregate([
+  return Earning.aggregate([
     {
       $match: {
-        artisan: new mongoose.Types.ObjectId(artisanId),
+        artisan: artisanId,
         transactionType: 'sale',
         status: 'completed',
         createdAt: { $gte: startDate },
@@ -186,42 +98,27 @@ earningSchema.statics.getMonthlyEarnings = async function (artisanId, months = 6
     },
     {
       $group: {
-        _id: {
-          year: { $year: '$createdAt' },
-          month: { $month: '$createdAt' },
-        },
+        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
         totalEarnings: { $sum: '$netAmount' },
         totalSales: { $sum: 1 },
       },
     },
-    {
-      $sort: { '_id.year': 1, '_id.month': 1 },
-    },
+    { $sort: { '_id.year': 1, '_id.month': 1 } },
   ]);
 };
 
-// Static method to get earnings by category
-earningSchema.statics.getEarningsByCategory = async function (artisanId) {
-  return this.aggregate([
+Earning.getEarningsByCategory = async function (artisanId) {
+  return Earning.aggregate([
     {
       $match: {
-        artisan: new mongoose.Types.ObjectId(artisanId),
+        artisan: artisanId,
         transactionType: 'sale',
         status: 'completed',
         productId: { $exists: true },
       },
     },
-    {
-      $lookup: {
-        from: 'products',
-        localField: 'productId',
-        foreignField: '_id',
-        as: 'product',
-      },
-    },
-    {
-      $unwind: '$product',
-    },
+    { $lookup: { from: 'products', localField: 'productId', foreignField: '_id', as: 'product' } },
+    { $unwind: '$product' },
     {
       $group: {
         _id: '$product.category',
@@ -229,22 +126,8 @@ earningSchema.statics.getEarningsByCategory = async function (artisanId) {
         totalSales: { $sum: 1 },
       },
     },
-    {
-      $sort: { totalEarnings: -1 },
-    },
+    { $sort: { totalEarnings: -1 } },
   ]);
 };
 
-// Method to create audit log entry
-earningSchema.methods.createAuditLog = function (action, userId, notes) {
-  return {
-    earningId: this._id,
-    action,
-    userId,
-    notes,
-    timestamp: new Date(),
-    previousStatus: this.withdrawalStatus,
-  };
-};
-
-module.exports = mongoose.model('Earning', earningSchema);
+module.exports = Earning;

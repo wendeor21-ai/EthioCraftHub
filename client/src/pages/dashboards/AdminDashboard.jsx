@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { API_BASE_URL } from '../../config/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { Users, Package, ShoppingCart, DollarSign, BarChart3, RefreshCw, TrendingUp } from 'lucide-react';
+import { Users, Package, ShoppingCart, DollarSign, BarChart3, RefreshCw, TrendingUp, Download, Percent, ShieldCheck } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
@@ -15,6 +16,33 @@ const AdminDashboard = () => {
   const [stats, setStats] = useState({ totalUsers: 0, activeArtisans: 0, monthlyOrders: 0, monthlyRevenue: 0, platformEarnings: 0 });
   const [pending, setPending] = useState({ artisanApplications: 0, productApprovals: 0 });
   const [activities, setActivities] = useState([]);
+  const [backingUp, setBackingUp] = useState(false);
+
+  const handleDownloadBackup = async () => {
+    try {
+      setBackingUp(true);
+      const authToken = token || localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/api/admin/backup/download`, {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      if (!response.ok) throw new Error('Backup failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ethiocraft-global-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('Database backup downloaded successfully!');
+    } catch (err) {
+      console.error('Backup download error:', err);
+      toast.error('Failed to download database backup');
+    } finally {
+      setBackingUp(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -100,7 +128,26 @@ const AdminDashboard = () => {
         </div>
         
         <div className="flex items-center gap-3">
-           <button
+          <button
+            onClick={handleDownloadBackup}
+            disabled={backingUp}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+            title="Download complete system database backup"
+          >
+            <Download className="w-4 h-4" />
+            <span>{backingUp ? 'Backing up...' : 'Backup All Data'}</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/admin/settings')}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all active:scale-95"
+            title="Modify VAT & Commission Rates"
+          >
+            <Percent className="w-4 h-4" />
+            <span>VAT & Commission</span>
+          </button>
+
+          <button
             onClick={() => window.location.reload()}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all"
             title="Refresh Dashboard"

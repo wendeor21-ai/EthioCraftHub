@@ -37,13 +37,16 @@ const Register = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated when landing on the page (e.g. navigating back after login)
+  // Do NOT trigger on fresh registration — handleSubmit handles that redirect
+  const [registrationInProgress, setRegistrationInProgress] = useState(false);
+
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !registrationInProgress) {
       const from = location.state?.from?.pathname || '/';
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, navigate, location, registrationInProgress]);
 
   // Handle input changes
   const handleChange = (e) => {
@@ -127,13 +130,14 @@ const Register = () => {
     }
 
     const { confirmPassword, ...registrationData } = formData;
+    setRegistrationInProgress(true);
     const result = await register(registrationData);
     
     if (result.success) {
-      // Pass the full user object so getRedirectPath can check verification status
       const redirectPath = getRedirectPath(result.user.role, result.user);
       navigate(redirectPath, { replace: true });
     } else {
+      setRegistrationInProgress(false);
       setErrors({ general: result.error });
     }
   };

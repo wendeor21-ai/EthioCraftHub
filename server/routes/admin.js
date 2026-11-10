@@ -82,6 +82,7 @@ router.get(
       region: "ET",
       logoUrl: "",
       commissionRate: 5,
+      vatRate: 15,
     });
 
     // Ensure logoUrl is a full path if it starts with /uploads
@@ -133,6 +134,220 @@ router.post(
 
     res.json({ success: true, settings: settingsResponse });
   }),
+);
+
+
+// GET /api/admin/backup/download - Full system database & settings backup
+router.get(
+  "/backup/download",
+  asyncHandler(async (req, res) => {
+    const { prisma } = require("../lib/prisma");
+
+    const [
+      users,
+      products,
+      orders,
+      customOrders,
+      promotions,
+      promotionProducts,
+      messages,
+      earnings,
+      commissionPayments,
+      commissionPaymentOrders,
+      withdrawalAuditLogs,
+      userInteractions,
+      aiChatLogs,
+      alertLogs,
+      siteConfigs,
+      notificationSettings,
+    ] = await Promise.all([
+      prisma.user.findMany(),
+      prisma.product.findMany(),
+      prisma.order.findMany(),
+      prisma.customOrder.findMany(),
+      prisma.promotion.findMany(),
+      prisma.promotionProduct.findMany(),
+      prisma.message.findMany(),
+      prisma.earning.findMany(),
+      prisma.commissionPayment.findMany(),
+      prisma.commissionPaymentOrder.findMany(),
+      prisma.withdrawalAuditLog.findMany(),
+      prisma.userInteraction.findMany(),
+      prisma.aIChatLog.findMany(),
+      prisma.alertLog.findMany(),
+      prisma.siteConfig.findMany(),
+      prisma.notificationSetting.findMany(),
+    ]);
+
+    const platformSettings = readJson("platform-settings", {});
+    const auditLogs = readJson("audit-logs", []);
+    const broadcasts = readJson("broadcasts", []);
+
+    const backupPayload = {
+      system: "EthioCraft Global",
+      version: "1.0.0",
+      exportDate: new Date().toISOString(),
+      database: "MySQL / Prisma",
+      summary: {
+        users: users.length,
+        products: products.length,
+        orders: orders.length,
+        customOrders: customOrders.length,
+        promotions: promotions.length,
+        messages: messages.length,
+        earnings: earnings.length,
+        commissionPayments: commissionPayments.length,
+        withdrawalAuditLogs: withdrawalAuditLogs.length,
+        userInteractions: userInteractions.length,
+        aiChatLogs: aiChatLogs.length,
+        alertLogs: alertLogs.length,
+        siteConfigs: siteConfigs.length,
+        notificationSettings: notificationSettings.length,
+        totalRecords:
+          users.length +
+          products.length +
+          orders.length +
+          customOrders.length +
+          promotions.length +
+          messages.length +
+          earnings.length +
+          commissionPayments.length +
+          withdrawalAuditLogs.length +
+          userInteractions.length +
+          aiChatLogs.length +
+          alertLogs.length +
+          siteConfigs.length +
+          notificationSettings.length,
+      },
+      data: {
+        users,
+        products,
+        orders,
+        customOrders,
+        promotions,
+        promotionProducts,
+        messages,
+        earnings,
+        commissionPayments,
+        commissionPaymentOrders,
+        withdrawalAuditLogs,
+        userInteractions,
+        aiChatLogs,
+        alertLogs,
+        siteConfigs,
+        notificationSettings,
+        platformSettings,
+        auditLogs,
+        broadcasts,
+      },
+    };
+
+    // Save a copy on the server in backups/ folder
+    try {
+      const backupsDir = path.join(__dirname, "..", "backups");
+      if (!fs.existsSync(backupsDir)) fs.mkdirSync(backupsDir, { recursive: true });
+      const localFilename = `backup-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+      fs.writeFileSync(path.join(backupsDir, localFilename), JSON.stringify(backupPayload, null, 2));
+    } catch (saveErr) {
+      console.warn("Could not save local backup file:", saveErr.message);
+    }
+
+    // Record audit log
+    const audit = readJson("audit-logs", []);
+    audit.unshift({
+      _id: String(Date.now()),
+      action: "database_full_backup",
+      adminEmail: req.user ? req.user.email : "admin",
+      details: `Full database backup downloaded (${backupPayload.summary.totalRecords} total records)`,
+      createdAt: new Date(),
+    });
+    writeJson("audit-logs", audit);
+
+    // Stream download directly to client
+    const dateStr = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Disposition", `attachment; filename="ethiocraft-global-backup-${dateStr}.json"`);
+    res.status(200).send(JSON.stringify(backupPayload, null, 2));
+  })
+);
+
+// POST /api/admin/recalculate-rates - Update VAT % and Commission % and recalculate all products
+router.post(
+  "/recalculate-rates",
+  asyncHandler(async (req, res) => {
+    const { vatRate = 15, commissionRate = 5 } = req.body;
+    const vatNum = parseFloat(vatRate);
+    const commNum = parseFloat(commissionRate);
+
+    if (isNaN(vatNum) || vatNum < 0 || vatNum > 100) {
+      return res.status(400).json({ success: false, message: "VAT rate must be between 0% and 100%" });
+    }
+    if (isNaN(commNum) || commNum < 0 || commNum > 100) {
+      return res.status(400).json({ success: false, message: "Commission rate must be between 0% and 100%" });
+    }
+
+    // 1. Update platform settings JSON
+    const current = readJson("platform-settings", {});
+    current.vatRate = vatNum;
+    current.commissionRate = commNum;
+    writeJson("platform-settings", current);
+
+    // 2. Fetch all products from MySQL
+    const { prisma } = require("../lib/prisma");
+    const allProducts = await prisma.product.findMany();
+
+    // 3. Recalculate specifications and rates for all products
+    let updatedCount = 0;
+    for (const prod of allProducts) {
+      const specs = typeof prod.specifications === "string"
+        ? JSON.parse(prod.specifications || "{}")
+        : (prod.specifications || {});
+
+      // Calculate VAT & Commission breakdown in %
+      const price = Number(prod.price) || 0;
+      const vatAmount = Math.round(price * (vatNum / 100) * 100) / 100;
+      const commissionAmount = Math.round(price * (commNum / 100) * 100) / 100;
+      const artisanNet = Math.round((price - commissionAmount) * 100) / 100;
+
+      const updatedSpecs = {
+        ...specs,
+        vatRate: vatNum,
+        vatAmount,
+        commissionRate: commNum,
+        commissionAmount,
+        artisanNetEarning: artisanNet,
+        ratesUpdatedAt: new Date().toISOString(),
+      };
+
+      await prisma.product.update({
+        where: { id: prod.id },
+        data: {
+          specifications: updatedSpecs,
+        },
+      });
+      updatedCount++;
+    }
+
+    // 4. Record audit log
+    const audit = readJson("audit-logs", []);
+    audit.unshift({
+      _id: String(Date.now()),
+      action: "tax_and_commission_updated",
+      adminEmail: req.user ? req.user.email : "admin",
+      details: `VAT set to ${vatNum}%, Commission set to ${commNum}%. Recalculated ${updatedCount} products.`,
+      createdAt: new Date(),
+    });
+    writeJson("audit-logs", audit);
+
+    res.json({
+      success: true,
+      message: `VAT (${vatNum}%) and Commission (${commNum}%) successfully updated across ${updatedCount} products!`,
+      vatRate: vatNum,
+      commissionRate: commNum,
+      updatedCount,
+      settings: current,
+    });
+  })
 );
 
 // POST /api/admin/platform-settings/logo
@@ -320,30 +535,60 @@ router.post(
       createdAt: new Date(),
     });
     writeJson("audit-logs", audit);
+
+    // Real-time broadcast emission via Socket.io
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("newBroadcast", item);
+      io.emit("broadcastNotification", item);
+      console.log(`📢 Real-time broadcast emitted to all clients (target: ${item.target}): "${item.message}"`);
+    } else {
+      console.warn("⚠️ Socket.io instance not found in req.app during broadcast");
+    }
+
     res.json({ success: true, broadcast: item });
   }),
 );
 
-// DELETE /api/admin/notifications/broadcasts/:id -> clear a broadcast
+// DELETE /api/admin/notifications/broadcasts/:id -> clear a broadcast or 'all'
 router.delete(
   "/notifications/broadcasts/:id",
   asyncHandler(async (req, res) => {
     const id = req.params.id;
     let broadcasts = readJson("broadcasts", []);
-    const removed = broadcasts.find((b) => b._id === id);
-    broadcasts = broadcasts.filter((b) => b._id !== id);
-    writeJson("broadcasts", broadcasts);
+    let removedMessage = "All active broadcasts";
+
+    if (id === "all" || id === "clear-all") {
+      broadcasts = [];
+      writeJson("broadcasts", []);
+    } else {
+      const removed = broadcasts.find((b) => b._id === id);
+      if (removed) removedMessage = removed.message;
+      broadcasts = broadcasts.filter((b) => b._id !== id);
+      writeJson("broadcasts", broadcasts);
+    }
+
     // audit log
     const audit = readJson("audit-logs", []);
     audit.unshift({
       _id: String(Date.now()),
       action: "broadcast_cleared",
       adminEmail: req.user.email,
-      details: removed ? removed.message : id,
+      details: removedMessage,
       createdAt: new Date(),
     });
     writeJson("audit-logs", audit);
-    res.json({ success: true });
+
+    // Real-time deletion emission via Socket.io
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("broadcastDeleted", { id, all: id === "all" || id === "clear-all" });
+      io.emit("clearBroadcast", { id, all: id === "all" || id === "clear-all" });
+      io.emit("broadcastCleared", { id, all: id === "all" || id === "clear-all" });
+      console.log(`📢 Real-time broadcast removal emitted to all clients (id: ${id})`);
+    }
+
+    res.json({ success: true, message: "Broadcast cancelled/removed" });
   }),
 );
 
@@ -364,15 +609,58 @@ router.get(
 router.get(
   "/orders/:orderNumber",
   asyncHandler(async (req, res) => {
-    // Must use findOne({ orderNumber }) — NOT findById — because orderNumber is a custom string
-    const order = await Order.findOne({ orderNumber: req.params.orderNumber })
-      .populate("customer", "profile.firstName profile.lastName email profile.phone")
-      .populate("items.product", "name images price category")
-      .populate("items.artisan", "profile.firstName profile.lastName businessProfile.businessName email");
+    const { prisma } = require("../lib/prisma");
+    const { toMongoDoc } = require("../lib/mongoCompat/serialize");
+    const identifier = req.params.orderNumber;
 
-    if (!order) {
+    // Use Prisma directly to avoid $or issues in MongoCompat layer
+    // orderNumber is unique so try it first; fall back to id match
+    let raw = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { orderNumber: identifier },
+          { id: identifier },
+        ]
+      },
+      include: { customer: true, artisan: true },
+    });
+
+    if (!raw) {
       return res.status(404).json({ success: false, message: "Order not found" });
     }
+
+    const order = toMongoDoc(raw);
+
+    // Manually populate items.product and items.artisan from JSON array
+    if (Array.isArray(order.items)) {
+      const productIds = [...new Set(order.items.map(i => i.product).filter(Boolean).map(String))];
+      const artisanIds = [...new Set(order.items.map(i => i.artisan).filter(Boolean).map(String))];
+
+      const [productRecs, artisanRecs] = await Promise.all([
+        productIds.length ? prisma.product.findMany({ where: { id: { in: productIds } } }) : [],
+        artisanIds.length ? prisma.user.findMany({ where: { id: { in: artisanIds } } }) : [],
+      ]);
+
+      const productMap = new Map(productRecs.map(p => [p.id, toMongoDoc(p)]));
+      const artisanMap = new Map(artisanRecs.map(u => [u.id, toMongoDoc(u)]));
+
+      order.items = order.items.map(item => ({
+        ...item,
+        product: (item.product && productMap.get(String(item.product))) || item.product,
+        artisan: (item.artisan && artisanMap.get(String(item.artisan))) || item.artisan,
+      }));
+    }
+
+    // Delivery efficiency
+    if (['delivered', 'completed'].includes(order.status)) {
+      const completionDate = order.shipping?.deliveredAt || order.updatedAt;
+      if (completionDate) {
+        const diffTime = Math.abs(new Date(completionDate) - new Date(order.createdAt));
+        order.deliveryEfficiencyDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+        order.completionDate = completionDate;
+      }
+    }
+
     res.json({ success: true, order });
   })
 );
@@ -442,6 +730,7 @@ router.put(
   })
 );
 
+
 /**
  * @route   GET /api/admin/payments
  * @desc    Get all order payments and payout statuses
@@ -450,89 +739,119 @@ router.put(
 router.get(
   "/payments",
   asyncHandler(async (req, res) => {
+    const { prisma } = require("../lib/prisma");
+    const { toMongoDoc } = require("../lib/mongoCompat/serialize");
     const { search, paymentStatus, deliveryStatus, paymentMethod } = req.query;
-    let query = {};
+
+    const andClauses = [];
 
     if (search) {
-      // Find users matching search for customer or artisan
-      const matchingUsers = await User.find({
-        $or: [
-          { 'profile.firstName': { $regex: search, $options: 'i' } },
-          { 'profile.lastName': { $regex: search, $options: 'i' } },
-          { 'businessProfile.businessName': { $regex: search, $options: 'i' } }
-        ]
-      }).select('_id');
-      const userIds = matchingUsers.map(u => u._id);
-
-      query.$or = [
-        { orderNumber: { $regex: search, $options: 'i' } },
-        { customer: { $in: userIds } },
-        { 'items.artisan': { $in: userIds } }
-      ];
+      const matchingUsers = await prisma.user.findMany({
+        where: {
+          OR: [
+            { profile: { path: (process.env.DATABASE_URL || '').startsWith('mysql:') ? '$.firstName' : ['firstName'], string_contains: search } },
+            { profile: { path: (process.env.DATABASE_URL || '').startsWith('mysql:') ? '$.lastName' : ['lastName'], string_contains: search } },
+          ]
+        },
+        select: { id: true }
+      }).catch(() => []);
+      const userIds = matchingUsers.map(u => u.id);
+      const orClauses = [{ orderNumber: { contains: search, mode: 'insensitive' } }];
+      if (userIds.length > 0) {
+        orClauses.push({ customerId: { in: userIds } });
+        orClauses.push({ artisanId: { in: userIds } });
+      }
+      andClauses.push({ OR: orClauses });
     }
 
-    if (paymentStatus && paymentStatus !== 'All') {
-      query['payment.status'] = paymentStatus;
-    }
-    
-    if (paymentMethod && paymentMethod !== 'All') {
-      // Allow slightly fuzzy matching or exact. The enum matches: COD, MANUAL, CHAPA
-      query['payment.method'] = { $regex: new RegExp(`^${paymentMethod}$`, 'i') };
-    }
-    
     if (deliveryStatus && deliveryStatus !== 'All') {
-      query.status = deliveryStatus.toLowerCase();
+      andClauses.push({ status: { equals: deliveryStatus, mode: 'insensitive' } });
     }
 
-    const orders = await Order.find(query)
-      .populate("customer", "profile.firstName profile.lastName email")
-      .populate({
-        path: "items.artisan",
-        select: "profile.firstName profile.lastName businessProfile.businessName email",
-      })
-      .sort({ createdAt: -1 });
+    const where = andClauses.length > 0 ? { AND: andClauses } : {};
 
-    res.json({
-      success: true,
-      transactions: orders.map((order) => {
-        const artisan = order.items?.[0]?.artisan;
-        const artisanName = artisan?.businessProfile?.businessName || 
-                            (artisan?.profile?.firstName ? `${artisan.profile.firstName} ${artisan.profile.lastName}` : 'Artisan Hub');
-
-        // Delivery Efficiency Calculation
-        let completionDate = null;
-        let deliveryEfficiencyDays = null;
-        if (['delivered', 'completed'].includes(order.status)) {
-          completionDate = order.shipping?.deliveredAt || order.updatedAt;
-          if (completionDate) {
-             const diffTime = Math.abs(new Date(completionDate) - new Date(order.createdAt));
-             deliveryEfficiencyDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24))); 
-          }
-        }
-
-        return {
-          _id: order._id,
-          orderNumber: order.orderNumber,
-          customer: order.customer,
-          artisanName,
-          artisanId: artisan?._id,
-          amount: order.totals.total,
-          currency: "ETB",
-          status: order.payment.status,
-          method: order.payment.method,
-          payoutStatus: order.payoutStatus,
-          commissionStatus: order.commissionStatus || 'Pending',
-          deliveryStatus: order.shipping?.deliveryStatus || order.status,
-          commission: order.totals.platformCommission || (order.totals.total * 0.05),
-          earning: order.totals.artisanEarning || (order.totals.total * 0.95),
-          receiptUrl: order.payment.receipt,
-          createdAt: order.createdAt,
-          completionDate,
-          deliveryEfficiencyDays,
-          transactionId: order.payment.transactionId,
-        };
-      }),
+    const rawOrders = await prisma.order.findMany({
+      where,
+      include: { customer: true },
+      orderBy: { createdAt: 'desc' },
     });
+
+    // Cache artisan lookups to avoid N+1 queries
+    const artisanCache = new Map();
+    const getArtisan = async (id) => {
+      if (!id) return null;
+      const sid = String(id);
+      if (artisanCache.has(sid)) return artisanCache.get(sid);
+      const rec = await prisma.user.findUnique({ where: { id: sid } }).catch(() => null);
+      artisanCache.set(sid, rec);
+      return rec;
+    };
+
+    const transactions = [];
+    for (const raw of rawOrders) {
+      const order = toMongoDoc(raw);
+      const payment = order.payment || {};
+      const totals = order.totals || {};
+
+      // Post-filter JSON payment fields
+      if (paymentStatus && paymentStatus !== 'All') {
+        if ((payment.status || '').toLowerCase() !== paymentStatus.toLowerCase()) continue;
+      }
+      if (paymentMethod && paymentMethod !== 'All') {
+        if ((payment.method || '').toLowerCase() !== paymentMethod.toLowerCase()) continue;
+      }
+
+      // Resolve artisan from items JSON
+      const firstItemArtisanId = Array.isArray(order.items) && order.items[0]?.artisan
+        ? String(order.items[0].artisan)
+        : (order.artisanId ? String(order.artisanId) : null);
+
+      let artisanName = 'Artisan Hub';
+      let artisanId = null;
+      const artisanRec = await getArtisan(firstItemArtisanId);
+      if (artisanRec) {
+        const profile = artisanRec.profile || {};
+        artisanName = profile.storeName || profile.businessName ||
+          (profile.firstName ? `${profile.firstName} ${profile.lastName || ''}`.trim() : 'Artisan Hub');
+        artisanId = artisanRec.id;
+      }
+
+      let completionDate = null;
+      let deliveryEfficiencyDays = null;
+      if (['delivered', 'completed'].includes(order.status)) {
+        completionDate = order.shipping?.deliveredAt || order.updatedAt;
+        if (completionDate) {
+          const diffTime = Math.abs(new Date(completionDate) - new Date(order.createdAt));
+          deliveryEfficiencyDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+        }
+      }
+
+      const totalAmount = totals.total || payment.amount || 0;
+      transactions.push({
+        _id: order._id,
+        orderNumber: order.orderNumber,
+        customer: order.customer,
+        artisanName,
+        artisanId,
+        amount: totalAmount,
+        currency: "ETB",
+        status: payment.status || order.status || 'Pending',
+        method: payment.method || 'Manual',
+        payoutStatus: order.payoutStatus || 'Pending',
+        commissionStatus: order.commissionStatus || 'Pending',
+        deliveryStatus: order.shipping?.deliveryStatus || order.status || 'Pending',
+        commission: totals.platformCommission || (totalAmount * 0.05),
+        earning: totals.artisanEarning || (totalAmount * 0.95),
+        receiptUrl: payment.receipt,
+        createdAt: order.createdAt,
+        completionDate,
+        deliveryEfficiencyDays,
+        transactionId: payment.transactionId,
+        isDisputed: order.isDisputed,
+      });
+    }
+
+    res.json({ success: true, transactions });
   }),
 );
 
@@ -782,27 +1101,71 @@ router.get(
 router.get(
   "/commission/history/:artisanId",
   asyncHandler(async (req, res) => {
+    const { prisma } = require("../lib/prisma");
+    const { toMongoDoc } = require("../lib/mongoCompat/serialize");
     const { artisanId } = req.params;
-    const orders = await Order.find({
-      "items.artisan": artisanId,
-      "payment.method": { $in: ["Manual", "MANUAL", "COD", "cash_on_delivery", "CASH_ON_DELIVERY", "cod"] }
-    }).select("orderNumber payment.method totals.total items createdAt commissionStatus").lean().sort({ createdAt: -1 });
 
-    const history = orders.map(order => {
-      const artisanItems = order.items.filter(i => i.artisan.toString() === artisanId);
-      const commissionOwed = artisanItems.reduce((sum, item) => sum + (item.price * item.quantity * 0.05), 0);
-      const totalAmount = artisanItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const MANUAL_METHODS = ["Manual", "MANUAL", "COD", "manual", "cash_on_delivery", "CASH_ON_DELIVERY", "cod"];
 
-      return {
-        _id: order._id,
-        orderId: order.orderNumber || order._id.toString().slice(-8),
-        date: order.createdAt,
-        totalAmount,
-        paymentMethod: order.payment.method,
-        commissionOwed,
-        commissionStatus: order.commissionStatus
-      };
+    // Use Prisma directly — fetch all orders for this artisan then post-filter by payment method
+    const rawOrders = await prisma.order.findMany({
+      where: {
+        OR: [
+          { artisanId },
+          // also catch orders where artisan appears only in items JSON
+          ...((process.env.DATABASE_URL || '').startsWith('mysql:') ? [] : [{ items: { path: ['0', 'artisan'], equals: artisanId } }])
+        ]
+      },
+      orderBy: { createdAt: 'desc' },
     });
+
+    // Also do a broader fetch catching all orders that might contain this artisan in items
+    // Use raw query for reliable JSON array containment
+    let allRelevantOrders = rawOrders;
+    try {
+      const byItems = await prisma.$queryRawUnsafe(
+        `SELECT id FROM orders WHERE JSON_CONTAINS(items, ?)`,
+        JSON.stringify({ artisan: artisanId })
+      );
+      const byItemsIds = new Set(byItems.map(r => String(r.id)));
+      const existingIds = new Set(rawOrders.map(o => o.id));
+      const missing = byItems.filter(r => !existingIds.has(String(r.id)));
+      if (missing.length > 0) {
+        const extra = await prisma.order.findMany({ where: { id: { in: missing.map(r => String(r.id)) } } });
+        allRelevantOrders = [...rawOrders, ...extra];
+      }
+    } catch (e) {
+      // fall back to artisanId-only results if raw query fails
+    }
+
+    const history = allRelevantOrders
+      .filter(raw => {
+        const payment = raw.payment || {};
+        return MANUAL_METHODS.includes(payment.method);
+      })
+      .map(raw => {
+        const order = toMongoDoc(raw);
+        const payment = order.payment || {};
+        const items = Array.isArray(order.items) ? order.items : [];
+        const artisanItems = items.filter(i => {
+          const iArtisan = i.artisan?._id || i.artisan;
+          return String(iArtisan) === String(artisanId);
+        });
+        const commissionOwed = artisanItems.reduce((sum, i) => sum + (i.price * i.quantity * 0.05), 0);
+        const totalAmount = artisanItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+
+        return {
+          _id: order._id,
+          orderId: order.orderNumber || String(order._id).slice(-8),
+          date: order.createdAt,
+          totalAmount,
+          paymentMethod: payment.method,
+          commissionOwed,
+          commissionStatus: order.commissionStatus || 'pending',
+        };
+      })
+      // Only include rows where this artisan actually had items
+      .filter(h => h.totalAmount > 0);
 
     res.json({ success: true, history });
   })
@@ -903,54 +1266,64 @@ router.get(
 router.put(
   "/commission/approve-payment/:paymentId",
   asyncHandler(async (req, res) => {
+    const { prisma } = require("../lib/prisma");
     const { paymentId } = req.params;
     const { artisanId, paymentAmount } = req.body;
 
-    // 1. Validation to prevent 400 errors
     if (!artisanId || paymentAmount === undefined || paymentAmount === null) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Missing artisanId or paymentAmount in request body" 
+      return res.status(400).json({
+        success: false,
+        message: "Missing artisanId or paymentAmount in request body"
       });
     }
 
     const amountPaid = Number(paymentAmount);
-    if (isNaN(amountPaid)) {
+    if (isNaN(amountPaid) || amountPaid <= 0) {
       return res.status(400).json({ success: false, message: "Invalid paymentAmount" });
     }
 
-    const payment = await CommissionPayment.findById(paymentId);
-    if (!payment) return res.status(404).json({ success: false, message: "Payment record not found" });
-    if (payment.status === "Confirmed") return res.status(400).json({ success: false, message: "Payment is already confirmed" });
-
-    // 2. Update associated orders to 'paid'
-    if (payment.orderIds && payment.orderIds.length > 0) {
-      await Order.updateMany(
-        { _id: { $in: payment.orderIds } },
-        { $set: { commissionStatus: "paid" } }
-      );
+    // Fetch the commission payment record directly via Prisma
+    const payment = await prisma.commissionPayment.findUnique({ where: { id: paymentId } });
+    if (!payment) {
+      return res.status(404).json({ success: false, message: "Payment record not found" });
+    }
+    if (payment.status === "confirmed") {
+      return res.status(400).json({ success: false, message: "Payment is already confirmed" });
     }
 
-    // 3. Update payment record status
-    payment.status = "confirmed";
-    await payment.save();
+    // Mark associated orders' commissionStatus as paid
+    const orderIds = Array.isArray(payment.orderIds) ? payment.orderIds.filter(Boolean).map(String) : [];
+    if (orderIds.length > 0) {
+      await prisma.order.updateMany({
+        where: { id: { in: orderIds } },
+        data: { commissionStatus: "paid" },
+      });
+    }
 
-    // Update the artisan's commission tracking fields
-    const artisan = await User.findById(artisanId);
+    // Confirm the payment record
+    await prisma.commissionPayment.update({
+      where: { id: paymentId },
+      data: { status: "confirmed" },
+    });
+
+    // Atomically move amount from unpaid → paid on the artisan user
+    const artisan = await prisma.user.findUnique({ where: { id: String(artisanId) } });
     if (!artisan) {
       return res.status(404).json({ success: false, message: "Artisan not found" });
     }
 
-    // Move from unpaid to paid
-    artisan.unpaidCommission = Math.max(0, (artisan.unpaidCommission || 0) - amountPaid);
-    artisan.paidCommission = (artisan.paidCommission || 0) + amountPaid;
-    
-    await artisan.save();
+    const newUnpaid = Math.max(0, (artisan.unpaidCommission || 0) - amountPaid);
+    const newPaid = (artisan.paidCommission || 0) + amountPaid;
+
+    await prisma.user.update({
+      where: { id: String(artisanId) },
+      data: { unpaidCommission: newUnpaid, paidCommission: newPaid },
+    });
 
     res.status(200).json({
       success: true,
-      message: 'Commission payment confirmed successfully',
-      remainingDebt: artisan.unpaidCommission
+      message: "Commission payment confirmed successfully",
+      remainingDebt: newUnpaid,
     });
   })
 );
@@ -1400,16 +1773,18 @@ router.get(
 
 /**
  * @route   DELETE /api/admin/users/:userId
- * @desc    Delete a user (admin) - cannot delete admins
+ * @desc    Delete a user completely — removes all related data
  * @access  Private (Admin)
  */
 router.delete(
   "/users/:userId",
   asyncHandler(async (req, res) => {
-    const user = await User.findById(req.params.userId);
+    const { prisma } = require("../lib/prisma");
+    const userId = req.params.userId;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw createNotFoundError("User");
 
-    // Prevent deleting admin accounts
     if (user.role === "admin") {
       return res.status(403).json({
         error: "Forbidden",
@@ -1418,8 +1793,7 @@ router.delete(
       });
     }
 
-    // Prevent self-deletion
-    if (user._id.toString() === req.user._id.toString()) {
+    if (userId === req.user._id.toString()) {
       return res.status(400).json({
         error: "Cannot delete own account",
         message: "You cannot delete your own admin account",
@@ -1427,23 +1801,79 @@ router.delete(
       });
     }
 
-    await User.findByIdAndDelete(user._id);
+    console.log(`🗑️ Starting full cascade delete for user ${user.email} (${user.role})`);
 
-    // Cascade: remove all products belonging to this artisan so they no
-    // longer appear on the customer product page.
-    if (user.role === "artisan") {
-      const deletedProducts = await Product.deleteMany({ artisan: user._id });
-      console.log(
-        `🗑️ Deleted ${deletedProducts.deletedCount} product(s) for artisan ${user.email}`,
-      );
+    // Delete in dependency order to satisfy FK constraints
+    // 1. AI chat logs
+    await prisma.aIChatLog.deleteMany({ where: { userId } });
+
+    // 2. User interactions
+    await prisma.userInteraction.deleteMany({ where: { userId } });
+
+    // 3. Notification settings
+    await prisma.notificationSetting.deleteMany({ where: { adminUserId: userId } });
+
+    // 4. Messages sent/received
+    await prisma.message.deleteMany({ where: { OR: [{ senderId: userId }, { recipientId: userId }] } });
+
+    // 5. Withdrawal audit logs
+    await prisma.withdrawalAuditLog.deleteMany({
+      where: { OR: [{ artisanId: userId }, { performedById: userId }] }
+    });
+
+    // 6. Earnings (artisan earnings + processed records)
+    await prisma.earning.deleteMany({
+      where: { OR: [{ artisanId: userId }, { processedById: userId }] }
+    });
+
+    // 7. Commission payment orders (join table)
+    const commissionPayments = await prisma.commissionPayment.findMany({ where: { artisanId: userId } });
+    if (commissionPayments.length > 0) {
+      const cpIds = commissionPayments.map(cp => cp.id);
+      await prisma.commissionPaymentOrder.deleteMany({ where: { commissionPaymentId: { in: cpIds } } });
+      await prisma.commissionPayment.deleteMany({ where: { artisanId: userId } });
     }
 
+    // 8. Custom orders
+    await prisma.customOrder.deleteMany({
+      where: { OR: [{ customerId: userId }, { artisanId: userId }] }
+    });
+
+    // 9. Orders (customer orders — set artisan orders to null artisanId)
+    await prisma.order.updateMany({ where: { artisanId: userId }, data: { artisanId: null } });
+    await prisma.order.deleteMany({ where: { customerId: userId } });
+
+    // 10. Promotions & products (artisan only)
+    if (user.role === "artisan") {
+      const promotions = await prisma.promotion.findMany({ where: { artisanId: userId } });
+      if (promotions.length > 0) {
+        const promIds = promotions.map(p => p.id);
+        await prisma.promotionProduct.deleteMany({ where: { promotionId: { in: promIds } } });
+        await prisma.promotion.deleteMany({ where: { artisanId: userId } });
+      }
+      const products = await prisma.product.findMany({ where: { artisanId: userId } });
+      if (products.length > 0) {
+        const pIds = products.map(p => p.id);
+        await prisma.userInteraction.deleteMany({ where: { productId: { in: pIds } } });
+        await prisma.aIChatLog.deleteMany({ where: { productId: { in: pIds } } });
+        await prisma.promotionProduct.deleteMany({ where: { productId: { in: pIds } } });
+        await prisma.earning.deleteMany({ where: { productId: { in: pIds } } });
+        await prisma.product.deleteMany({ where: { artisanId: userId } });
+      }
+      console.log(`🗑️ Deleted ${products.length} product(s) for artisan ${user.email}`);
+    }
+
+    // 11. Finally delete the user
+    await prisma.user.delete({ where: { id: userId } });
+
+    console.log(`✅ User ${user.email} fully deleted`);
+
     logBusinessEvent("user_deleted", req.user._id, {
-      targetUserId: user._id,
+      targetUserId: userId,
       targetUserEmail: user.email,
     });
 
-    res.json({ message: "User deleted" });
+    res.json({ success: true, message: "User and all associated data deleted successfully" });
   }),
 );
 
@@ -2638,4 +3068,100 @@ router.get(
   })
 );
 
+/**
+ * @route   POST /api/admin/executives
+ * @desc    Create a new admin executive (staff) account
+ * @access  Private (Admin)
+ */
+router.post(
+  "/executives",
+  asyncHandler(async (req, res) => {
+    const { firstName, lastName, email, phone, department, jobTitle, password, notes } = req.body;
+
+    // Basic validation
+    if (!firstName || !lastName || !email || !jobTitle || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "First name, last name, email, job title, and password are required",
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters",
+      });
+    }
+
+    // Check for duplicate email
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "An account with this email already exists",
+      });
+    }
+
+    const executive = new User({
+      email: email.toLowerCase().trim(),
+      password,
+      role: "admin",
+      profile: {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phone ? phone.trim() : undefined,
+        bio: notes ? notes.trim() : undefined,
+      },
+      isActive: true,
+      isVerified: true,
+    });
+
+    await executive.save();
+
+    // Audit log
+    const audit = readJson("audit-logs", []);
+    audit.unshift({
+      _id: String(Date.now()),
+      action: "executive_created",
+      adminEmail: req.user.email,
+      details: `Created executive: ${firstName} ${lastName} (${email}) — ${jobTitle}${department ? ` / ${department}` : ""}`,
+      createdAt: new Date(),
+    });
+    writeJson("audit-logs", audit);
+
+    res.status(201).json({
+      success: true,
+      message: `Executive account for ${firstName} ${lastName} created successfully`,
+      executive: {
+        _id: executive._id,
+        email: executive.email,
+        role: executive.role,
+        profile: {
+          firstName: executive.profile.firstName,
+          lastName: executive.profile.lastName,
+        },
+        jobTitle,
+        department,
+      },
+    });
+  })
+);
+
+/**
+ * @route   GET /api/admin/executives
+ * @desc    List all admin executives
+ * @access  Private (Admin)
+ */
+router.get(
+  "/executives",
+  asyncHandler(async (req, res) => {
+    const executives = await User.find({ role: "admin" })
+      .select("profile email isActive createdAt lastLogin")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, executives });
+  })
+);
+
 module.exports = router;
+

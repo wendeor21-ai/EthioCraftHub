@@ -1,0 +1,3437 @@
+[
+  {
+    "id": "698691c288aa4df4395641e1",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:13:38.624Z",
+    "updatedAt": "2026-07-29T16:26:24.791Z"
+  },
+  {
+    "id": "698691d988aa4df4395641ed",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:14:01.154Z",
+    "updatedAt": "2026-07-29T16:26:24.802Z"
+  },
+  {
+    "id": "698691f288aa4df4395641f9",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:14:26.296Z",
+    "updatedAt": "2026-07-29T16:26:24.813Z"
+  },
+  {
+    "id": "6986922988aa4df43956420b",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:15:21.849Z",
+    "updatedAt": "2026-07-29T16:26:24.822Z"
+  },
+  {
+    "id": "698692ca7e0887a5d9e9c455",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:18:02.187Z",
+    "updatedAt": "2026-07-29T16:26:24.833Z"
+  },
+  {
+    "id": "6986934a7e0887a5d9e9c467",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:20:10.178Z",
+    "updatedAt": "2026-07-29T16:26:24.842Z"
+  },
+  {
+    "id": "6986935c7e0887a5d9e9c473",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:20:28.347Z",
+    "updatedAt": "2026-07-29T16:26:24.852Z"
+  },
+  {
+    "id": "698694e77e0887a5d9e9c485",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:27:03.786Z",
+    "updatedAt": "2026-07-29T16:26:24.861Z"
+  },
+  {
+    "id": "698696b17e0887a5d9e9c497",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:34:41.241Z",
+    "updatedAt": "2026-07-29T16:26:24.870Z"
+  },
+  {
+    "id": "6986979f7e0887a5d9e9c4a3",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:38:39.707Z",
+    "updatedAt": "2026-07-29T16:26:24.881Z"
+  },
+  {
+    "id": "6988b11139870d12f8ecc428",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-08T15:51:45.877Z",
+    "updatedAt": "2026-07-29T16:26:24.891Z"
+  },
+  {
+    "id": "6988b11139870d12f8ecc42a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-08T15:51:45.890Z",
+    "updatedAt": "2026-07-29T16:26:24.897Z"
+  },
+  {
+    "id": "6988b12d39870d12f8ecc438",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-08T15:52:13.836Z",
+    "updatedAt": "2026-07-29T16:26:24.902Z"
+  },
+  {
+    "id": "6988b4d539870d12f8ecc47f",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-08T16:07:49.410Z",
+    "updatedAt": "2026-07-29T16:26:24.906Z"
+  },
+  {
+    "id": "6988b7fd39870d12f8ecc492",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-08T16:21:17.093Z",
+    "updatedAt": "2026-07-29T16:26:24.912Z"
+  },
+  {
+    "id": "6988b82239870d12f8ecc4b5",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-08T16:21:54.281Z",
+    "updatedAt": "2026-07-29T16:26:24.917Z"
+  },
+  {
+    "id": "6988b88d39870d12f8ecc4d9",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-08T16:23:41.523Z",
+    "updatedAt": "2026-07-29T16:26:24.922Z"
+  },
+  {
+    "id": "6989af1dae62882f5385be10",
+    "userId": "69893592d0b857b9da35efcb",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-09T09:55:41.276Z",
+    "updatedAt": "2026-07-29T16:26:24.928Z"
+  },
+  {
+    "id": "6989af1dae62882f5385be18",
+    "userId": "69893592d0b857b9da35efcb",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-09T09:55:41.378Z",
+    "updatedAt": "2026-07-29T16:26:24.933Z"
+  },
+  {
+    "id": "6989b066ae62882f5385be3a",
+    "userId": "69893592d0b857b9da35efcb",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-09T10:01:10.946Z",
+    "updatedAt": "2026-07-29T16:26:24.937Z"
+  },
+  {
+    "id": "6989b544ae62882f5385bf1b",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-09T10:21:56.995Z",
+    "updatedAt": "2026-07-29T16:26:24.943Z"
+  },
+  {
+    "id": "69f6653abbc61bf4176be378",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "HDaFCAmST1R4uaEbZlU3ZMLlB4XCB8IX",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T20:57:30.970Z",
+    "updatedAt": "2026-07-29T16:26:25.625Z"
+  },
+  {
+    "id": "698691ac88aa4df4395641d5",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "purchase",
+    "duration": null,
+    "quantity": 1,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-07T01:13:16.081Z",
+    "updatedAt": "2026-07-29T16:26:24.779Z"
+  },
+  {
+    "id": "69f670f83350b85271a786ae",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "DNxawX_4ZT5LZ490NichpxHAwr0ruCMU",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T21:47:36.674Z",
+    "updatedAt": "2026-07-29T16:26:25.646Z"
+  },
+  {
+    "id": "6a08913cfcdc951ead02def3",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "Ov4FPEtK2XPZTrtAXxPd9nchd8_s_eAh",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:46:04.755Z",
+    "updatedAt": "2026-07-29T16:26:25.800Z"
+  },
+  {
+    "id": "04b595aad982a60a5ea6a536",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "SSeCEi09McB0qRlThf2OWkRQfjNx2WYu",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T00:41:30.085Z",
+    "updatedAt": "2026-07-30T00:41:30.085Z"
+  },
+  {
+    "id": "6989b6a1ae62882f5385bf45",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-09T10:27:45.024Z",
+    "updatedAt": "2026-07-29T16:26:24.954Z"
+  },
+  {
+    "id": "6989b557ae62882f5385bf31",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "like",
+    "duration": null,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-09T10:22:15.750Z",
+    "updatedAt": "2026-07-29T16:26:24.949Z"
+  },
+  {
+    "id": "698c9d9dcb714e1b0a0f8fae",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-11T15:17:49.997Z",
+    "updatedAt": "2026-07-29T16:26:24.960Z"
+  },
+  {
+    "id": "698c9d9dcb714e1b0a0f8fac",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-11T15:17:49.969Z",
+    "updatedAt": "2026-07-29T16:26:24.966Z"
+  },
+  {
+    "id": "698d08a8f0d208c25f744993",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-11T22:54:32.314Z",
+    "updatedAt": "2026-07-29T16:26:24.970Z"
+  },
+  {
+    "id": "698d08a8f0d208c25f744995",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-11T22:54:32.328Z",
+    "updatedAt": "2026-07-29T16:26:24.975Z"
+  },
+  {
+    "id": "698d08bcf0d208c25f7449ae",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-11T22:54:52.164Z",
+    "updatedAt": "2026-07-29T16:26:24.981Z"
+  },
+  {
+    "id": "698d2bc8b56232a78cc1b31a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-12T01:24:24.441Z",
+    "updatedAt": "2026-07-29T16:26:24.987Z"
+  },
+  {
+    "id": "69965db46ecca4c592f58ee6",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-19T00:47:48.736Z",
+    "updatedAt": "2026-07-29T16:26:24.994Z"
+  },
+  {
+    "id": "69965db46ecca4c592f58ee8",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-19T00:47:48.750Z",
+    "updatedAt": "2026-07-29T16:26:24.999Z"
+  },
+  {
+    "id": "69966cdc4cb7bc4f868d6a2b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-19T01:52:28.035Z",
+    "updatedAt": "2026-07-29T16:26:25.004Z"
+  },
+  {
+    "id": "69966d004cb7bc4f868d6ad2",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-19T01:53:04.384Z",
+    "updatedAt": "2026-07-29T16:26:25.010Z"
+  },
+  {
+    "id": "69979f630452ec6ecb342412",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-19T23:40:19.377Z",
+    "updatedAt": "2026-07-29T16:26:25.016Z"
+  },
+  {
+    "id": "69979f630452ec6ecb342414",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-19T23:40:19.390Z",
+    "updatedAt": "2026-07-29T16:26:25.021Z"
+  },
+  {
+    "id": "6997fcd3d92de4c7802d5459",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-20T06:18:59.925Z",
+    "updatedAt": "2026-07-29T16:26:25.027Z"
+  },
+  {
+    "id": "6997fd539c749126287d3639",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-20T06:21:07.740Z",
+    "updatedAt": "2026-07-29T16:26:25.033Z"
+  },
+  {
+    "id": "699a5c5cfb29af1e50fc299c",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T01:31:08.616Z",
+    "updatedAt": "2026-07-29T16:26:25.193Z"
+  },
+  {
+    "id": "699a5d6503445d51d1e237e2",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T01:35:33.948Z",
+    "updatedAt": "2026-07-29T16:26:25.198Z"
+  },
+  {
+    "id": "699a5bf7937ae31f699e52c8",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T01:29:27.394Z",
+    "updatedAt": "2026-07-29T16:26:25.170Z"
+  },
+  {
+    "id": "699a5c1c937ae31f699e52ea",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T01:30:04.928Z",
+    "updatedAt": "2026-07-29T16:26:25.176Z"
+  },
+  {
+    "id": "699a5c38937ae31f699e5311",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T01:30:32.126Z",
+    "updatedAt": "2026-07-29T16:26:25.182Z"
+  },
+  {
+    "id": "699a5da8aa86918e722aa9a0",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T01:36:40.604Z",
+    "updatedAt": "2026-07-29T16:26:25.209Z"
+  },
+  {
+    "id": "699a5fffa61d4ce3597332c6",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T01:46:39.687Z",
+    "updatedAt": "2026-07-29T16:26:25.214Z"
+  },
+  {
+    "id": "699aa72cb78f5098a6b4c63e",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T06:50:20.384Z",
+    "updatedAt": "2026-07-29T16:26:25.219Z"
+  },
+  {
+    "id": "699aa72cb78f5098a6b4c642",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-22T06:50:20.427Z",
+    "updatedAt": "2026-07-29T16:26:25.223Z"
+  },
+  {
+    "id": "699eff32c3229012bf751e47",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-02-25T13:54:58.399Z",
+    "updatedAt": "2026-07-29T16:26:25.245Z"
+  },
+  {
+    "id": "69b7edeb50b8879d17d9935d",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-16T11:47:55.748Z",
+    "updatedAt": "2026-07-29T16:26:25.349Z"
+  },
+  {
+    "id": "69b8012adaa731f2f8986a27",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-16T13:10:02.386Z",
+    "updatedAt": "2026-07-29T16:26:25.353Z"
+  },
+  {
+    "id": "f5a48f9f611dbec5b54bfaf1",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "Te3oIgyYlf8dXg3ch0Sg-sKynBbo7T1W",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T00:47:13.499Z",
+    "updatedAt": "2026-07-30T00:47:13.499Z"
+  },
+  {
+    "id": "95694aabe789696fee984da0",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "QC2t6Eug6V2tbAUX3k_o1iO4-ELXUmdi",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T01:11:08.668Z",
+    "updatedAt": "2026-07-30T01:11:08.668Z"
+  },
+  {
+    "id": "503b0cda21460f7885406e74",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "Q5y4G8IstTVMSO3YJhOMvKgxWShqD25n",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T12:04:12.486Z",
+    "updatedAt": "2026-07-30T12:04:12.486Z"
+  },
+  {
+    "id": "aeec2b4cb85de4df7a70c5be",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "15abkVOCqr_KxJKoLX-yxLNEgGxWQ-Fg",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T12:06:00.828Z",
+    "updatedAt": "2026-07-30T12:06:00.828Z"
+  },
+  {
+    "id": "45896986520bca24251a3453",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "vG6y_-sSatWdviQI7qDLDMBXENkIpnVk",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T14:31:05.392Z",
+    "updatedAt": "2026-07-30T14:31:05.392Z"
+  },
+  {
+    "id": "4e5022fd539e6593524ecf0e",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "PeLMbY3alnchr4iisxcFs68elGMB1Z5i",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T15:11:18.956Z",
+    "updatedAt": "2026-07-30T15:11:18.956Z"
+  },
+  {
+    "id": "69b3732a99b3f0ab5a678712",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T02:15:06.263Z",
+    "updatedAt": "2026-07-29T16:26:25.257Z"
+  },
+  {
+    "id": "69b3732a99b3f0ab5a67871c",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T02:15:06.408Z",
+    "updatedAt": "2026-07-29T16:26:25.265Z"
+  },
+  {
+    "id": "69b3733799b3f0ab5a678749",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "like",
+    "duration": null,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T02:15:19.512Z",
+    "updatedAt": "2026-07-29T16:26:25.270Z"
+  },
+  {
+    "id": "69b3c2bdc6dca119c2d978b8",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T07:54:37.773Z",
+    "updatedAt": "2026-07-29T16:26:25.275Z"
+  },
+  {
+    "id": "69b3c2bdc6dca119c2d978ce",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T07:54:37.908Z",
+    "updatedAt": "2026-07-29T16:26:25.280Z"
+  },
+  {
+    "id": "69b3c442c6dca119c2d979ac",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T08:01:06.312Z",
+    "updatedAt": "2026-07-29T16:26:25.286Z"
+  },
+  {
+    "id": "69b3c826f8b5566060627446",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T08:17:42.174Z",
+    "updatedAt": "2026-07-29T16:26:25.291Z"
+  },
+  {
+    "id": "69b3cacdf8b55660606277ff",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T08:29:01.071Z",
+    "updatedAt": "2026-07-29T16:26:25.296Z"
+  },
+  {
+    "id": "69b3ce1df8b5566060627aaa",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T08:43:09.090Z",
+    "updatedAt": "2026-07-29T16:26:25.305Z"
+  },
+  {
+    "id": "69b3ec522454452f00743249",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T10:52:02.252Z",
+    "updatedAt": "2026-07-29T16:26:25.310Z"
+  },
+  {
+    "id": "69b3ec522454452f0074324e",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-13T10:52:02.427Z",
+    "updatedAt": "2026-07-29T16:26:25.314Z"
+  },
+  {
+    "id": "69b73db6ca9ba979ef93b814",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-15T23:16:06.408Z",
+    "updatedAt": "2026-07-29T16:26:25.319Z"
+  },
+  {
+    "id": "69b73db6ca9ba979ef93b818",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-15T23:16:06.442Z",
+    "updatedAt": "2026-07-29T16:26:25.323Z"
+  },
+  {
+    "id": "69b7eb8c50b8879d17d99226",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-16T11:37:48.789Z",
+    "updatedAt": "2026-07-29T16:26:25.329Z"
+  },
+  {
+    "id": "69b7eb8c50b8879d17d99238",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-16T11:37:48.989Z",
+    "updatedAt": "2026-07-29T16:26:25.333Z"
+  },
+  {
+    "id": "54784675c82e623940479813",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "dJcstXfVOL8Ixoyv9m-nhJE0QvKzf022",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T15:38:10.044Z",
+    "updatedAt": "2026-07-30T15:38:10.044Z"
+  },
+  {
+    "id": "4038a4c6b74c3877d4b36611",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "GNHG9L5mxtFaSpAFW43o_QI6_uL4qRFl",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T15:58:11.767Z",
+    "updatedAt": "2026-07-30T15:58:11.767Z"
+  },
+  {
+    "id": "7fe875fb474d25a14b82a09c",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "i-l9VPqk-xnyHJam6aFPHyNmHEPaSB3G",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T16:35:00.222Z",
+    "updatedAt": "2026-07-30T16:35:00.222Z"
+  },
+  {
+    "id": "c180e6d638d0e0efcc770163",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b7c519ca79b023a1bbf007",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Leather Goods"
+    },
+    "sessionId": "N5BPTkVpNt95IISeGUMsB68dhvQynQ71",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T21:55:44.867Z",
+    "updatedAt": "2026-07-30T21:55:44.867Z"
+  },
+  {
+    "id": "6af2d2b0515c77e30ac12a03",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "eG9IjyLrnJv71CCFb2AJ9J5B4bxlGNZb",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-10-01T07:36:56.525Z",
+    "updatedAt": "2026-10-01T07:36:56.525Z"
+  },
+  {
+    "id": "fe89591cfdefffef61bebcf2",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "1EhOgKALUmZjp2LnuXVvOlkVWa4NbIqb",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-10-03T07:31:38.030Z",
+    "updatedAt": "2026-10-03T07:31:38.030Z"
+  },
+  {
+    "id": "22e073b52c6685a89e9e9ae8",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "dbSNfy7QnR3UXThQBlcxGPxYQZgKHtGa",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-10-03T08:10:45.431Z",
+    "updatedAt": "2026-10-03T08:10:45.431Z"
+  },
+  {
+    "id": "8ff85e8fa5292e783adebec1",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "Qi0so6ss1ccyvaVlwZ7c3zBnC5jWCyfA",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-10-03T17:49:00.859Z",
+    "updatedAt": "2026-10-03T17:49:00.859Z"
+  },
+  {
+    "id": "69d4a3d2da0fe09568b35de0",
+    "userId": "69d41e35ec0421a390a7a154",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "vROcvH8qk5x68yprf8zcnCv1zffWbhxH",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-07T06:27:30.349Z",
+    "updatedAt": "2026-07-29T16:26:25.455Z"
+  },
+  {
+    "id": "69d628ad0c14cd7077db9661",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "aJJhno7PTOChygoIY2jAYIbJ_MeLvjZh",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-08T10:06:37.094Z",
+    "updatedAt": "2026-07-29T16:26:25.465Z"
+  },
+  {
+    "id": "69ee63499068427f735b848b",
+    "userId": "69b34473c6ecd5476fcf08c4",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "eTLj8t1X4e5222zDy3bBs0ztUvSNyZcj",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-26T19:11:05.552Z",
+    "updatedAt": "2026-07-29T16:26:25.470Z"
+  },
+  {
+    "id": "69ee63499068427f735b848d",
+    "userId": "69b34473c6ecd5476fcf08c4",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "bG5pNcq7DMuDq-H_ZjgpDN83CqlmsiXB",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-26T19:11:05.567Z",
+    "updatedAt": "2026-07-29T16:26:25.475Z"
+  },
+  {
+    "id": "bfd24906c6d12f54b1fa9235",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "YkqaoKDJVzklgS6Y5Dg-gB6gk_jt8Kx0",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T00:13:13.731Z",
+    "updatedAt": "2026-07-30T00:13:13.731Z"
+  },
+  {
+    "id": "e432e948ca5e43df4bcd2b81",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b37748f49fcffb59c0a889",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Leather Goods"
+    },
+    "sessionId": "oydC5betyFZtafWHGVhxKOXeSb9nlXoY",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T16:09:53.694Z",
+    "updatedAt": "2026-07-30T16:09:53.694Z"
+  },
+  {
+    "id": "bee519261d78234889f6b95e",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "ql5XEQ3Wux1a0NNYUQqQ-CryGs1KNTKr",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-10-03T07:33:10.993Z",
+    "updatedAt": "2026-10-03T07:33:10.993Z"
+  },
+  {
+    "id": "69b8a5fb2326b5a55632ce67",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-17T00:53:15.557Z",
+    "updatedAt": "2026-07-29T16:26:25.359Z"
+  },
+  {
+    "id": "69b8a8972326b5a55632d111",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-17T01:04:23.243Z",
+    "updatedAt": "2026-07-29T16:26:25.364Z"
+  },
+  {
+    "id": "69b8beb301335267970e6410",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-17T02:38:43.730Z",
+    "updatedAt": "2026-07-29T16:26:25.379Z"
+  },
+  {
+    "id": "69b8bef8901aa536e105f9de",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-17T02:39:52.778Z",
+    "updatedAt": "2026-07-29T16:26:25.383Z"
+  },
+  {
+    "id": "69b8bf49c4254a37237e9322",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-17T02:41:13.800Z",
+    "updatedAt": "2026-07-29T16:26:25.388Z"
+  },
+  {
+    "id": "69b8bf93c4254a37237e93f8",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-17T02:42:27.070Z",
+    "updatedAt": "2026-07-29T16:26:25.393Z"
+  },
+  {
+    "id": "69b8c2d85973e139c5b00dc7",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-17T02:56:24.410Z",
+    "updatedAt": "2026-07-29T16:26:25.398Z"
+  },
+  {
+    "id": "69bf168bce4d0a528df4040a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-21T22:07:07.465Z",
+    "updatedAt": "2026-07-29T16:26:25.403Z"
+  },
+  {
+    "id": "69bf168bce4d0a528df4040c",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-21T22:07:07.502Z",
+    "updatedAt": "2026-07-29T16:26:25.409Z"
+  },
+  {
+    "id": "69bf2a0ae597ebc83e2acef9",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-21T23:30:18.635Z",
+    "updatedAt": "2026-07-29T16:26:25.424Z"
+  },
+  {
+    "id": "69bf2a2ce597ebc83e2acf66",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-21T23:30:52.033Z",
+    "updatedAt": "2026-07-29T16:26:25.429Z"
+  },
+  {
+    "id": "69c7bca5a0fddc3395d2e6c5",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-28T11:33:57.704Z",
+    "updatedAt": "2026-07-29T16:26:25.434Z"
+  },
+  {
+    "id": "69c7bca5a0fddc3395d2e6c7",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "anonymous",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-03-28T11:33:57.712Z",
+    "updatedAt": "2026-07-29T16:26:25.439Z"
+  },
+  {
+    "id": "cc7b55aa67def3f4f6b882ac",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "SDzQt06_hZtDceRcRRRDvyAnSzZNJq5_",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-10-01T08:24:19.451Z",
+    "updatedAt": "2026-10-01T08:24:19.451Z"
+  },
+  {
+    "id": "69f11f708a4b33791d82dd8c",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "FpZcEr3-yj6rx3l8BWesgsC9Qh2KvZcJ",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T20:58:24.624Z",
+    "updatedAt": "2026-07-29T16:26:25.487Z"
+  },
+  {
+    "id": "69f12f07f32d224ec49a27e5",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "txhq4VtLT9Pr_EKrjrWDX3QM4WKj-hOB",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T22:04:55.481Z",
+    "updatedAt": "2026-07-29T16:26:25.497Z"
+  },
+  {
+    "id": "69f12fb2f32d224ec49a28b0",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "1KTr7auxccpwKa5U0EDDaKhrY6tg_svq",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T22:07:46.607Z",
+    "updatedAt": "2026-07-29T16:26:25.502Z"
+  },
+  {
+    "id": "69f1314c4cc305ff79894f47",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "6985ef7ab48db5a16687553c",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "3inSjV0K2f7IKoqex2bpMsxQMEwG36I2",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T22:14:36.403Z",
+    "updatedAt": "2026-07-29T16:26:25.506Z"
+  },
+  {
+    "id": "69f135d568d3ae2de75eadbe",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "JbfcT57Z-JxQGl49wU2LGDOhch3z2zUV",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T22:33:57.749Z",
+    "updatedAt": "2026-07-29T16:26:25.511Z"
+  },
+  {
+    "id": "69f1373168d3ae2de75eae36",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "sn9JdZIlTYfnmcwmXuZIm2EYTtxxbqBn",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T22:39:45.008Z",
+    "updatedAt": "2026-07-29T16:26:25.516Z"
+  },
+  {
+    "id": "69f1375f68d3ae2de75eae96",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "_MBaKuPU9M_G3YhgpFacef7ZO7rS-3yn",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T22:40:31.625Z",
+    "updatedAt": "2026-07-29T16:26:25.520Z"
+  },
+  {
+    "id": "69f14091580ec5448402a95f",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "Bw4FcJ9KNYsztj675A9wRX9g62t9CbRa",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T23:19:45.028Z",
+    "updatedAt": "2026-07-29T16:26:25.525Z"
+  },
+  {
+    "id": "69f25680181eb3fec199e6ac",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "FB0X3hCJISngisLDP5U4aL-V1hAU2kcU",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-29T19:05:36.122Z",
+    "updatedAt": "2026-07-29T16:26:25.530Z"
+  },
+  {
+    "id": "69f26ef840e2ebe441b94b22",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "BfX2DE9VMtn8KLGXuLvPKOzrlahuMNpi",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-29T20:50:00.536Z",
+    "updatedAt": "2026-07-29T16:26:25.535Z"
+  },
+  {
+    "id": "69f26fbd40e2ebe441b94c03",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "bT31-R7OOqrW8IQGhGfiFpJLfbUaWV2w",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-29T20:53:17.313Z",
+    "updatedAt": "2026-07-29T16:26:25.538Z"
+  },
+  {
+    "id": "69f2706440e2ebe441b94c83",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "Qfr_ZsHDQdMNmlmtMUYaz1Eain8C6X3F",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-29T20:56:04.131Z",
+    "updatedAt": "2026-07-29T16:26:25.543Z"
+  },
+  {
+    "id": "69f2710040e2ebe441b94d4d",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "gFdnhIWPDj6mWSLZv6ZokOBtY4ZDPdk6",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-29T20:58:40.761Z",
+    "updatedAt": "2026-07-29T16:26:25.548Z"
+  },
+  {
+    "id": "69f28abe412277c02fb2f3b5",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "4HjuYkaIC0sAIthBy0b7hgJL92h-f_Sf",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-29T22:48:30.037Z",
+    "updatedAt": "2026-07-29T16:26:25.553Z"
+  },
+  {
+    "id": "69f2ecf9db05c8752f1c405b",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "7oLF2k2ayqQCqfj0txCcNN6sebESneEn",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T05:47:37.233Z",
+    "updatedAt": "2026-07-29T16:26:25.559Z"
+  },
+  {
+    "id": "69f2ecf9db05c8752f1c405d",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "mRcrUbmSagc7gK7ol67f6N273Ps9-PNj",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T05:47:37.248Z",
+    "updatedAt": "2026-07-29T16:26:25.565Z"
+  },
+  {
+    "id": "69f2ed16db05c8752f1c4081",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "wbDqD9yy1jc33t2wJ43epmSnzjS-4t5D",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T05:48:06.093Z",
+    "updatedAt": "2026-07-29T16:26:25.569Z"
+  },
+  {
+    "id": "69f2eff8db05c8752f1c4103",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "yWV7dXuC4Zo4rEuFkb-Ef_QXuo-nf8IS",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T06:00:24.722Z",
+    "updatedAt": "2026-07-29T16:26:25.574Z"
+  },
+  {
+    "id": "69f2f021db05c8752f1c4140",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "aOUOm8J7SwC9p07WCeexQSWiEQnhl9lG",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T06:01:05.117Z",
+    "updatedAt": "2026-07-29T16:26:25.578Z"
+  },
+  {
+    "id": "69f3b184f94e560835288ce0",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "3tNfbCZP6tlrnYY2W4UyL2H2Dz7V1xBe",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T19:46:12.219Z",
+    "updatedAt": "2026-07-29T16:26:25.583Z"
+  },
+  {
+    "id": "69f3b184f94e560835288ce9",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "T5vcZmI8ihQ-oWN0rp7k_ntMQHn7OWmk",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T19:46:12.292Z",
+    "updatedAt": "2026-07-29T16:26:25.587Z"
+  },
+  {
+    "id": "69f3dd2178cf1523b1337da8",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "m0TZkGb702UUuARDcIewUphnCRP70sFD",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T22:52:17.647Z",
+    "updatedAt": "2026-07-29T16:26:25.598Z"
+  },
+  {
+    "id": "69f3de3178cf1523b1337f0b",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "HW_XCZdUoZRaSR_eeZZZvTQNUXfk2_OA",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-30T22:56:49.195Z",
+    "updatedAt": "2026-07-29T16:26:25.604Z"
+  },
+  {
+    "id": "69f65f33bbc61bf4176be042",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "-mOw9nZe-9B2o5y7LSzvLDcDesA0JNjP",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T20:31:47.584Z",
+    "updatedAt": "2026-07-29T16:26:25.620Z"
+  },
+  {
+    "id": "69f66c7f3350b85271a7849b",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "poKmrFJJ4_pGG6yVMjF9ijHulSC1wK6a",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T21:28:31.794Z",
+    "updatedAt": "2026-07-29T16:26:25.630Z"
+  },
+  {
+    "id": "69f66e883350b85271a7855c",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "swFvZVnxOlK3Nz73RdV5DY7kzXIEM5X4",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T21:37:12.085Z",
+    "updatedAt": "2026-07-29T16:26:25.635Z"
+  },
+  {
+    "id": "69f66fd93350b85271a7861b",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "9QGVQYLmKJum5ztqGR9U04hEUkftj5lV",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T21:42:49.728Z",
+    "updatedAt": "2026-07-29T16:26:25.641Z"
+  },
+  {
+    "id": "d912572ff92433e5406aa327",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "dxqHMFkNYl5l3GdDACczVIjYqMNBEmLv",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T00:13:24.745Z",
+    "updatedAt": "2026-07-30T00:13:24.745Z"
+  },
+  {
+    "id": "69f11ed28a4b33791d82dc64",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "06R4fNLsofL4VZV8z2X6rB95lKDEfboE",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-04-28T20:55:46.393Z",
+    "updatedAt": "2026-07-29T16:26:25.479Z"
+  },
+  {
+    "id": "584dd985360231a796c592dd",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "Yc0HUi3pnw7i7l1MdfcamzJsFA-ohhyV",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T01:07:09.773Z",
+    "updatedAt": "2026-07-30T01:07:09.773Z"
+  },
+  {
+    "id": "69f6765c3772a2f84e7eade9",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "AhmmCMOd3ntJjWfNcBhh2iRK6hH17OOq",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T22:10:36.842Z",
+    "updatedAt": "2026-07-29T16:26:25.655Z"
+  },
+  {
+    "id": "69f676c33772a2f84e7eae4b",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "k3fgMld8aIVl9vdCmNF1iC1Xn6bdw6ES",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T22:12:19.045Z",
+    "updatedAt": "2026-07-29T16:26:25.660Z"
+  },
+  {
+    "id": "69f67fc88446e155532228b8",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "698605f5f0cc2558ff6a1606",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "AiNmrABQIRpSo7RA9eY6dj4oxCqB3NU3",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T22:50:48.572Z",
+    "updatedAt": "2026-07-29T16:26:25.664Z"
+  },
+  {
+    "id": "6a0844db09ffd814e9831728",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "fN8Hcmdju59q_zL2gG-UHs0rrO0VS2Bb",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T10:20:11.922Z",
+    "updatedAt": "2026-07-29T16:26:25.668Z"
+  },
+  {
+    "id": "6a0844db09ffd814e983172a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "HSFO8t7vLIPzGruGmYMnKW5Pd_3BgOBT",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T10:20:11.938Z",
+    "updatedAt": "2026-07-29T16:26:25.672Z"
+  },
+  {
+    "id": "6a087023d39b0e98d6a1e775",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "vu9Z10B-83gQE73Xsms3P4RbrzHFNfI3",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T13:24:51.604Z",
+    "updatedAt": "2026-07-29T16:26:25.678Z"
+  },
+  {
+    "id": "6a087023d39b0e98d6a1e777",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "rtI70HCanCEfZcbbTUyn_6uWPktu_brc",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T13:24:51.636Z",
+    "updatedAt": "2026-07-29T16:26:25.683Z"
+  },
+  {
+    "id": "6a0871abd39b0e98d6a1e7d7",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "0NtDoUCDtOn-KqxjVPEMcB_HYaTIDabZ",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T13:31:23.799Z",
+    "updatedAt": "2026-07-29T16:26:25.688Z"
+  },
+  {
+    "id": "6a0871abd39b0e98d6a1e7d9",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "CtkrT64MwKF3qYZmDNpalg2efwT1rrEz",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T13:31:23.805Z",
+    "updatedAt": "2026-07-29T16:26:25.694Z"
+  },
+  {
+    "id": "6a0876b5f40e8e31955851c3",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "RS7Vxg8iPjw69T5ARs18jo_lSqMi182R",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T13:52:53.237Z",
+    "updatedAt": "2026-07-29T16:26:25.698Z"
+  },
+  {
+    "id": "6a087a16f40e8e31955851f2",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "kvdcb7dtolk_BsIO7BzVUfSmW20mwASf",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T14:07:18.605Z",
+    "updatedAt": "2026-07-29T16:26:25.703Z"
+  },
+  {
+    "id": "6a087a1cf40e8e319558533b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6997c4a20a0ac0c6c3e29031",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "XKeFEoFjhP_DPyfhyUPUsmKxoejHgzJQ",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T14:07:24.714Z",
+    "updatedAt": "2026-07-29T16:26:25.708Z"
+  },
+  {
+    "id": "6a08878af40e8e31955854f1",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "wXy4viuvhDT3DfVFVIEwurGgvPTDQOM4",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:04:42.304Z",
+    "updatedAt": "2026-07-29T16:26:25.714Z"
+  },
+  {
+    "id": "6a08881cfcdc951ead02da81",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "TBeq2_bwxr6a8rz02kNF5ZRmFQfSweel",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:07:08.990Z",
+    "updatedAt": "2026-07-29T16:26:25.729Z"
+  },
+  {
+    "id": "6a088884fcdc951ead02dd4f",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "buUAFIBnuIH36yPJe_GxJUiwu_sbL5fI",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:08:52.040Z",
+    "updatedAt": "2026-07-29T16:26:25.738Z"
+  },
+  {
+    "id": "6a088884fcdc951ead02dd57",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "GxHSZue1gdAmJ_BkkCzp46ugZJKxiMdH",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:08:52.072Z",
+    "updatedAt": "2026-07-29T16:26:25.743Z"
+  },
+  {
+    "id": "6a088b28fcdc951ead02dd99",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "sJ3qIDV7UB001xhbtA4FjHwwFdVwVp5e",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:20:08.068Z",
+    "updatedAt": "2026-07-29T16:26:25.749Z"
+  },
+  {
+    "id": "6a088fb2fcdc951ead02ddd2",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "ZpN58Fw0EtV7jAYCcYnl2rlF3ofsQDw8",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:39:30.179Z",
+    "updatedAt": "2026-07-29T16:26:25.755Z"
+  },
+  {
+    "id": "6a088fcffcdc951ead02de0b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "EcPpel1upqDdWVrqkqbD6_iCjYLAXBDW",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:39:59.802Z",
+    "updatedAt": "2026-07-29T16:26:25.762Z"
+  },
+  {
+    "id": "6a088fd0fcdc951ead02de1e",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "T7NbFlu5rXNuZCO0jIw5eiLrzBTM7v90",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:40:00.363Z",
+    "updatedAt": "2026-07-29T16:26:25.767Z"
+  },
+  {
+    "id": "6a089107fcdc951ead02de5d",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "SiRj6wYDx6bRFkUV7YsbSjrbq7d585tY",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:45:11.992Z",
+    "updatedAt": "2026-07-29T16:26:25.772Z"
+  },
+  {
+    "id": "6a089108fcdc951ead02de71",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "As9ugMyA-4v96nEUC41xqv6vs3XD3lIS",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:45:12.062Z",
+    "updatedAt": "2026-07-29T16:26:25.778Z"
+  },
+  {
+    "id": "6a089108fcdc951ead02de7d",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "79PDqj07DJ2L9hWITNt2fzS6JFPq7M0V",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:45:12.178Z",
+    "updatedAt": "2026-07-29T16:26:25.784Z"
+  },
+  {
+    "id": "6a089108fcdc951ead02de8b",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "CCqk1zzJ6BCTtupPWJNAAz7gLHEb2w6Z",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:45:12.327Z",
+    "updatedAt": "2026-07-29T16:26:25.789Z"
+  },
+  {
+    "id": "6a089108fcdc951ead02de8e",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "8n-AZEUZ-XGoYsrp-s_9ZG2hgMR2Nrxt",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:45:12.371Z",
+    "updatedAt": "2026-07-29T16:26:25.795Z"
+  },
+  {
+    "id": "6a08913cfcdc951ead02defb",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "7JsbZxLro22YTD1g5BO-bbSH3Hx8oeHJ",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:46:04.781Z",
+    "updatedAt": "2026-07-29T16:26:25.805Z"
+  },
+  {
+    "id": "6a0891d3fcdc951ead02df2c",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "6tq0RF-rl7dKShQ189h9ow0jkaX_4YX-",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:48:35.773Z",
+    "updatedAt": "2026-07-29T16:26:25.810Z"
+  },
+  {
+    "id": "6a0891d3fcdc951ead02df36",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "6984d07e3fde5570a4137059",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "wjcEa5GFoNTXoA2BPfJjhOhrQU7x1eKu",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:48:35.827Z",
+    "updatedAt": "2026-07-29T16:26:25.816Z"
+  },
+  {
+    "id": "6a0893cffcdc951ead02df7b",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "ir7V0pfZs2L0diL7TJpnJBF-ABJnZkt3",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T15:57:03.300Z",
+    "updatedAt": "2026-07-29T16:26:25.820Z"
+  },
+  {
+    "id": "69f67310a257ede75d8e47c7",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "pcAKoy92pC_J87nhiQbwV585QKnVp06r",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-02T21:56:32.748Z",
+    "updatedAt": "2026-07-29T16:26:25.650Z"
+  },
+  {
+    "id": "6a08a90dfcdc951ead02e0d8",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "SdpsCCOI1-9Gpcb2OA9ReC8xgvGh1WWK",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T17:27:41.305Z",
+    "updatedAt": "2026-07-29T16:26:25.841Z"
+  },
+  {
+    "id": "6a08ac29fcdc951ead02e1de",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "bz41UptKsnyImGpJwOT5GCvv-TS8wgof",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T17:40:57.283Z",
+    "updatedAt": "2026-07-29T16:26:25.847Z"
+  },
+  {
+    "id": "6a115f68ea8ee55596dfe0fb",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "DY3Jjutf_hTsDKE8vzZs4oXGiU9k9_8T",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T08:03:52.153Z",
+    "updatedAt": "2026-07-29T16:26:25.851Z"
+  },
+  {
+    "id": "6a11997306b39715c1ea6b68",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "CWlCRS0iBP2B3wCYH9r1oW40BNG4nVNW",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T12:11:31.928Z",
+    "updatedAt": "2026-07-29T16:26:25.865Z"
+  },
+  {
+    "id": "6a119add06b39715c1ea6e9b",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "8U5f2uEG3Hh6CgIbUV3Ke5XORt6lydCC",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T12:17:33.399Z",
+    "updatedAt": "2026-07-29T16:26:25.869Z"
+  },
+  {
+    "id": "6a119add06b39715c1ea6e9e",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b3755e99b3f0ab5a678936",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Jewelry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "c9SDOUxnwxa4ypMaPI9tzxY93fMNSD7C",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T12:17:33.418Z",
+    "updatedAt": "2026-07-29T16:26:25.875Z"
+  },
+  {
+    "id": "6a11a00c06b39715c1ea70e8",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "5O_6Ahz8we9x591iM5dgK-baV9OFQkW-",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T12:39:40.420Z",
+    "updatedAt": "2026-07-29T16:26:25.880Z"
+  },
+  {
+    "id": "6a11a1cc06b39715c1ea716f",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "TBGbx45f23YB3D3bhH65G12uSLp4aCIa",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T12:47:08.817Z",
+    "updatedAt": "2026-07-29T16:26:25.884Z"
+  },
+  {
+    "id": "6a11a1cc06b39715c1ea7173",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "SeAv_4w1A6IIzYFMCWhGObr42qPcsT_U",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T12:47:08.867Z",
+    "updatedAt": "2026-07-29T16:26:25.888Z"
+  },
+  {
+    "id": "6a11b27b4a8ff2f83907e17b",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "bJcA6r7k2-0ARQtYWw5_tqoaBTr82mYG",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T13:58:19.793Z",
+    "updatedAt": "2026-07-29T16:26:25.893Z"
+  },
+  {
+    "id": "6a11b57652366f9225b773ae",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "fR54n-zo02h-0y_5K27Mnp-adRZlIUGy",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T14:11:02.310Z",
+    "updatedAt": "2026-07-29T16:26:25.898Z"
+  },
+  {
+    "id": "6a11b63652366f9225b773ef",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "V6YzLec-bIQE-m0hbdkwevcDvd6WlvP4",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T14:14:14.697Z",
+    "updatedAt": "2026-07-29T16:26:25.902Z"
+  },
+  {
+    "id": "6a11b7bb9050727d0baef5e8",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "Bg4d0nsObDnrJuUvJxOsABSFEeiwyJet",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T14:20:43.590Z",
+    "updatedAt": "2026-07-29T16:26:25.907Z"
+  },
+  {
+    "id": "6a11b82d45847e22ab6227a6",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "2WO7xxIL5DKSgrkvFpdaiRvwo0qRMix6",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T14:22:37.831Z",
+    "updatedAt": "2026-07-29T16:26:25.912Z"
+  },
+  {
+    "id": "6a11c91a8001868c4706b226",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69b3731270da081915d643d5",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "vvV5g3KMax7UyYKOB-g0festKsoOp44e",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T15:34:50.514Z",
+    "updatedAt": "2026-07-29T16:26:25.916Z"
+  },
+  {
+    "id": "6a11ca788001868c4706b3f2",
+    "userId": "6983eea63321e3cbca373dd3",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "sCtvNho1aYzF4qG450SC4wwT2iJvg5rC",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T15:40:40.805Z",
+    "updatedAt": "2026-07-29T16:26:25.922Z"
+  },
+  {
+    "id": "6a1b4be47229ea76f14c12ac",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "4UpyYORdRXVuFY_RUOEHpt-xvZ3_ha7T",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-30T20:43:16.211Z",
+    "updatedAt": "2026-07-29T16:26:25.928Z"
+  },
+  {
+    "id": "6a1b4be57229ea76f14c12b7",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "2cPcHEJRkAchu1rt4jYoOipSrVfKLHWu",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-30T20:43:17.183Z",
+    "updatedAt": "2026-07-29T16:26:25.933Z"
+  },
+  {
+    "id": "6a1b4cf17229ea76f14c133b",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "waJQP-Qn0W9qqNNZ72H6FnzSfNFNbgvE",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-30T20:47:45.918Z",
+    "updatedAt": "2026-07-29T16:26:25.939Z"
+  },
+  {
+    "id": "b7dd442022fcabf0218a948c",
+    "userId": "6983f5b9d60aa35f2e196d78",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "ADM2aE56pXdYcuFJuq_VI_v2yasRdmmd",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T00:40:05.235Z",
+    "updatedAt": "2026-07-30T00:40:05.235Z"
+  },
+  {
+    "id": "b854d8f7ddf68d5ecdd98deb",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "wyAYiK8Zi9Z0rcnYvHO_DRvU2I3BKOux",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T00:40:27.254Z",
+    "updatedAt": "2026-07-30T00:40:27.254Z"
+  },
+  {
+    "id": "7721ae86bc4948b852e8bf26",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b7c519ca79b023a1bbf007",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Leather Goods"
+    },
+    "sessionId": "N5VXucO-4ibvMgDOqZ13mJ1cxwNgm5VT",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T01:13:38.073Z",
+    "updatedAt": "2026-07-30T01:13:38.073Z"
+  },
+  {
+    "id": "6a089bbefcdc951ead02e041",
+    "userId": "6985d6de3539900c08c2b0dd",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "9an8WJ7dWklzaLK2bLQ3jupgsgT6e_ZP",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T16:30:54.998Z",
+    "updatedAt": "2026-07-29T16:26:25.825Z"
+  },
+  {
+    "id": "6a08a4dafcdc951ead02e079",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "sOwn62aXbtUvZ4cmBAKt70M7X0nfX6QS",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T17:09:46.190Z",
+    "updatedAt": "2026-07-29T16:26:25.831Z"
+  },
+  {
+    "id": "6a08a4dafcdc951ead02e07d",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "698602fef0cc2558ff6a15f7",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Basketry",
+      "deviceType": "desktop"
+    },
+    "sessionId": "t1RrlYa1Qv4cyW4r0unBgwSHtL9st38H",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-16T17:09:46.222Z",
+    "updatedAt": "2026-07-29T16:26:25.836Z"
+  },
+  {
+    "id": "6a1170d0ea8ee55596dff324",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69d77f5cddbab7c73b474871",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "bRYdFQrmB6_k-OfxHOkC2wluZ2eixzUb",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T09:18:08.762Z",
+    "updatedAt": "2026-07-29T16:26:25.855Z"
+  },
+  {
+    "id": "6a11997306b39715c1ea6b6a",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "69f25665d4249c49299bedbf",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles",
+      "deviceType": "desktop"
+    },
+    "sessionId": "jjUQAMjrRWVD-V-80rf3Lts0sU8-2eNK",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-05-23T12:11:31.944Z",
+    "updatedAt": "2026-07-29T16:26:25.860Z"
+  },
+  {
+    "id": "d0f806170c99f707b0aebb8e",
+    "userId": "69d41c54ec0421a390a74198",
+    "productId": "69b36dde8845b1293c3712b2",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "96xA-pzkMEAiKrQJaHxWEZ8ZSQf-UylJ",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T12:07:22.160Z",
+    "updatedAt": "2026-07-30T12:07:22.160Z"
+  },
+  {
+    "id": "8dc8b3d3c6a6ad03f146ec25",
+    "userId": "6983ef193321e3cbca373ddc",
+    "productId": "7e07caa2dc14f056c7bd7298",
+    "interactionType": "view",
+    "duration": 0,
+    "quantity": null,
+    "metadata": {
+      "source": "direct",
+      "category": "Textiles"
+    },
+    "sessionId": "7O5UVBXvoWxDQerDwn8JULcc4XA4gkLL",
+    "ipAddress": null,
+    "userAgent": null,
+    "createdAt": "2026-07-30T14:47:10.014Z",
+    "updatedAt": "2026-07-30T14:47:10.014Z"
+  }
+]

@@ -1,0 +1,2046 @@
+[
+  {
+    "id": "6983f5b9d60aa35f2e196d78",
+    "email": "admin@ethiocraft.com",
+    "password": "$2a$12$GVyFSTB26Ge0cM2gqUdtieN/ULuib8doRzcF.IkvXoCrCSNCQVmci",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "admin",
+    "profile": {
+      "bio": "Platform administrator for EthioCraft Global marketplace",
+      "phone": "+251911234567",
+      "lastName": "Administrator",
+      "firstName": "EthioCraft",
+      "specialties": []
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [
+        {
+          "query": "Bag",
+          "timestamp": "2026-03-16T13:15:42.958Z"
+        },
+        {
+          "query": "Silver",
+          "timestamp": "2026-03-16T13:20:50.079Z"
+        },
+        {
+          "query": "traditional jewelry",
+          "timestamp": "2026-03-17T01:43:43.016Z"
+        },
+        {
+          "query": "traditional textiles",
+          "timestamp": "2026-03-17T01:44:03.475Z"
+        },
+        {
+          "query": "textiles",
+          "timestamp": "2026-03-17T01:44:17.661Z"
+        },
+        {
+          "query": "traditional jewelry",
+          "timestamp": "2026-03-17T01:44:47.308Z"
+        },
+        {
+          "query": "traditional textiles",
+          "timestamp": "2026-03-17T01:45:19.031Z"
+        },
+        {
+          "query": "traditional basketry",
+          "timestamp": "2026-03-17T01:49:10.603Z"
+        },
+        {
+          "query": "ጫማ",
+          "timestamp": "2026-03-23T14:35:48.065Z"
+        }
+      ],
+      "viewedProducts": [
+        {
+          "product": "6985eeb3b48db5a166875537",
+          "viewedAt": "2026-02-12T14:17:52.086Z"
+        },
+        {
+          "product": "6985ec6cb48db5a16687552c",
+          "viewedAt": "2026-02-16T06:14:38.112Z"
+        },
+        {
+          "product": "69980dae2a3d135dba0845aa",
+          "viewedAt": "2026-02-20T07:31:41.378Z"
+        },
+        {
+          "product": "6985eb29b48db5a166875521",
+          "viewedAt": "2026-03-12T18:21:23.616Z"
+        },
+        {
+          "product": "69b3755e99b3f0ab5a678936",
+          "viewedAt": "2026-03-16T11:47:56.059Z"
+        },
+        {
+          "product": "6986020cf0cc2558ff6a15e9",
+          "viewedAt": "2026-03-16T13:12:08.082Z"
+        },
+        {
+          "product": "699f187b5e651d51fc0e9eb7",
+          "viewedAt": "2026-03-16T23:43:31.183Z"
+        },
+        {
+          "product": "69b37748f49fcffb59c0a889",
+          "viewedAt": "2026-03-21T22:40:16.529Z"
+        },
+        {
+          "product": "699804b10b208df46905fa95",
+          "viewedAt": "2026-03-21T22:41:06.696Z"
+        },
+        {
+          "product": "69b7c519ca79b023a1bbf007",
+          "viewedAt": "2026-04-09T11:21:33.087Z"
+        },
+        {
+          "product": "69f25665d4249c49299bedbf",
+          "viewedAt": "2026-07-30T00:40:06.819Z"
+        },
+        {
+          "product": "7e07caa2dc14f056c7bd7298",
+          "viewedAt": "2026-10-03T07:31:38.880Z"
+        },
+        {
+          "product": "69b36dde8845b1293c3712b2",
+          "viewedAt": "2026-10-03T17:49:01.257Z"
+        }
+      ],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "698a10ac1ba4bc834390f522",
+        "city": "Addis Ababa",
+        "phone": "+251911234567",
+        "region": "Ethiopia",
+        "street": "Bole Road, Near Edna Mall, Building 123, Apartment 5B",
+        "country": "Ethiopia",
+        "lastName": "Administrator",
+        "firstName": "EthioCraft",
+        "isDefault": false,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-10-12T01:23:08.175Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-02-05T01:43:21.850Z",
+    "updatedAt": "2026-07-29T22:02:33.929Z"
+  },
+  {
+    "id": "6983f06a3321e3cbca373de1",
+    "email": "belay@gmail.com",
+    "password": "$2a$12$CjEPEJuzt.OeKJjuo7bPo.uNwzE8QvyLvEFdznRmvWO3YpCV78QNS",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "customer",
+    "profile": {
+      "phone": "+251923525734",
+      "lastName": "Hunachew",
+      "firstName": "Belaye",
+      "specialties": []
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-02-12T00:17:20.309Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": null,
+    "notificationPreferences": null,
+    "storeSettings": null,
+    "shippingSettings": null,
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-02-05T01:20:42.627Z",
+    "updatedAt": "2026-07-29T16:26:22.354Z"
+  },
+  {
+    "id": "69b34473c6ecd5476fcf08c4",
+    "email": "wendeor21@gmail.com",
+    "password": "$2a$12$YJhHvh30t4nw3BN2GYGNBOPOu8mUj589n67kwRZeV9re8egPBv.iC",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "customer",
+    "profile": {
+      "phone": "+251923525734",
+      "lastName": "WAGAW",
+      "firstName": "WENDWESEN",
+      "specialties": [],
+      "totalProducts": 0,
+      "experienceYears": 0,
+      "workshopGallery": [],
+      "isVerifiedArtisan": false,
+      "traditionsPreserved": 0
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [
+        {
+          "product": "69b37748f49fcffb59c0a889",
+          "viewedAt": "2026-04-09T11:30:18.113Z"
+        },
+        {
+          "product": "69b3755e99b3f0ab5a678936",
+          "viewedAt": "2026-04-26T19:11:05.386Z"
+        },
+        {
+          "product": "69b3755e99b3f0ab5a678936",
+          "viewedAt": "2026-04-26T19:11:05.466Z"
+        }
+      ],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-04-26T19:10:55.361Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": "2f5ffc18417304285007b06dadf39f61def6aa6f79a1d780c0e25eba8be2e3e7",
+    "passwordResetExpires": "2026-05-23T15:25:11.651Z",
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-03-12T22:55:47.519Z",
+    "updatedAt": "2026-07-29T16:26:22.472Z"
+  },
+  {
+    "id": "69b0a27a8f3e73261b9af485",
+    "email": "chale@gmail.com",
+    "password": "$2a$12$EWMXClyBelAhhmFTaenlGONSYmr55ESrbuAHxd1/cP6pTANWiLeMG",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "artisan",
+    "profile": {
+      "phone": "+251945678909",
+      "lastName": "shegaw",
+      "firstName": "chale",
+      "specialties": []
+    },
+    "verification": {
+      "status": "pending",
+      "documents": [],
+      "submittedAt": "2026-03-10T23:00:10.449Z"
+    },
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-03-11T00:01:26.994Z",
+    "loginAttempts": 3,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": "2026-03-11T00:15:09.524Z",
+    "tokenVersion": 0,
+    "passwordResetToken": "bc22dbda4f2cf4a60d3ee46295d8d849e5dae00662c498ed876622846f713fdb",
+    "passwordResetExpires": "2026-03-12T23:54:02.485Z",
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-03-10T23:00:10.489Z",
+    "updatedAt": "2026-07-29T16:26:22.460Z"
+  },
+  {
+    "id": "69d5424cd4aeb1794ce0fa75",
+    "email": "ethiocraftadmin@gmail.com",
+    "password": "$2a$12$M.4WflBerRYg4BebIj1p..EjXK9yqf6XZPfR6CPOeYuJsEkJnXuF6",
+    "googleId": "110264149563280533640",
+    "authProvider": "google",
+    "role": "admin",
+    "profile": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocLmOTgIKQyQAtq-ai1Y4zpBjHqbEQo-_kk0IUivwdQPJW_BmA=s96-c",
+      "lastName": "Ethiocraft",
+      "firstName": "Admin",
+      "specialties": [],
+      "totalProducts": 0,
+      "experienceYears": 0,
+      "workshopGallery": [],
+      "isVerifiedArtisan": false,
+      "traditionsPreserved": 0
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-07-28T22:25:17.012Z",
+    "loginAttempts": 1,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-04-07T17:43:40.757Z",
+    "updatedAt": "2026-07-29T16:26:22.507Z"
+  },
+  {
+    "id": "69d746de7646fd76a91823cb",
+    "email": "tibebuybeltal@gmail.com",
+    "password": "$2a$12$DPMf.VYcUonzp7IwMDfH7uDu3M/gsfhdJGQH5ngxND.o/pTH1BrsS",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "artisan",
+    "profile": {
+      "phone": "+251923525734",
+      "lastName": "Ybeltal",
+      "firstName": "Tibebu",
+      "specialties": [],
+      "businessInfo": {
+        "tinNumber": "1234567",
+        "businessName": "ethiotbeb"
+      }
+    },
+    "verification": {
+      "status": "approved",
+      "feedback": "Your verification has been approved. Welcome to EthioCraft Global!",
+      "documents": [
+        "/uploads/verification/identity-1775721863899-302409603.jpg",
+        "/uploads/verification/tradeLicense-1775721863906-701330694.jpg",
+        "/uploads/verification/tinCertificate-1775721863924-936357387.png",
+        "/uploads/verification/productPhotos-1775721863931-540025334.jpg"
+      ],
+      "reviewedAt": "2026-04-09T08:19:53.983Z",
+      "reviewedBy": "6983f5b9d60aa35f2e196d78",
+      "workVideos": [],
+      "submittedAt": "2026-04-09T08:04:24.009Z",
+      "identityCard": "/uploads/verification/identity-1775721863899-302409603.jpg",
+      "tradeLicense": "/uploads/verification/tradeLicense-1775721863906-701330694.jpg",
+      "productPhotos": [
+        "/uploads/verification/productPhotos-1775721863931-540025334.jpg"
+      ],
+      "termsAccepted": true,
+      "tinCertificate": "/uploads/verification/tinCertificate-1775721863924-936357387.png"
+    },
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": true,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [
+      {
+        "_id": "69d7612addbab7c73b473ea6",
+        "read": false,
+        "message": "Your artisan verification has been approved. You can now list products.",
+        "createdAt": "2026-04-09T08:19:54.048Z"
+      }
+    ],
+    "lastLogin": "2026-04-09T11:30:30.390Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "bankName": "CBE",
+      "updatedAt": "2026-04-09T08:04:23.998Z",
+      "accountNumber": "10474444",
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-04-09T06:27:42.393Z",
+    "updatedAt": "2026-07-29T16:26:22.528Z"
+  },
+  {
+    "id": "6983eea63321e3cbca373dd3",
+    "email": "abebe@gmail.com",
+    "password": "$2a$12$/CWE9cVlSfd5me82K5VEIuZi/5mxKEKMCQBvevRShhN9gKX.z.1LO",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "customer",
+    "profile": {
+      "phone": "+251912345678",
+      "lastName": "Kebedee",
+      "firstName": "Abebe",
+      "specialties": [],
+      "totalProducts": 0,
+      "experienceYears": 0,
+      "workshopGallery": [],
+      "isVerifiedArtisan": false,
+      "traditionsPreserved": 0
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [
+        {
+          "query": "Artisan Leather Messenger Bag",
+          "timestamp": "2026-02-13T00:39:48.973Z"
+        },
+        {
+          "query": "ሳባ",
+          "timestamp": "2026-03-13T07:54:19.737Z"
+        },
+        {
+          "query": "ሳባ",
+          "timestamp": "2026-03-13T07:54:28.384Z"
+        },
+        {
+          "query": "የንግስት ሳባ ጥበብ ቀሚስ",
+          "timestamp": "2026-03-13T07:54:46.499Z"
+        },
+        {
+          "query": "የንግስት ሳባ ጥበብ ቀሚስ",
+          "timestamp": "2026-03-13T07:54:53.364Z"
+        },
+        {
+          "query": "የንግስት ሳባ ጥበብ ቀሚስ",
+          "timestamp": "2026-03-13T07:54:57.365Z"
+        },
+        {
+          "query": "የንግስት ሳባ ጥበብ ቀሚስ",
+          "timestamp": "2026-03-13T07:55:03.759Z"
+        },
+        {
+          "query": "የንግስት ሳባ ጥበብ ቀሚስ",
+          "timestamp": "2026-03-13T07:55:05.661Z"
+        }
+      ],
+      "viewedProducts": [
+        {
+          "product": "69860061f0cc2558ff6a15d9",
+          "viewedAt": "2026-03-22T02:24:50.575Z"
+        },
+        {
+          "product": "6985eb29b48db5a166875521",
+          "viewedAt": "2026-03-28T09:09:47.579Z"
+        },
+        {
+          "product": "699f187b5e651d51fc0e9eb7",
+          "viewedAt": "2026-04-08T20:25:22.854Z"
+        },
+        {
+          "product": "6985ef7ab48db5a16687553c",
+          "viewedAt": "2026-04-28T22:14:37.060Z"
+        },
+        {
+          "product": "69b36dde8845b1293c3712b2",
+          "viewedAt": "2026-04-28T22:40:33.218Z"
+        },
+        {
+          "product": "69b37748f49fcffb59c0a889",
+          "viewedAt": "2026-04-29T19:05:25.072Z"
+        },
+        {
+          "product": "698605f5f0cc2558ff6a1606",
+          "viewedAt": "2026-04-29T20:50:00.969Z"
+        },
+        {
+          "product": "698602fef0cc2558ff6a15f7",
+          "viewedAt": "2026-04-30T05:48:06.391Z"
+        },
+        {
+          "product": "69b3755e99b3f0ab5a678936",
+          "viewedAt": "2026-05-23T12:17:33.550Z"
+        },
+        {
+          "product": "69b3755e99b3f0ab5a678936",
+          "viewedAt": "2026-05-23T12:17:33.590Z"
+        },
+        {
+          "product": "6986020cf0cc2558ff6a15e9",
+          "viewedAt": "2026-05-23T12:54:26.965Z"
+        },
+        {
+          "product": "69d77f5cddbab7c73b474871",
+          "viewedAt": "2026-05-23T14:22:54.158Z"
+        },
+        {
+          "product": "69b7c519ca79b023a1bbf007",
+          "viewedAt": "2026-05-23T15:21:25.428Z"
+        },
+        {
+          "product": "69b3731270da081915d643d5",
+          "viewedAt": "2026-05-23T15:34:51.011Z"
+        },
+        {
+          "product": "69f25665d4249c49299bedbf",
+          "viewedAt": "2026-05-23T15:40:41.206Z"
+        }
+      ],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [
+      "6985ef7ab48db5a16687553c"
+    ],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "698913672c0ef1abad444af4",
+        "city": "Gondar",
+        "phone": "+251912345678",
+        "region": "Ethiopia",
+        "street": "Gondar/09877",
+        "country": "Ethiopia",
+        "lastName": "Kebede",
+        "firstName": "Abebe",
+        "isDefault": false,
+        "postalCode": ""
+      },
+      {
+        "_id": "6989157ba9f38588c0396d20",
+        "city": "Addis Ababa",
+        "phone": "+251912345678",
+        "region": "Ethiopia",
+        "street": "Bole Road, Near Edna Mall, Building 123, Apartment 5B",
+        "country": "Ethiopia",
+        "lastName": "Kebede",
+        "firstName": "Abebe",
+        "isDefault": false,
+        "postalCode": ""
+      },
+      {
+        "_id": "698930879564c4c9a48a683f",
+        "city": "Sekota",
+        "phone": "+251912345678",
+        "region": "Ethiopia",
+        "street": "Gondar/09877",
+        "country": "Ethiopia",
+        "lastName": "Kebede",
+        "firstName": "Abebe",
+        "isDefault": true,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-05-23T15:20:39.446Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-02-05T01:13:10.336Z",
+    "updatedAt": "2026-07-29T16:26:22.219Z"
+  },
+  {
+    "id": "698496cc30bae05859d9b943",
+    "email": "testartisan@example.com",
+    "password": "$2a$12$6p9JhZ5TazWm.iZ3MgnSB.BdIxEZpgtW/dR/blu2ETlAPSJ/QjkiC",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "artisan",
+    "profile": {
+      "bio": "Test artisan for product creation testing",
+      "lastName": "Artisan",
+      "firstName": "Test",
+      "specialties": [
+        "Textiles"
+      ],
+      "businessInfo": {
+        "tinNumber": "1234567",
+        "businessName": "ethiotbeb",
+        "tradeLicenseNumber": "1243567654"
+      },
+      "culturalBackground": "Ethiopian"
+    },
+    "verification": {
+      "status": "approved",
+      "feedback": "Approved",
+      "documents": [
+        "/uploads/verification/identity-1773446468441-556195372.png",
+        "/uploads/verification/tradeLicense-1773446468493-702562003.jpg",
+        "/uploads/verification/tinCertificate-1773446468527-417067211.jpg"
+      ],
+      "reviewedAt": "2026-03-22T01:17:26.197Z",
+      "reviewedBy": "6983f5b9d60aa35f2e196d78",
+      "submittedAt": "2026-03-14T00:01:08.553Z"
+    },
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "6992e1388a634d12e9835366",
+        "city": "Gondar",
+        "phone": "+251912345678",
+        "region": "amhara",
+        "street": "Gondar/09877",
+        "country": "Ethiopia",
+        "lastName": "Artisan",
+        "firstName": "Test",
+        "isDefault": true,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": true,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [
+      {
+        "reason": "werty",
+        "resolved": false,
+        "flaggedAt": "2026-02-16T07:57:20.171Z",
+        "flaggedBy": "6983f5b9d60aa35f2e196d78"
+      },
+      {
+        "reason": "creat confis",
+        "resolved": false,
+        "flaggedAt": "2026-02-16T08:34:23.293Z",
+        "flaggedBy": "6983f5b9d60aa35f2e196d78"
+      }
+    ],
+    "alerts": [
+      {
+        "_id": "69bf43263ee896ed82c6e74d",
+        "read": false,
+        "message": "Your artisan verification has been approved. You can now list products.",
+        "createdAt": "2026-03-22T01:17:26.238Z"
+      },
+      {
+        "_id": "69b4a4de9d563ab16efb1bb7",
+        "read": false,
+        "message": "Your artisan verification was rejected. the document can not open please send me correct document",
+        "createdAt": "2026-03-13T23:59:26.693Z"
+      },
+      {
+        "_id": "69931a7fef194fa861bfc846",
+        "read": false,
+        "message": "Your artisan verification was rejected. can not send correct docment",
+        "createdAt": "2026-02-16T13:24:15.371Z"
+      },
+      {
+        "_id": "69930b02ef8431c8666671ee",
+        "read": false,
+        "message": "Your artisan verification has been approved. You can now list products.",
+        "createdAt": "2026-02-16T12:18:10.171Z"
+      }
+    ],
+    "lastLogin": "2026-03-13T23:47:08.875Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [
+        {
+          "_id": "69b1083763c4cf446d1c6315",
+          "name": "Standard Delivery",
+          "enabled": true,
+          "basePrice": 50,
+          "description": "Standard delivery within 3-5 business days",
+          "estimatedDays": 5
+        },
+        {
+          "_id": "69b1083763c4cf446d1c6316",
+          "name": "Express Delivery",
+          "enabled": false,
+          "basePrice": 150,
+          "description": "Fast delivery within 1-2 business days",
+          "estimatedDays": 2
+        },
+        {
+          "_id": "69b1083763c4cf446d1c6317",
+          "name": "Store Pickup",
+          "enabled": true,
+          "basePrice": 0,
+          "description": "Pick up from store location",
+          "estimatedDays": 1
+        }
+      ],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 20
+      },
+      "freeShippingThreshold": 1000
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": "2026-03-11T00:58:36.324Z",
+    "tokenVersion": 0,
+    "passwordResetToken": "7e64201bad89d04d15c1b0bdd3f2ddaac1a36ae58c16ca1627369ff95a8bc525",
+    "passwordResetExpires": "2026-04-07T21:18:44.362Z",
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-02-05T13:10:36.080Z",
+    "updatedAt": "2026-07-29T16:26:22.391Z"
+  },
+  {
+    "id": "69d74251fa19da7e0698985c",
+    "email": "mekuwant@gmail.com",
+    "password": "$2a$12$UDh9fjHYQ6ORMOcZbuyQROiHEdOtfsOT7uWJ.3n1pu2i33moJzgPa",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "artisan",
+    "profile": {
+      "phone": "+251912345678",
+      "lastName": "segaw",
+      "firstName": "mekuwant",
+      "specialties": []
+    },
+    "verification": {
+      "status": "rejected",
+      "feedback": "plase send the document",
+      "documents": [],
+      "resubmitBy": "2026-04-16T08:21:31.293Z",
+      "reviewedAt": "2026-04-09T08:21:31.291Z",
+      "reviewedBy": "6983f5b9d60aa35f2e196d78",
+      "workVideos": [],
+      "submittedAt": "2026-04-09T06:08:17.022Z",
+      "productPhotos": [],
+      "termsAccepted": false
+    },
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [
+      {
+        "_id": "69d7618bddbab7c73b473f58",
+        "read": false,
+        "message": "Your artisan verification was rejected. plase send the document",
+        "createdAt": "2026-04-09T08:21:31.339Z"
+      }
+    ],
+    "lastLogin": "2026-04-09T08:20:53.312Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-04-09T06:08:17.060Z",
+    "updatedAt": "2026-07-29T16:26:22.518Z"
+  },
+  {
+    "id": "6a11b99745847e22ab6228c5",
+    "email": "wendiewa8@gmail.com",
+    "password": "$2a$12$2C1E5MVwW3N9pDRskQuatuOCJPeeYfGmu6yDackUTKR7auAigbHfW",
+    "googleId": "112615916409554571572",
+    "authProvider": "google",
+    "role": "customer",
+    "profile": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKnoAm54Ru9hAM3CI6S6jgaNIoYSznkNvGt-9CSsF9EPEYlz-Y=s96-c",
+      "lastName": "Wa",
+      "firstName": "Wendie",
+      "specialties": [],
+      "totalProducts": 0,
+      "experienceYears": 0,
+      "workshopGallery": [],
+      "isVerifiedArtisan": false,
+      "traditionsPreserved": 0
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-05-23T14:28:41.983Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-05-23T14:28:39.830Z",
+    "updatedAt": "2026-07-29T16:26:22.539Z"
+  },
+  {
+    "id": "6985d6de3539900c08c2b0dd",
+    "email": "zewdu@gmail.com",
+    "password": "$2a$12$NGYnH93Kza.sm0KxtWa4aOBSL3w5gYjF.AY1WgqVNxsqoToa2uZve",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "customer",
+    "profile": {
+      "phone": "+251975401994",
+      "lastName": "Geremew",
+      "firstName": "Zewdu",
+      "specialties": [],
+      "totalProducts": 0,
+      "experienceYears": 0,
+      "workshopGallery": [],
+      "isVerifiedArtisan": false,
+      "traditionsPreserved": 0
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [
+        {
+          "product": "69b7c519ca79b023a1bbf007",
+          "viewedAt": "2026-03-28T07:00:52.727Z"
+        },
+        {
+          "product": "698602fef0cc2558ff6a15f7",
+          "viewedAt": "2026-05-16T15:20:08.428Z"
+        },
+        {
+          "product": "69d77f5cddbab7c73b474871",
+          "viewedAt": "2026-05-16T16:30:55.348Z"
+        },
+        {
+          "product": "69f25665d4249c49299bedbf",
+          "viewedAt": "2026-05-30T20:43:17.371Z"
+        },
+        {
+          "product": "69b36dde8845b1293c3712b2",
+          "viewedAt": "2026-05-30T20:47:46.894Z"
+        }
+      ],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "69c2bbf10b93dc7691373956",
+        "city": "Gondar",
+        "phone": "+251975401994",
+        "region": "Ethiopia",
+        "street": "Gondar/09877",
+        "country": "Ethiopia",
+        "lastName": "Geremew",
+        "firstName": "Zewdu",
+        "isDefault": true,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-05-30T20:42:52.813Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": "2026-03-10T17:14:29.463Z",
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-02-06T11:56:14.345Z",
+    "updatedAt": "2026-07-29T16:26:22.406Z"
+  },
+  {
+    "id": "69893592d0b857b9da35efcb",
+    "email": "alemu@gmail.com",
+    "password": "$2a$12$2KhQSNFq.PE/NcIOyNooyO2HeS5B0WXWyBmIxYdBKon1a9gquHzfy",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "customer",
+    "profile": {
+      "phone": "+251975401900",
+      "lastName": "Takele",
+      "firstName": "Alemu",
+      "specialties": []
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "698935dbd0b857b9da35eff1",
+        "city": "Addis Ababa",
+        "phone": "+251975401900",
+        "region": "Ethiopia",
+        "street": "Bole Road, Near Edna Mall, Building 123, Apartment 5B",
+        "country": "Ethiopia",
+        "lastName": "Takele",
+        "firstName": "Alemu",
+        "isDefault": true,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-03-10T22:45:18.463Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": null,
+    "twoFactorEnabled": false,
+    "lastPasswordChange": "2026-03-10T22:40:11.485Z",
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-02-09T01:17:06.833Z",
+    "updatedAt": "2026-07-29T16:26:22.438Z"
+  },
+  {
+    "id": "698e8a3db19ddf417b977c3d",
+    "email": "teshale@gmail.com",
+    "password": "$2a$12$oxayyUmaZC1ndXP.3egQzeCTTxuIZun9hVuFvuZB8rrd.6St/EEK2",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "artisan",
+    "profile": {
+      "phone": "+251923525778",
+      "lastName": "Zeyeye",
+      "firstName": "Teshale",
+      "specialties": [
+        "Weaving",
+        "Traditional Cotton",
+        "Textile Art"
+      ],
+      "culturalBackground": "I am a professional artisan with over 15 years of experience in traditional Ethiopian weaving. I learned the craft from my parents and specialize in hand-loomed cotton products that represent our unique cultural heritage patterns."
+    },
+    "verification": {
+      "status": "approved",
+      "feedback": "Approved",
+      "documents": [
+        "Artisan_Cotton_Netela_scarf.jpg",
+        "Highland_Sheepskin_Tote_Bag.jpg",
+        "jewelery.jpg",
+        "Gondar_Style_Embroidered_Dress.jpg"
+      ],
+      "reviewedAt": "2026-02-16T12:42:53.276Z",
+      "reviewedBy": "6983f5b9d60aa35f2e196d78",
+      "submittedAt": "2026-02-13T12:00:34.073Z"
+    },
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "6992add4f516eb15e4111d12",
+        "city": "Bonga",
+        "phone": "+251923525778",
+        "region": "Ethiopia",
+        "street": "Gondar",
+        "country": "Ethiopia",
+        "lastName": "Zeyeye",
+        "firstName": "Teshale",
+        "isDefault": false,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": true,
+    "isFlagged": true,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [
+      {
+        "reason": "send misinfo",
+        "resolved": false,
+        "flaggedAt": "2026-02-16T08:59:45.659Z",
+        "flaggedBy": "6983f5b9d60aa35f2e196d78"
+      },
+      {
+        "reason": "work mistak",
+        "resolved": false,
+        "flaggedAt": "2026-03-04T00:34:00.370Z",
+        "flaggedBy": "6983f5b9d60aa35f2e196d78"
+      }
+    ],
+    "alerts": [
+      {
+        "_id": "699310cdef8431c8666673e0",
+        "read": false,
+        "message": "Your artisan verification has been approved. You can now list products.",
+        "createdAt": "2026-02-16T12:42:53.308Z"
+      }
+    ],
+    "lastLogin": null,
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": null,
+    "notificationPreferences": null,
+    "storeSettings": null,
+    "shippingSettings": null,
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-02-13T02:19:41.401Z",
+    "updatedAt": "2026-07-29T16:26:22.450Z"
+  },
+  {
+    "id": "69d41e35ec0421a390a7a154",
+    "email": "wendwesenwagaw218@gmail.com",
+    "password": "$2a$12$DesiGFrjJFXcl02F7tIZEufaR.UK/tVF/Ou6idf4IruaFcSuutgWy",
+    "googleId": "115848169281234766191",
+    "authProvider": "google",
+    "role": "customer",
+    "profile": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKxbQNDng_Fo-pJxnJJnarKPSakgtjONN5VNLfHq-tPIQZLTcC1=s96-c",
+      "lastName": "Wagaw",
+      "firstName": "Wendwesen",
+      "specialties": []
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [
+        {
+          "query": "ጫማ",
+          "timestamp": "2026-04-06T23:23:24.525Z"
+        },
+        {
+          "query": "Amma.",
+          "timestamp": "2026-04-07T22:01:24.179Z"
+        },
+        {
+          "query": "Zen Bill.",
+          "timestamp": "2026-04-07T22:01:41.889Z"
+        }
+      ],
+      "viewedProducts": [
+        {
+          "product": "69b7c519ca79b023a1bbf007",
+          "viewedAt": "2026-04-07T00:17:32.329Z"
+        },
+        {
+          "product": "69b36dde8845b1293c3712b2",
+          "viewedAt": "2026-04-07T06:27:30.907Z"
+        },
+        {
+          "product": "6985eb29b48db5a166875521",
+          "viewedAt": "2026-04-07T07:03:01.628Z"
+        },
+        {
+          "product": "699f187b5e651d51fc0e9eb7",
+          "viewedAt": "2026-04-07T07:17:05.183Z"
+        },
+        {
+          "product": "69b37748f49fcffb59c0a889",
+          "viewedAt": "2026-04-07T07:35:21.582Z"
+        },
+        {
+          "product": "699804b10b208df46905fa95",
+          "viewedAt": "2026-04-07T17:20:56.125Z"
+        }
+      ],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "69d49d01950a0bad49d1988b",
+        "city": "Gondar",
+        "phone": "+251914225724",
+        "region": "Ethiopia",
+        "street": "Gondar/09877",
+        "country": "Ethiopia",
+        "lastName": "Wagaw",
+        "firstName": "Wendwesen",
+        "isDefault": true,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-04-09T11:37:46.985Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": "6d3b397492154519faca6a4947f6c15908bb8932e5a38017f956da18c5d30ac2",
+    "passwordResetExpires": "2026-04-08T11:10:08.916Z",
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-04-06T20:57:25.526Z",
+    "updatedAt": "2026-07-29T16:26:22.498Z"
+  },
+  {
+    "id": "6983ef193321e3cbca373ddc",
+    "email": "almaz@gmail.com",
+    "password": "$2a$12$Rd8YGYraKo9AQ2dO4ScmaOpTlSv/BF0k8VcCd3fhEujlJ3xAMm3C2",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "artisan",
+    "profile": {
+      "bio": "",
+      "phone": "+251922334445",
+      "address": {
+        "city": "Gondar",
+        "region": "Amhara",
+        "street": "",
+        "country": "Ethiopia"
+      },
+      "lastName": "Aweke",
+      "firstName": "Almaz",
+      "storeLogo": "/uploads/1785425595059_d8b4c217ee5575781139adad001456e5.jpg",
+      "storeName": "Almaze",
+      "coverBanner": "/uploads/1779546002362_1775568444896.png",
+      "phoneNumber": "+251922334445",
+      "specialties": [],
+      "profileImage": "/uploads/1775683973006_5796258421693680485_99.jpg",
+      "totalProducts": 10,
+      "experienceYears": 5,
+      "workshopGallery": [
+        "/uploads/1779546030425_workbaner.png"
+      ],
+      "isVerifiedArtisan": false,
+      "traditionsPreserved": 2
+    },
+    "verification": {
+      "status": "approved",
+      "feedback": "Approved",
+      "documents": [],
+      "reviewedAt": "2026-02-16T12:18:11.304Z",
+      "reviewedBy": "6983f5b9d60aa35f2e196d78",
+      "workVideos": [],
+      "submittedAt": "2026-02-05T01:15:05.136Z",
+      "productPhotos": [],
+      "termsAccepted": false
+    },
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [
+        {
+          "query": "Wollo Royal Labaliba Art",
+          "timestamp": "2026-03-13T11:02:17.134Z"
+        },
+        {
+          "query": "Wollo Royal Labaliba Art",
+          "timestamp": "2026-03-13T11:02:22.382Z"
+        },
+        {
+          "query": "Wollo Royal Labaliba Art",
+          "timestamp": "2026-03-13T15:43:20.531Z"
+        },
+        {
+          "query": "Wollo Royal Labaliba Art",
+          "timestamp": "2026-03-13T15:43:22.734Z"
+        },
+        {
+          "query": "ጫማ",
+          "timestamp": "2026-03-17T00:56:19.043Z"
+        },
+        {
+          "query": "መስቀል",
+          "timestamp": "2026-03-17T01:18:47.693Z"
+        },
+        {
+          "query": "ጎንዳር",
+          "timestamp": "2026-03-17T01:22:04.903Z"
+        },
+        {
+          "query": "ጎን",
+          "timestamp": "2026-03-17T01:22:10.553Z"
+        },
+        {
+          "query": "Performance",
+          "timestamp": "2026-03-17T01:22:55.916Z"
+        },
+        {
+          "query": "dra",
+          "timestamp": "2026-03-17T01:27:11.936Z"
+        },
+        {
+          "query": "dr",
+          "timestamp": "2026-03-17T01:27:17.430Z"
+        },
+        {
+          "query": "bag",
+          "timestamp": "2026-03-17T01:27:33.126Z"
+        },
+        {
+          "query": "bag",
+          "timestamp": "2026-03-17T01:27:41.238Z"
+        },
+        {
+          "query": "bag",
+          "timestamp": "2026-03-17T01:27:50.349Z"
+        },
+        {
+          "query": "bag",
+          "timestamp": "2026-03-17T01:34:03.220Z"
+        }
+      ],
+      "viewedProducts": [
+        {
+          "product": "69860117f0cc2558ff6a15de",
+          "viewedAt": "2026-02-19T01:52:48.303Z"
+        },
+        {
+          "product": "6997aa11d8f18af2cf970c3f",
+          "viewedAt": "2026-02-20T12:34:34.794Z"
+        },
+        {
+          "product": "69980dae2a3d135dba0845aa",
+          "viewedAt": "2026-02-20T12:35:40.099Z"
+        },
+        {
+          "product": "699804b10b208df46905fa95",
+          "viewedAt": "2026-02-25T13:54:50.045Z"
+        },
+        {
+          "product": "698605f5f0cc2558ff6a1606",
+          "viewedAt": "2026-03-13T08:17:54.790Z"
+        },
+        {
+          "product": "6985ea0db48db5a166875516",
+          "viewedAt": "2026-03-16T13:11:06.139Z"
+        },
+        {
+          "product": "6985eb29b48db5a166875521",
+          "viewedAt": "2026-03-16T13:12:38.843Z"
+        },
+        {
+          "product": "6985ef7ab48db5a16687553c",
+          "viewedAt": "2026-03-17T00:53:16.053Z"
+        },
+        {
+          "product": "69b3731270da081915d643d5",
+          "viewedAt": "2026-03-17T02:41:14.517Z"
+        },
+        {
+          "product": "69b3755e99b3f0ab5a678936",
+          "viewedAt": "2026-04-08T10:06:37.769Z"
+        },
+        {
+          "product": "699f187b5e651d51fc0e9eb7",
+          "viewedAt": "2026-04-08T20:06:35.511Z"
+        },
+        {
+          "product": "69b7c519ca79b023a1bbf007",
+          "viewedAt": "2026-04-08T20:18:14.727Z"
+        },
+        {
+          "product": "69b37748f49fcffb59c0a889",
+          "viewedAt": "2026-04-08T21:26:22.775Z"
+        },
+        {
+          "product": "6997c4a20a0ac0c6c3e29031",
+          "viewedAt": "2026-05-16T14:07:25.731Z"
+        },
+        {
+          "product": "69b36dde8845b1293c3712b2",
+          "viewedAt": "2026-05-16T15:48:35.933Z"
+        },
+        {
+          "product": "6984d07e3fde5570a4137059",
+          "viewedAt": "2026-05-16T15:48:36.011Z"
+        },
+        {
+          "product": "698602fef0cc2558ff6a15f7",
+          "viewedAt": "2026-05-16T17:40:59.292Z"
+        },
+        {
+          "product": "7e07caa2dc14f056c7bd7298",
+          "viewedAt": "2026-07-30T00:41:53.831Z"
+        },
+        {
+          "product": "69f25665d4249c49299bedbf",
+          "viewedAt": "2026-10-01T08:24:20.789Z"
+        }
+      ],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [
+      "6985ef7ab48db5a16687553c",
+      "69b7c519ca79b023a1bbf007"
+    ],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "6994f7f3b0991a437caee386",
+        "city": "Gondar",
+        "phone": "+251922334455",
+        "region": "amhara",
+        "street": "Gondar/09877",
+        "country": "Ethiopia",
+        "lastName": "Aweke",
+        "firstName": "Almaz",
+        "isDefault": false,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": true,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": true,
+    "tempPasswordExpiry": "2026-07-29T23:10:33.648Z",
+    "flags": [],
+    "alerts": [
+      {
+        "_id": "69930b03ef8431c8666671ff",
+        "read": false,
+        "message": "Your artisan verification has been approved. You can now list products.",
+        "createdAt": "2026-02-16T12:18:11.329Z"
+      }
+    ],
+    "lastLogin": "2026-10-01T07:25:46.397Z",
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": {
+      "bankName": "Commercial Bank of Ethiopia (CBE)",
+      "merchantId": "103473",
+      "accountNumber": "1001466566017",
+      "paymentMethod": "bank_transfer",
+      "telebirrNumber": "+251918304123",
+      "accountHolderName": "Almaz Kebede"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [
+        {
+          "_id": "69b123eab4097e1d9155a23d",
+          "name": "Standard Delivery",
+          "enabled": true,
+          "basePrice": 50,
+          "description": "Standard delivery within 3-5 business days",
+          "estimatedDays": 5
+        },
+        {
+          "_id": "69b123eab4097e1d9155a23e",
+          "name": "Express Delivery",
+          "enabled": false,
+          "basePrice": 150,
+          "description": "Fast delivery within 1-2 business days",
+          "estimatedDays": 2
+        },
+        {
+          "_id": "69b123eab4097e1d9155a23f",
+          "name": "Store Pickup",
+          "enabled": true,
+          "basePrice": 0,
+          "description": "Pick up from store location",
+          "estimatedDays": 1
+        }
+      ],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": true,
+        "pricePerKg": 20
+      },
+      "freeShippingThreshold": 1000
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": "2026-07-29T23:01:23.421Z",
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 1475.01,
+    "paidCommission": 6199.98,
+    "createdAt": "2026-02-05T01:15:05.165Z",
+    "updatedAt": "2026-07-30T21:35:59.285Z"
+  },
+  {
+    "id": "bc75540cc2a34d4a37608cb1",
+    "email": "sebleworkmesay@gmail.com",
+    "password": "$2a$12$yW5l91WcGfnkZ2qFz0ZgYuI0BzZZrbOccfRkq0kavYrCqDJ5YHxte",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "artisan",
+    "profile": {
+      "phone": "0921345678",
+      "lastName": "MESAY",
+      "firstName": "SEBLEWORK"
+    },
+    "verification": {
+      "status": "none"
+    },
+    "preferences": {},
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": null,
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": null,
+    "notificationPreferences": null,
+    "storeSettings": null,
+    "shippingSettings": null,
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-07-30T22:14:27.536Z",
+    "updatedAt": "2026-07-30T22:14:27.536Z"
+  },
+  {
+    "id": "baac16f0cfc9d60c92429d62",
+    "email": "smartcareai08@gmail.com",
+    "password": "$2a$12$.8dJprQ/A/mtGFt3C2VdPOatll6HK5fX2yjw8DwwUZQZKR.wquXlW",
+    "googleId": null,
+    "authProvider": "local",
+    "role": "customer",
+    "profile": {
+      "phone": "+251948634600",
+      "lastName": "care",
+      "firstName": "smart"
+    },
+    "verification": null,
+    "preferences": {},
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "4d7b173efe81098d02f07841",
+        "city": "weleh",
+        "phone": "+251948634600",
+        "region": "amhara",
+        "street": "sekota",
+        "country": "Ethiopia",
+        "lastName": "care",
+        "firstName": "smart",
+        "isDefault": true,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": null,
+    "flags": [],
+    "alerts": [],
+    "lastLogin": null,
+    "loginAttempts": 0,
+    "lockUntil": null,
+    "bankDetails": null,
+    "notificationPreferences": null,
+    "storeSettings": null,
+    "shippingSettings": null,
+    "twoFactorEnabled": false,
+    "lastPasswordChange": null,
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-07-30T22:06:22.104Z",
+    "updatedAt": "2026-07-30T22:06:22.104Z"
+  },
+  {
+    "id": "69d41c54ec0421a390a74198",
+    "email": "yeshiwagaw21@gmail.com",
+    "password": "$2a$12$IseS1B55lxBjfc/wUqJ8i.VlsHSmgRbqWmQunOhBHScx3csRCABFu",
+    "googleId": "105038507318808252563",
+    "authProvider": "google",
+    "role": "customer",
+    "profile": {
+      "avatar": "https://lh3.googleusercontent.com/a/ACg8ocKtOI6GJKTV1Gan4VVkrC6CnqT4MyVrncaAmD0wrcOVf0i63Q=s96-c",
+      "lastName": "WAGAW",
+      "firstName": "YESHI",
+      "specialties": [],
+      "totalProducts": 0,
+      "experienceYears": 0,
+      "workshopGallery": [],
+      "isVerifiedArtisan": false,
+      "traditionsPreserved": 0
+    },
+    "verification": null,
+    "preferences": {
+      "categories": [],
+      "priceRange": {
+        "max": 10000,
+        "min": 0
+      },
+      "searchHistory": [],
+      "viewedProducts": [
+        {
+          "product": "69d77f5cddbab7c73b474871",
+          "viewedAt": "2026-04-30T22:56:49.621Z"
+        },
+        {
+          "product": "69b3731270da081915d643d5",
+          "viewedAt": "2026-05-02T22:12:19.680Z"
+        },
+        {
+          "product": "6986020cf0cc2558ff6a15e9",
+          "viewedAt": "2026-05-02T22:19:12.117Z"
+        },
+        {
+          "product": "69860061f0cc2558ff6a15d9",
+          "viewedAt": "2026-05-02T22:28:34.385Z"
+        },
+        {
+          "product": "698605f5f0cc2558ff6a1606",
+          "viewedAt": "2026-05-02T22:50:49.093Z"
+        },
+        {
+          "product": "69b36dde8845b1293c3712b2",
+          "viewedAt": "2026-07-30T15:38:11.521Z"
+        },
+        {
+          "product": "69b37748f49fcffb59c0a889",
+          "viewedAt": "2026-07-30T16:09:54.369Z"
+        },
+        {
+          "product": "69b7c519ca79b023a1bbf007",
+          "viewedAt": "2026-07-30T21:55:45.472Z"
+        },
+        {
+          "product": "7e07caa2dc14f056c7bd7298",
+          "viewedAt": "2026-10-03T07:33:11.324Z"
+        },
+        {
+          "product": "69f25665d4249c49299bedbf",
+          "viewedAt": "2026-10-03T08:10:45.965Z"
+        }
+      ],
+      "categoryWeights": {},
+      "culturalInterests": []
+    },
+    "wishlist": [],
+    "cart": [],
+    "shippingAddresses": [
+      {
+        "_id": "69f3d4a397cc05c213f2384f",
+        "city": "hamusit",
+        "phone": "0948634647",
+        "region": "amhara",
+        "street": "sekota",
+        "country": "Ethiopia",
+        "lastName": "WAGAW",
+        "firstName": "YESHI",
+        "isDefault": true,
+        "postalCode": ""
+      }
+    ],
+    "isActive": true,
+    "isVerified": false,
+    "isFlagged": false,
+    "mustChangePassword": false,
+    "hasAcceptedGuidelines": false,
+    "tempPasswordExpiry": "2026-07-30T00:55:59.124Z",
+    "flags": [],
+    "alerts": [],
+    "lastLogin": "2026-10-03T08:11:22.839Z",
+    "loginAttempts": 1,
+    "lockUntil": null,
+    "bankDetails": {
+      "paymentMethod": "bank_transfer"
+    },
+    "notificationPreferences": {
+      "emailOnLowStock": true,
+      "emailOnNewOrder": true,
+      "emailOnNewReview": true,
+      "emailOnWithdrawal": true,
+      "pushNotifications": true
+    },
+    "storeSettings": {
+      "vacationMode": false
+    },
+    "shippingSettings": {
+      "methods": [],
+      "regionalPricing": [],
+      "weightBasedPricing": {
+        "enabled": false,
+        "pricePerKg": 0
+      },
+      "freeShippingThreshold": 0
+    },
+    "twoFactorEnabled": false,
+    "lastPasswordChange": "2026-07-30T00:46:50.795Z",
+    "tokenVersion": 0,
+    "passwordResetToken": null,
+    "passwordResetExpires": null,
+    "unpaidCommission": 0,
+    "paidCommission": 0,
+    "createdAt": "2026-04-06T20:49:24.541Z",
+    "updatedAt": "2026-07-29T16:26:22.485Z"
+  }
+]

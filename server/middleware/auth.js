@@ -311,7 +311,7 @@ const generateTokens = (user) => {
 const refreshAccessToken = async (refreshToken) => {
   try {
     const decoded = jwt.verify(
-      refreshToken, 
+      refreshToken,
       process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET
     );
     

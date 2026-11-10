@@ -1,0 +1,54 @@
+[
+  {
+    "id": "69a7dad11c95dec7b2c8103d",
+    "earningId": "69a7dad11c95dec7b2c8103b",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "action": "created",
+    "previousStatus": null,
+    "newStatus": "pending",
+    "performedById": "6983ef193321e3cbca373ddc",
+    "notes": "Withdrawal request created by artisan",
+    "metadata": null,
+    "createdAt": "2026-03-04T07:10:09.744Z",
+    "updatedAt": "2026-07-29T16:26:24.740Z"
+  },
+  {
+    "id": "69a7dfdc1c95dec7b2c81620",
+    "earningId": "69a7dad11c95dec7b2c8103b",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "action": "processing",
+    "previousStatus": "pending",
+    "newStatus": "processing",
+    "performedById": "6983f5b9d60aa35f2e196d78",
+    "notes": "Approved by admin",
+    "metadata": null,
+    "createdAt": "2026-03-04T07:31:40.052Z",
+    "updatedAt": "2026-07-29T16:26:24.749Z"
+  },
+  {
+    "id": "69a7dff81c95dec7b2c8162f",
+    "earningId": "69a7dad11c95dec7b2c8103b",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "action": "completed",
+    "previousStatus": "processing",
+    "newStatus": "completed",
+    "performedById": "6983f5b9d60aa35f2e196d78",
+    "notes": "Payment completed successfully",
+    "metadata": null,
+    "createdAt": "2026-03-04T07:32:08.348Z",
+    "updatedAt": "2026-07-29T16:26:24.754Z"
+  },
+  {
+    "id": "69a7e41f1499f08377019ced",
+    "earningId": "69a7e41f1499f08377019ceb",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "action": "created",
+    "previousStatus": null,
+    "newStatus": "pending",
+    "performedById": "6983ef193321e3cbca373ddc",
+    "notes": "Withdrawal request created by artisan",
+    "metadata": null,
+    "createdAt": "2026-03-04T07:49:51.939Z",
+    "updatedAt": "2026-07-29T16:26:24.759Z"
+  }
+]

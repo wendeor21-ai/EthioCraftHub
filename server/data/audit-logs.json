@@ -1,5 +1,231 @@
 [
   {
+    "_id": "1794272607214",
+    "action": "broadcast_cleared",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "createdAt": "2026-11-10T01:03:27.214Z"
+  },
+  {
+    "_id": "1794272555278",
+    "action": "broadcast_cleared",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "createdAt": "2026-11-10T01:02:35.278Z"
+  },
+  {
+    "_id": "1794270969127",
+    "action": "tax_and_commission_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "VAT set to 15%, Commission set to 5%. Recalculated 6 products.",
+    "createdAt": "2026-11-10T00:36:09.127Z"
+  },
+  {
+    "_id": "1794270880552",
+    "action": "database_full_backup",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Full database backup downloaded (419 total records)",
+    "createdAt": "2026-11-10T00:34:40.552Z"
+  },
+  {
+    "_id": "1794266686527",
+    "action": "broadcast_cleared",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "selam",
+    "createdAt": "2026-11-09T23:24:46.527Z"
+  },
+  {
+    "_id": "1794266641688",
+    "action": "broadcast_sent",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "selam",
+    "target": "all",
+    "createdAt": "2026-11-09T23:24:01.688Z"
+  },
+  {
+    "_id": "1794266614236",
+    "action": "broadcast_cleared",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "createdAt": "2026-11-09T23:23:34.236Z"
+  },
+  {
+    "_id": "1794266479132",
+    "action": "broadcast_cleared",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "createdAt": "2026-11-09T23:21:19.132Z"
+  },
+  {
+    "_id": "1794266429324",
+    "action": "broadcast_sent",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "target": "artisans",
+    "createdAt": "2026-11-09T23:20:29.324Z"
+  },
+  {
+    "_id": "1794266429289",
+    "action": "broadcast_sent",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "target": "artisans",
+    "createdAt": "2026-11-09T23:20:29.290Z"
+  },
+  {
+    "_id": "1794266429256",
+    "action": "broadcast_sent",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "target": "artisans",
+    "createdAt": "2026-11-09T23:20:29.256Z"
+  },
+  {
+    "_id": "1794266429236",
+    "action": "broadcast_sent",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "target": "artisans",
+    "createdAt": "2026-11-09T23:20:29.236Z"
+  },
+  {
+    "_id": "1794266429206",
+    "action": "broadcast_sent",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "hi",
+    "target": "artisans",
+    "createdAt": "2026-11-09T23:20:29.207Z"
+  },
+  {
+    "_id": "1794239545122",
+    "action": "platform_settings_updated",
+    "adminEmail": "ethiocraftadmin@gmail.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-11-09T15:52:25.122Z"
+  },
+  {
+    "_id": "1791050206785",
+    "action": "platform_settings_updated",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-10-03T17:56:46.785Z"
+  },
+  {
+    "_id": "1791050198445",
+    "action": "platform_settings_updated",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-10-03T17:56:38.445Z"
+  },
+  {
+    "_id": "1790843571567",
+    "action": "broadcast_cleared",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "hi",
+    "createdAt": "2026-10-01T08:32:51.567Z"
+  },
+  {
+    "_id": "1790843525760",
+    "action": "broadcast_sent",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "hi",
+    "target": "all",
+    "createdAt": "2026-10-01T08:32:05.760Z"
+  },
+  {
+    "_id": "1785424822541",
+    "action": "platform_settings_updated",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-07-30T15:20:22.541Z"
+  },
+  {
+    "_id": "1785424665705",
+    "action": "platform_settings_updated",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-07-30T15:17:45.705Z"
+  },
+  {
+    "_id": "1785424559665",
+    "action": "platform_settings_updated",
+    "adminEmail": "admin@ethiocraft.com",
+    "details": "Platform settings or commission rate changed",
+    "createdAt": "2026-07-30T15:15:59.665Z"
+  },
+  {
+    "id": "93947c07-0e89-42d4-a2b9-1d14d7f5c0f1",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "7e07caa2dc14f056c7bd7298",
+      "productName": "የጎንደር ንጉሣዊ ቲልት ባህላዊ የጥጥ ቀሚስ",
+      "changedFields": [
+        "_id",
+        "name",
+        "slug",
+        "shortDescription",
+        "description",
+        "price",
+        "category",
+        "subcategory",
+        "originRegion",
+        "originZone",
+        "materials",
+        "dimensions",
+        "craftingTime",
+        "story",
+        "careInstructions",
+        "weight",
+        "videoUrl",
+        "customizable",
+        "tags",
+        "culturalTags",
+        "stock",
+        "isAvailable",
+        "seo",
+        "shipping",
+        "images",
+        "inventory",
+        "variations",
+        "options",
+        "status"
+      ]
+    },
+    "message": "Updated product: የጎንደር ንጉሣዊ ቲልት ባህላዊ የጥጥ ቀሚስ",
+    "createdAt": "2026-07-30T15:12:25.528Z"
+  },
+  {
+    "id": "31a84293-8819-4060-a4c5-e392832b3143",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "7e07caa2dc14f056c7bd7298",
+      "productName": "የጎንደር ንጉሣዊ ቲልት ባህላዊ የጥጥ ቀሚስ",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የጎንደር ንጉሣዊ ቲልት ባህላዊ የጥጥ ቀሚስ",
+    "createdAt": "2026-07-30T14:47:32.180Z"
+  },
+  {
+    "id": "1fb13c03-26bd-46ec-992a-127bbaa764f4",
+    "userId": "6983ef193321e3cbca373ddc",
+    "action": "product_updated",
+    "details": {
+      "productId": "7e07caa2dc14f056c7bd7298",
+      "productName": "የጎንደር ንጉሣዊ ቲልት ባህላዊ የጥጥ ቀሚስ",
+      "changedFields": [
+        "inventory",
+        "isAvailable"
+      ]
+    },
+    "message": "Updated product: የጎንደር ንጉሣዊ ቲልት ባህላዊ የጥጥ ቀሚስ",
+    "createdAt": "2026-07-30T14:46:33.557Z"
+  },
+  {
     "_id": "1777752574903",
     "action": "platform_settings_updated",
     "adminEmail": "ethiocraftadmin@gmail.com",

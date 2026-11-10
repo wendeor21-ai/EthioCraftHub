@@ -360,7 +360,7 @@ router.post(
 
     const user = await User.findOne({
       passwordResetToken: hashed,
-      passwordResetExpires: { $gt: Date.now() },
+      passwordResetExpires: { $gt: new Date() },
     });
 
     if (!user) {
@@ -372,8 +372,8 @@ router.post(
     }
 
     user.password = password;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
     user.mustChangePassword = false;
     await user.save();
 
@@ -745,18 +745,29 @@ router.post(
 
 /**
  * @route   POST /api/auth/create-admin
- * @desc    Create admin user (development only)
- * @access  Public (should be removed in production)
+ * @desc    Create admin user — requires ADMIN_CREATION_KEY header
+ * @access  Restricted (secret key required regardless of environment)
  */
 router.post(
   "/create-admin",
   asyncHandler(async (req, res) => {
-    // Only allow in development environment
-    if (process.env.NODE_ENV === "production") {
+    // SEC-04: Require a secret admin creation key in all environments.
+    // Set ADMIN_CREATION_KEY to a strong random string in your .env.
+    // Without it this route is permanently disabled.
+    const adminKey = process.env.ADMIN_CREATION_KEY;
+    if (!adminKey) {
       return res.status(403).json({
         error: "Forbidden",
-        message: "Admin creation not allowed in production",
-        code: "PRODUCTION_FORBIDDEN",
+        message: "Admin creation is disabled (ADMIN_CREATION_KEY not configured)",
+        code: "ADMIN_CREATION_DISABLED",
+      });
+    }
+    const providedKey = req.headers["x-admin-creation-key"];
+    if (!providedKey || providedKey !== adminKey) {
+      return res.status(403).json({
+        error: "Forbidden",
+        message: "Invalid or missing admin creation key",
+        code: "INVALID_ADMIN_KEY",
       });
     }
 

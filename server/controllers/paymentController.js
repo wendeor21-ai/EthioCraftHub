@@ -12,6 +12,21 @@
 const User = require("../models/User");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+
+function getPlatformRates() {
+  try {
+    const p = path.join(__dirname, '..', 'data', 'platform-settings.json');
+    if (fs.existsSync(p)) {
+      const s = JSON.parse(fs.readFileSync(p, 'utf8'));
+      return {
+        vatRate: typeof s.vatRate === 'number' ? s.vatRate : 15,
+        commissionRate: typeof s.commissionRate === 'number' ? s.commissionRate : 5
+      };
+    }
+  } catch (_) {}
+  return { vatRate: 15, commissionRate: 5 };
+}
+
 const axios = require("axios");
 const crypto = require("crypto");
 
@@ -38,6 +53,74 @@ if (!CHAPA_SECRET_KEY) {
  * @route POST /api/payment/initialize
  * @access Private
  */
+
+/**
+ * Real-time Socket.io notification dispatcher to all artisans in an order
+ */
+function notifyArtisansOfNewOrder(req, order) {
+  try {
+    const io = req.app.get('io');
+    if (!io) {
+      console.warn("⚠️ Socket.io instance (io) not found in req.app");
+      return;
+    }
+
+    const artisanIds = new Set();
+    
+    // Top-level artisan or artisanId
+    if (order.artisanId) artisanIds.add(String(order.artisanId));
+    if (order.artisan) {
+      if (order.artisan._id) artisanIds.add(String(order.artisan._id));
+      else if (order.artisan.id) artisanIds.add(String(order.artisan.id));
+      else if (typeof order.artisan === 'string') artisanIds.add(order.artisan);
+    }
+
+    // Items array
+    if (Array.isArray(order.items)) {
+      for (const item of order.items) {
+        if (item.artisan) {
+          if (item.artisan._id) artisanIds.add(String(item.artisan._id));
+          else if (item.artisan.id) artisanIds.add(String(item.artisan.id));
+          else if (typeof item.artisan === 'string') artisanIds.add(item.artisan);
+        }
+      }
+    }
+
+    const idList = Array.from(artisanIds).filter(Boolean);
+    console.log(`📡 [Socket.io] Broadcasting newOrder to ${idList.length} artisan(s):`, idList);
+
+    const payload = {
+      orderId: order._id ? String(order._id) : (order.id ? String(order.id) : null),
+      id: order._id ? String(order._id) : (order.id ? String(order.id) : null),
+      _id: order._id ? String(order._id) : (order.id ? String(order.id) : null),
+      orderNumber: order.orderNumber,
+      total: order.totals?.total,
+      totals: order.totals || {},
+      itemCount: order.items?.length || 0,
+      paymentMethod: order.payment?.method,
+      payment: order.payment || {},
+      status: order.status || 'pending',
+      createdAt: order.createdAt || new Date().toISOString(),
+      items: order.items || [],
+      customer: order.customer || null,
+      message: `🛍️ New order #${order.orderNumber} placed!`
+    };
+
+    idList.forEach(artisanId => {
+      io.to(String(artisanId)).emit('newOrder', payload);
+      io.to(`user_${artisanId}`).emit('newOrder', payload);
+      io.to(`artisan_${artisanId}`).emit('newOrder', payload);
+      console.log(`   👉 Emitted 'newOrder' to rooms: ${artisanId}, user_${artisanId}, artisan_${artisanId}`);
+    });
+
+    // Also broadcast to admin rooms
+    io.to('role_admin').emit('newOrder', payload);
+    io.to('admin').emit('newOrder', payload);
+  } catch (err) {
+    console.error("❌ Error notifying artisans via Socket.io:", err.message);
+  }
+}
+
 exports.initializePayment = async (req, res) => {
   try {
     // Validate Chapa API key is configured
@@ -95,7 +178,9 @@ exports.initializePayment = async (req, res) => {
       });
     }
 
-    const shippingAddress = user.shippingAddresses.id(shippingAddressId);
+    const shippingAddress = (user.shippingAddresses || []).find(
+      (a) => String(a._id) === String(shippingAddressId)
+    );
     if (!shippingAddress) {
       return res.status(404).json({
         success: false,
@@ -239,8 +324,9 @@ exports.initializePayment = async (req, res) => {
     console.log("✅ All products validated successfully!");
 
     // Calculate totals
+    const { vatRate: currentVatRate } = getPlatformRates();
     const shipping = subtotal >= 1000 ? 0 : 50;
-    const tax = Math.round(subtotal * 0.15 * 100) / 100;
+    const tax = Math.round(subtotal * (currentVatRate / 100) * 100) / 100;
     const total = subtotal + shipping + tax;
 
     console.log("💰 Totals:", { subtotal, shipping, tax, total });
@@ -392,16 +478,29 @@ exports.initializePayment = async (req, res) => {
     }
 
     if (!order) {
+      // Extract artisanId from first item for top-level FK (used by artisan order queries)
+      const firstItem = items[0];
+      let firstPid = firstItem?.productId || firstItem?._id || (firstItem?.product && firstItem.product._id);
+      if (firstPid && typeof firstPid !== 'string') firstPid = firstPid.toString();
+      const firstProduct = firstPid ? productMap[firstPid] : null;
+      const orderArtisanId = firstItem?.artisan
+        ? String(firstItem.artisan._id || firstItem.artisan)
+        : firstProduct?.artisan
+          ? String(firstProduct.artisan._id || firstProduct.artisan)
+          : null;
+
       order = await Order.create({
         customer: userId,
+        artisan: orderArtisanId,
         cartId,
         items: items.map((item) => {
           let pid = item.productId || item._id || (item.product && item.product._id);
           if (pid && typeof pid !== "string") pid = pid.toString();
           const product = productMap[pid];
+          const artisanVal = item.artisan || product?.artisan || null;
           return {
             product: pid,
-            artisan: item.artisan || product?.artisan || null,
+            artisan: artisanVal ? String(artisanVal._id || artisanVal) : null,
             quantity: item.quantity,
             price: product ? product.price : 0,
             status: "pending",
@@ -451,12 +550,16 @@ exports.initializePayment = async (req, res) => {
         });
       }
 
+      // 🔔 Real-time notification to artisan dashboard without refresh
+      notifyArtisansOfNewOrder(req, pendingOrder);
+
       return res.status(200).json({
         success: true,
         message: "Order placed successfully",
         data: {
           order: pendingOrder,
           orderNumber: pendingOrder.orderNumber,
+          orderId: pendingOrder._id ? pendingOrder._id.toString() : null,
           redirect: '/order-success'
         }
       });
@@ -571,7 +674,9 @@ exports.verifyPayment = async (req, res) => {
                   const shippingAddressId = paymentData.meta?.shippingAddressId;
                   
                   // Robust shipping address resolution
-                  let shippingAddress = user && shippingAddressId ? user.shippingAddresses.id(shippingAddressId) : null;
+                  let shippingAddress = user && shippingAddressId
+                    ? (user.shippingAddresses || []).find(a => String(a._id) === String(shippingAddressId))
+                    : null;
                   if (!shippingAddress && user && user.shippingAddresses?.length > 0) {
                       // Fallback to default or first address if specified one is missing
                       shippingAddress = user.shippingAddresses.find(a => a.isDefault) || user.shippingAddresses[0];
@@ -637,7 +742,10 @@ exports.verifyPayment = async (req, res) => {
 
               // Notify artisan
               const io = req.app.get('io');
-              if (io && order.artisan) {
+              // 🔔 Real-time notification to artisan dashboard
+      notifyArtisansOfNewOrder(req, newOrder);
+
+      if (io && order.artisan) {
                 io.to(`user_${order.artisan.toString()}`).emit('customOrderPaid', {
                    orderId: order._id,
                    message: 'Customer has completed payment. You can start production!'
@@ -707,7 +815,9 @@ exports.verifyPayment = async (req, res) => {
         });
       }
 
-      const shippingAddress = user.shippingAddresses.id(shippingAddressId);
+      const shippingAddress = (user.shippingAddresses || []).find(
+        (a) => String(a._id) === String(shippingAddressId)
+      );
 
       if (!shippingAddress) {
         console.log("❌ Shipping address not found for ID:", shippingAddressId);
@@ -840,6 +950,9 @@ exports.verifyPayment = async (req, res) => {
         });
         console.log(`  ✅ Updated inventory for product ${item.product}`);
       }
+
+      // 🔔 Real-time notification to artisan dashboard
+      notifyArtisansOfNewOrder(req, order);
 
       console.log("═══════════════════════════════════════");
       console.log("✅ PAYMENT VERIFICATION COMPLETED");
@@ -1113,10 +1226,11 @@ exports.initializeCustomPayment = async (req, res) => {
     if (!order.price || order.price <= 0) return res.status(400).json({ success: false, message: "Order price must be set before payment" });
 
     const subtotal = order.price;
-    const tax = Math.round(subtotal * 0.15 * 100) / 100;
+    const { vatRate: custVat, commissionRate: custComm } = getPlatformRates();
+    const tax = Math.round(subtotal * (custVat / 100) * 100) / 100;
     const total = subtotal + tax;
 
-    const commissionFee = subtotal * 0.10;
+    const commissionFee = Math.round(subtotal * (custComm / 100) * 100) / 100;
     const artisanShare = subtotal - commissionFee;
 
     // Validate shipping address before modifying CustomOrder
@@ -1126,20 +1240,26 @@ exports.initializeCustomPayment = async (req, res) => {
 
     const User = require("../models/User");
     const user = await User.findById(userId);
-    const shippingAddress = user ? user.shippingAddresses.id(shippingAddressId) : null;
+    const shippingAddress = user
+      ? (user.shippingAddresses || []).find(a => String(a._id) === String(shippingAddressId))
+      : null;
 
     if (!shippingAddress) {
       return res.status(404).json({ success: false, message: "Shipping address not found" });
     }
 
     if (paymentMethod !== 'CHAPA') {
+      const artisanId = order.artisan ? String(order.artisan._id || order.artisan) : null;
+      const customerId = order.customer ? String(order.customer._id || order.customer) : String(userId);
+
       // Create shadow official Order FIRST to ensure everything is valid
       const newOrder = await Order.create({
-        customer: order.customer._id || order.customer,
+        customer: customerId,
+        artisan: artisanId,
         cartId: `custom-${order._id}`,
         items: [{
-          product: order.product || null,
-          artisan: order.artisan._id || order.artisan,
+          product: order.product?._id || order.product || null,
+          artisan: artisanId,
           quantity: 1,
           price: order.price,
           status: 'pending',
@@ -1176,12 +1296,14 @@ exports.initializeCustomPayment = async (req, res) => {
         photos: order.photos
       });
 
+      const transactionId = paymentMethod === 'COD' ? `COD-${Date.now()}` : `MAN-${Date.now()}`;
+
       // Now update the CustomOrder
       order.status = paymentMethod === 'COD' ? 'accepted' : 'accepted'; // Keep as accepted until paid
       order.commission = commissionFee;
       order.artisanEarning = artisanShare;
       order.paymentMethod = paymentMethod;
-      order.transactionId = newOrder.payment.transactionId;
+      order.transactionId = transactionId;
       await order.save();
 
       // Alert Artisan

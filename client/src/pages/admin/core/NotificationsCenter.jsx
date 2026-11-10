@@ -38,7 +38,7 @@ const NotificationsCenter = () => {
     if (!active) return alert('No active broadcast');
     if (!window.confirm('Clear active broadcast?')) return;
     try {
-      await api.delete(`/admin/notifications/broadcasts/${active._id}`);
+      await api.delete(`/admin/notifications/broadcasts/all`);
       alert('Broadcast cleared');
       setActive(null);
       try { await refresh(); } catch (e) { console.warn('refresh after clear', e); }

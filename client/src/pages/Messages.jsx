@@ -191,7 +191,7 @@ const Messages = () => {
     }
   };
 
-  const unreadCount = messages.filter(m => m.status === 'Replied' && !m.read).length;
+  const unreadCount = messages.filter(m => !m.read).length;
   const inboxMessages = messages.filter(m => activeTab === 'inbox');
   const unrepliedMessages = messages.filter(m => m.status !== 'Replied');
 

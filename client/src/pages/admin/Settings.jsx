@@ -160,7 +160,9 @@ const AdminSettings = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [platform, setPlatform] = useState({ name: 'EthioCraft', contactEmail: '', currency: 'ETB', region: 'ET', logoUrl: '', commissionRate: 5 });
+  const [platform, setPlatform] = useState({ name: 'EthioCraft', contactEmail: '', currency: 'ETB', region: 'ET', logoUrl: '', commissionRate: 5, vatRate: 15 });
+  const [backingUp, setBackingUp] = useState(false);
+  const [updatingRates, setUpdatingRates] = useState(false);
   const [categories, setCategories] = useState([]);
   const [banners, setBanners] = useState([]);
   const [featured, setFeatured] = useState([]);
@@ -175,7 +177,7 @@ const AdminSettings = () => {
     headerLogo: '',
     footerLogo: ''
   });
-  const { refresh, updateSettings, updateHomeConfig } = useSettings();
+  const { refresh, updateSettings, updateHomeConfig, broadcasts, allBroadcasts } = useSettings();
   const [heritageLang, setHeritageLang] = useState('am');
 
   useEffect(() => { fetchAll(); }, []);
@@ -385,6 +387,52 @@ const AdminSettings = () => {
     }
   };
 
+  const handleDownloadBackup = async () => {
+    try {
+      setBackingUp(true);
+      const res = await adminAPI.downloadBackup();
+      const blob = new Blob([res.data], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ethiocraft-global-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('Database backup downloaded successfully!');
+    } catch (err) {
+      console.error('Backup download error:', err);
+      toast.error('Failed to download database backup');
+    } finally {
+      setBackingUp(false);
+    }
+  };
+
+  const handleRecalculateRates = async () => {
+    try {
+      setUpdatingRates(true);
+      const res = await adminAPI.recalculateRates({
+        vatRate: parseFloat(platform.vatRate) || 15,
+        commissionRate: parseFloat(platform.commissionRate) || 5
+      });
+      if (res.data.success) {
+        toast.success(res.data.message || 'Rates updated and applied to all products!');
+        setPlatform(prev => ({
+          ...prev,
+          vatRate: res.data.vatRate,
+          commissionRate: res.data.commissionRate
+        }));
+        await refresh();
+      }
+    } catch (err) {
+      console.error('Recalculate rates error:', err);
+      toast.error('Failed to update rates and recalculate products');
+    } finally {
+      setUpdatingRates(false);
+    }
+  };
+
   const saveSettings = async () => {
     setSaving(true);
     try {
@@ -433,29 +481,66 @@ const AdminSettings = () => {
     } catch (err) { console.error('delete category', err); alert('Failed'); }
   };
 
+    const [broadcastLoading, setBroadcastLoading] = useState(false);
+
   const sendBroadcast = async (target) => {
-    if (!broadcastMsg.trim()) return alert('Enter a message');
+    if (!broadcastMsg.trim()) {
+      toast.error('Please enter a broadcast message');
+      return;
+    }
+    setBroadcastLoading(true);
     try {
-      await adminAPI.broadcastNotification({ message: broadcastMsg, target });
-      // refresh broadcasts so users see the new message immediately
+      await adminAPI.broadcastNotification({ message: broadcastMsg.trim(), target });
       try { await refresh(); } catch (e) { console.warn('refresh after broadcast', e); }
-      alert('Broadcast sent');
+      toast.success(`Broadcast sent to ${target === 'artisans' ? 'all artisans' : 'all users'} in real-time!`);
       setBroadcastMsg('');
-    } catch (err) { console.error('broadcast', err); alert('Failed to send'); }
+      try {
+        const auditRes = await adminAPI.getAuditLogs({ limit: 20 });
+        if (auditRes.data?.logs) setAuditLogs(auditRes.data.logs);
+      } catch (e) {}
+    } catch (err) {
+      console.error('broadcast error', err);
+      toast.error('Failed to send broadcast');
+    } finally {
+      setBroadcastLoading(false);
+    }
   };
 
-  const removeCurrentBroadcast = async () => {
+  const cancelCompose = () => {
+    setBroadcastMsg('');
+    toast('Draft cleared');
+  };
+
+  const removeSingleBroadcast = async (broadcastId) => {
     try {
-      // fetch public broadcasts and remove the latest one
-      const res = await api.get('/notifications/broadcasts');
-      const list = res.data.broadcasts || [];
-      if (list.length === 0) return alert('No active broadcasts');
-      const active = list[0];
-      if (!window.confirm('Remove current broadcast?')) return;
-      await adminAPI.deleteBroadcast(active._id);
-      await refresh();
-      alert('Broadcast removed');
-    } catch (err) { console.error('remove broadcast', err); alert('Failed to remove broadcast'); }
+      await adminAPI.deleteBroadcast(broadcastId);
+      try { await refresh(); } catch (e) {}
+      toast.success('Broadcast cancelled & removed in real-time');
+      try {
+        const auditRes = await adminAPI.getAuditLogs({ limit: 20 });
+        if (auditRes.data?.logs) setAuditLogs(auditRes.data.logs);
+      } catch (e) {}
+    } catch (err) {
+      console.error('delete broadcast', err);
+      toast.error('Failed to cancel broadcast');
+    }
+  };
+
+  const removeAllBroadcasts = async () => {
+    if (!window.confirm('Are you sure you want to cancel and remove all active broadcasts?')) return;
+    try {
+      await adminAPI.deleteBroadcast('all');
+      setBroadcastMsg('');
+      try { await refresh(); } catch (e) {}
+      toast.success('All active broadcasts cancelled & removed in real-time!');
+      try {
+        const auditRes = await adminAPI.getAuditLogs({ limit: 20 });
+        if (auditRes.data?.logs) setAuditLogs(auditRes.data.logs);
+      } catch (e) {}
+    } catch (err) {
+      console.error('remove all broadcasts', err);
+      toast.error('Failed to remove broadcasts');
+    }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner size="large" /></div>;
@@ -466,6 +551,36 @@ const AdminSettings = () => {
         <button onClick={() => navigate('/admin/dashboard')} className="text-ethiopian-gold hover:text-ethiopian-earth mb-4 flex items-center">← Back to Dashboard</button>
         <h1 className="text-2xl font-bold mb-2">Admin Settings & Platform Configuration</h1>
         <p className="text-gray-600 mb-4">General platform settings, CMS controls, notifications and security logs.</p>
+
+        {/* Full Database Backup Action Banner */}
+        <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 rounded-2xl p-6 text-white mb-6 shadow-md border border-emerald-700/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-2xl">💾</span>
+              <h3 className="text-lg font-black tracking-tight">Full System Database Backup & Export</h3>
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider">MySQL / Prisma</span>
+            </div>
+            <p className="text-xs text-emerald-100/90 max-w-2xl leading-relaxed">
+              Generate and instantly download a complete JSON archive of all tables: Users, Products, Orders, Custom Orders, Settings, and Audit Logs.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleDownloadBackup}
+            disabled={backingUp}
+            className="flex items-center gap-2 px-5 py-3 bg-white hover:bg-emerald-50 text-emerald-950 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg transition-all active:scale-95 flex-shrink-0 cursor-pointer disabled:opacity-50"
+          >
+            {backingUp ? (
+              <span>⏳ Generating Backup...</span>
+            ) : (
+              <>
+                <span className="text-base">📥</span>
+                <span>Backup All Data (.JSON)</span>
+              </>
+            )}
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow p-6">
@@ -501,19 +616,76 @@ const AdminSettings = () => {
                 <option value="US">United States (English)</option>
               </select>
             </label>
-            <label className="block mb-3">
-              <span className="text-sm text-gray-600">Platform Commission Rate (%)</span>
-              <input 
-                type="number" 
-                value={platform.commissionRate} 
-                onChange={e => setPlatform({ ...platform, commissionRate: parseFloat(e.target.value) })} 
-                className="mt-1 block w-full border rounded px-3 py-2" 
-                step="0.1"
-                min="0"
-                max="100"
-              />
-              <span className="text-[10px] text-gray-500 italic">This rate is applied to all sales platform-wide.</span>
-            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <label className="block">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Platform VAT Rate (%)</span>
+                <input 
+                  type="number" 
+                  value={platform.vatRate !== undefined ? platform.vatRate : 15} 
+                  onChange={e => setPlatform({ ...platform, vatRate: parseFloat(e.target.value) || 0 })} 
+                  className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 font-bold text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-ethiopian-gold focus:outline-none transition-all" 
+                  step="0.5"
+                  min="0"
+                  max="100"
+                />
+                <span className="text-[10px] text-gray-400 italic">Standard Ethiopian VAT is 15%.</span>
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">Platform Commission (%)</span>
+                <input 
+                  type="number" 
+                  value={platform.commissionRate !== undefined ? platform.commissionRate : 5} 
+                  onChange={e => setPlatform({ ...platform, commissionRate: parseFloat(e.target.value) || 0 })} 
+                  className="mt-1 block w-full border border-gray-300 rounded-xl px-3 py-2 font-bold text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-ethiopian-gold focus:outline-none transition-all" 
+                  step="0.5"
+                  min="0"
+                  max="100"
+                />
+                <span className="text-[10px] text-gray-400 italic">Platform service fee applied to sales.</span>
+              </label>
+            </div>
+
+            {/* Live Calculation Preview & Auto-Recalculate Button */}
+            <div className="bg-amber-50/80 border border-amber-200/90 rounded-2xl p-4 my-4 shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-black text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <span>📊</span> Live Rate Preview (1,000 ETB Product)
+                </span>
+                <span className="text-[10px] bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full font-mono font-bold">Auto-Recalculation</span>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 text-center my-3">
+                <div className="bg-white p-2.5 rounded-xl border border-amber-100 shadow-2xs">
+                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider block">VAT ({platform.vatRate ?? 15}%)</span>
+                  <span className="text-sm font-black text-blue-600 font-mono">+{((1000 * (Number(platform.vatRate ?? 15) / 100))).toFixed(2)} ETB</span>
+                </div>
+                <div className="bg-white p-2.5 rounded-xl border border-amber-100 shadow-2xs">
+                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider block">Commission ({platform.commissionRate ?? 5}%)</span>
+                  <span className="text-sm font-black text-purple-600 font-mono">-{(1000 * (Number(platform.commissionRate ?? 5) / 100)).toFixed(2)} ETB</span>
+                </div>
+                <div className="bg-white p-2.5 rounded-xl border border-amber-100 shadow-2xs">
+                  <span className="text-[9px] font-black text-gray-400 uppercase tracking-wider block">Artisan Net</span>
+                  <span className="text-sm font-black text-emerald-600 font-mono">{(1000 - (1000 * (Number(platform.commissionRate ?? 5) / 100))).toFixed(2)} ETB</span>
+                </div>
+              </div>
+
+              <button 
+                type="button"
+                onClick={handleRecalculateRates} 
+                disabled={updatingRates}
+                className="w-full py-2.5 bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                {updatingRates ? (
+                  <span>⏳ Recalculating all products...</span>
+                ) : (
+                  <>
+                    <span>⚡</span>
+                    <span>Apply Rates & Automatically Recalculate All Products (%)</span>
+                  </>
+                )}
+              </button>
+            </div>
 
             <div className="flex justify-end mt-4">
               <button onClick={saveSettings} disabled={saving} className="px-4 py-2 bg-ethiopian-gold text-white rounded">{saving ? 'Saving...' : 'Save'}</button>
@@ -706,13 +878,86 @@ const AdminSettings = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="font-semibold mb-3">Notifications & Broadcasts</h3>
-            <textarea value={broadcastMsg} onChange={e => setBroadcastMsg(e.target.value)} placeholder="Write broadcast message..." className="w-full border rounded p-3 h-28" />
-            <div className="mt-3 flex gap-2 justify-end">
-              <button onClick={() => sendBroadcast('all')} className="px-3 py-2 bg-ethiopian-gold text-white rounded">Send to All</button>
-              <button onClick={() => sendBroadcast('artisans')} className="px-3 py-2 bg-white border rounded">Send to Artisans</button>
-              <button onClick={removeCurrentBroadcast} className="px-3 py-2 bg-red-600 text-white rounded">Remove Current Broadcast</button>
-              <button onClick={async () => { if (!window.confirm('Completely remove current broadcast and clear message?')) return; try { await removeCurrentBroadcast(); setBroadcastMsg(''); } catch (e) { console.error(e); alert('Failed'); } }} className="px-3 py-2 bg-red-800 text-white rounded">Completely Remove</button>
+            <h3 className="font-semibold mb-1 text-gray-900">Notifications & Broadcasts</h3>
+            <p className="text-xs text-gray-500 mb-3">Send instant alerts to artisans or all users across the platform without page reload.</p>
+            
+            {/* Active Live Broadcasts Indicator */}
+            {((allBroadcasts && allBroadcasts.length > 0) || (broadcasts && broadcasts.length > 0)) && (
+              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                    Currently Active Broadcasts ({allBroadcasts?.length || broadcasts.length})
+                  </span>
+                  <button
+                    onClick={removeAllBroadcasts}
+                    className="text-[11px] font-semibold text-red-700 hover:text-red-900 underline"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="max-h-32 overflow-y-auto space-y-1.5 pr-1">
+                  {(allBroadcasts || broadcasts).map((b) => (
+                    <div key={b._id} className="flex items-center justify-between bg-white p-2 rounded-lg border border-amber-100 text-xs">
+                      <div className="flex items-center gap-2 truncate pr-2">
+                        <span className="bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold uppercase text-[9px]">
+                          {b.target || 'all'}
+                        </span>
+                        <span className="truncate text-gray-700 font-medium">{b.message}</span>
+                      </div>
+                      <button
+                        onClick={() => removeSingleBroadcast(b._id)}
+                        className="text-red-600 hover:text-red-800 font-bold px-2 py-0.5 bg-red-50 hover:bg-red-100 rounded text-[11px] flex-shrink-0"
+                        title="Cancel this broadcast"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <textarea
+              value={broadcastMsg}
+              onChange={e => setBroadcastMsg(e.target.value)}
+              placeholder="Write announcement or urgent message to artisans..."
+              className="w-full border rounded-xl p-3 h-28 focus:ring-2 focus:ring-ethiopian-gold focus:outline-none text-sm text-gray-800"
+            />
+            
+            <div className="mt-3 flex flex-wrap gap-2 justify-end items-center">
+              {broadcastMsg && (
+                <button
+                  type="button"
+                  onClick={cancelCompose}
+                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition"
+                >
+                  Cancel / Clear Draft
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => sendBroadcast('artisans')}
+                disabled={broadcastLoading}
+                className="px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white rounded-lg text-sm font-bold shadow-sm transition disabled:opacity-50"
+              >
+                {broadcastLoading ? 'Sending...' : '📢 Send to All Artisans'}
+              </button>
+              <button
+                type="button"
+                onClick={() => sendBroadcast('all')}
+                disabled={broadcastLoading}
+                className="px-4 py-2 bg-ethiopian-gold hover:bg-amber-600 text-white rounded-lg text-sm font-bold shadow-sm transition disabled:opacity-50"
+              >
+                {broadcastLoading ? 'Sending...' : 'Send to All Users'}
+              </button>
+              <button
+                type="button"
+                onClick={removeAllBroadcasts}
+                className="px-3 py-2 bg-red-800 hover:bg-red-900 text-white rounded-lg text-sm font-medium transition"
+              >
+                Completely Remove
+              </button>
             </div>
           </div>
 

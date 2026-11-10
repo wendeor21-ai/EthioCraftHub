@@ -286,38 +286,84 @@ exports.deleteShippingAddress = async (req, res) => {
 exports.getArtisanStats = async (req, res) => {
   try {
     const artisanId = req.user._id;
+    const aid = String(artisanId);
+    const Product = require("../models/Product");
+    const { prisma } = require("../lib/prisma");
 
-    // 1. የዚህን አርቲሳን ምርቶች ብቻ መቁጠር
-    const Product = require("../models/Product"); // ሞዴሉን እዚህ ጋር ኢምፖርት አድርግ
+    // 1. Product count for this artisan
     const productCount = await Product.countDocuments({ artisan: artisanId });
 
-    // 2. ትዕዛዞችን መቁጠር (ከዚህ አርቲሳን የተገዙ ምርቶችን ብቻ)
-    const Order = require("../models/Order");
-    const orderCount = await Order.countDocuments({
-      "items.artisan": artisanId,
-    });
+    // 2. Fetch all orders belonging to this artisan (artisanId FK or items JSON containment)
+    let artisanOrders = [];
+    try {
+      artisanOrders = await prisma.$queryRawUnsafe(
+        `SELECT id, orderNumber, status, totals, createdAt FROM orders WHERE artisanId = ? OR JSON_CONTAINS(items, ?) OR JSON_CONTAINS(items, ?) ORDER BY createdAt DESC`,
+        aid,
+        JSON.stringify({ artisan: aid }),
+        JSON.stringify({ artisan: { _id: aid } })
+      );
+    } catch (e) {
+      artisanOrders = await prisma.order.findMany({
+        where: { artisanId: aid },
+        select: { id: true, orderNumber: true, status: true, totals: true, createdAt: true },
+        orderBy: { createdAt: 'desc' }
+      });
+    }
 
-    // 3. Performance Insights (ከ User ሞዴል ወይም Analytics አምጣው)
+    const totalOrdersCount = (artisanOrders || []).length;
+    const pendingOrders = (artisanOrders || []).filter(o =>
+      ['pending', 'pending verification'].includes((o.status || '').toLowerCase())
+    );
+    const pendingOrdersCount = pendingOrders.length;
+
+    // 3. User details and accurate revenue
     const user = await User.findById(artisanId);
+    let totalRevenue = user?.totalSales || 0;
+    if (!totalRevenue) {
+      const completedOrders = (artisanOrders || []).filter(o =>
+        ['completed', 'delivered', 'completed/delivered'].includes((o.status || '').toLowerCase())
+      );
+      totalRevenue = completedOrders.reduce((sum, o) => {
+        const t = typeof o.totals === 'string' ? JSON.parse(o.totals) : (o.totals || {});
+        return sum + (Number(t.artisanEarning || t.subtotal || t.total) || 0);
+      }, 0);
+    }
 
-    // 4. Fetch low stock products for popup notifications (Stock < 5)
-    const lowStockAlerts = await Product.find({ 
+    // 4. Low stock products for alerts
+    const lowStockAlerts = await Product.find({
       artisan: artisanId,
       status: "active",
-      "inventory.quantity": { $lt: 5 } 
+      "inventory.quantity": { $lt: 5 }
     }).select("name inventory.quantity").lean();
+
+    // 5. Recent pending orders list for real-time notifications
+    const recentPendingOrders = pendingOrders.slice(0, 10).map(o => {
+      const t = typeof o.totals === 'string' ? JSON.parse(o.totals) : (o.totals || {});
+      return {
+        id: String(o.id),
+        orderNumber: o.orderNumber,
+        status: o.status,
+        total: Number(t.total || t.subtotal || 0),
+        createdAt: o.createdAt
+      };
+    });
 
     res.status(200).json({
       success: true,
       data: {
         products: productCount,
-        orders: orderCount,
-        revenue: user.totalSales || 0, // በሞዴልህ ውስጥ ያለውን ተጠቀም
+        orders: totalOrdersCount,
+        totalOrders: totalOrdersCount,
+        newOrders: pendingOrdersCount,
+        pendingOrders: pendingOrdersCount,
+        pendingOrdersCount: pendingOrdersCount,
+        recentOrders: recentPendingOrders,
+        revenue: totalRevenue,
         lowStockAlerts: lowStockAlerts || [],
         performance: {
-          storeViews: user.performance?.storeViews || 0,
-          conversionRate: user.performance?.conversionRate || 0,
-          customerSatisfaction: user.performance?.rating || 4.8,
+          storeViews: user?.performance?.storeViews || 0,
+          conversionRate: user?.performance?.conversionRate || 0,
+          customerSatisfaction: user?.performance?.rating || 4.8,
         },
       },
     });

@@ -61,7 +61,7 @@ const Checkout = () => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('CHAPA');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('COD');
   const [error, setError] = useState('');
   const [artisanDetails, setArtisanDetails] = useState(null);
 
@@ -396,15 +396,19 @@ const Checkout = () => {
               </div>
               <div className="p-5 space-y-3">
                 {[
-                  { id: 'CHAPA', icon: CreditCardIcon, title: 'Online Payment', desc: 'Chapa (Cards, Telebirr, CBE)' },
-                  { id: 'COD', icon: BanknotesIcon, title: 'Cash on Delivery', desc: 'Pay when you receive' },
-                  { id: 'MANUAL', icon: BuildingOfficeIcon, title: 'Manual Payment', desc: 'Bank Transfer / Telebirr' }
+                  { id: 'CHAPA', icon: CreditCardIcon, title: 'Online Payment', desc: 'Chapa (Cards, Telebirr, CBE)', disabled: true },
+                  { id: 'COD', icon: BanknotesIcon, title: 'Cash on Delivery', desc: 'Pay when you receive', disabled: false },
+                  { id: 'MANUAL', icon: BuildingOfficeIcon, title: 'Manual Payment', desc: 'Bank Transfer / Telebirr', disabled: false }
                 ].map((method) => (
                   <div
                     key={method.id}
-                    onClick={() => setSelectedPaymentMethod(method.id)}
-                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedPaymentMethod === method.id ? 'border-ethiopian-gold bg-amber-50/20' : 'border-gray-200'
+                    onClick={() => !method.disabled && setSelectedPaymentMethod(method.id)}
+                    className={`p-4 rounded-lg border-2 transition-all ${
+                      method.disabled
+                        ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
+                        : selectedPaymentMethod === method.id
+                          ? 'border-ethiopian-gold bg-amber-50/20 cursor-pointer'
+                          : 'border-gray-200 cursor-pointer'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -416,9 +420,9 @@ const Checkout = () => {
                         </div>
                       </div>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        selectedPaymentMethod === method.id ? 'border-ethiopian-gold bg-ethiopian-gold' : 'border-gray-300'
+                        !method.disabled && selectedPaymentMethod === method.id ? 'border-ethiopian-gold bg-ethiopian-gold' : 'border-gray-300'
                       }`}>
-                        {selectedPaymentMethod === method.id && <CheckCircleIcon className="w-3 h-3 text-white" />}
+                        {!method.disabled && selectedPaymentMethod === method.id && <CheckCircleIcon className="w-3 h-3 text-white" />}
                       </div>
                     </div>
                   </div>

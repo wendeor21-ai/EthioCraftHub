@@ -1,0 +1,18 @@
+{
+  "user": 18,
+  "product": 13,
+  "order": 140,
+  "customOrder": 9,
+  "promotion": 0,
+  "promotionProduct": 0,
+  "message": 15,
+  "earning": 20,
+  "commissionPayment": 4,
+  "commissionPaymentOrder": 0,
+  "withdrawalAuditLog": 4,
+  "userInteraction": 193,
+  "aIChatLog": 111,
+  "alertLog": 67,
+  "siteConfig": 1,
+  "notificationSetting": 0
+}

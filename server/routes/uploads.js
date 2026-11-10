@@ -1,6 +1,7 @@
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
+const crypto = require("crypto");
 const { authenticate } = require("../middleware/auth");
 
 // optional Cloudinary integration
@@ -32,12 +33,33 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir);
   },
   filename: function (req, file, cb) {
-    const safeName = `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
-    cb(null, safeName);
+    // SEC-02: Strip ALL path characters and use a UUID-based name
+    // to prevent path traversal and filename injection attacks
+    const rawExt = path.extname(file.originalname || '');
+    // Allow only safe, lowercase alpha extensions (e.g. .jpg .png .pdf)
+    const safeExt = rawExt.replace(/[^a-z0-9]/gi, '').toLowerCase().slice(0, 8);
+    const ext = safeExt ? `.${safeExt}` : '';
+    const uuid = crypto.randomBytes(16).toString('hex');
+    cb(null, `${Date.now()}_${uuid}${ext}`);
   },
 });
 
-const upload = multer({ storage });
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+  'application/pdf', 'video/mp4', 'video/quicktime',
+];
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type not allowed: ${file.mimetype}`));
+    }
+  },
+});
 
 // POST /api/uploads - upload one or more files (authenticated)
 router.post("/", authenticate, upload.array("files", 10), async (req, res) => {

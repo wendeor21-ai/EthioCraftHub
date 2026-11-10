@@ -242,6 +242,8 @@ export const adminAPI = {
   getPlatformSettings: () => api.get("/admin/platform-settings"),
   setPlatformSettings: (payload) =>
     api.post("/admin/platform-settings", payload),
+  recalculateRates: (payload) => api.post("/admin/recalculate-rates", payload),
+  downloadBackup: () => api.get("/admin/backup/download", { responseType: "blob" }),
   broadcastNotification: (payload) =>
     api.post("/admin/notifications/broadcast", payload),
   deleteBroadcast: (id) => api.delete(`/admin/notifications/broadcasts/${id}`),

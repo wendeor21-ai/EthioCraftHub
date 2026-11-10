@@ -1,8 +1,9 @@
 {
-  "logoUrl": "/uploads/1775624874301-logo1.png",
+  "logoUrl": "/uploads/1794239558196-logo.jpg",
   "name": "EthioCraft",
   "contactEmail": "wendeor21@gmail.com",
   "currency": "ETB",
   "region": "ET",
-  "commissionRate": 5
+  "commissionRate": 5,
+  "vatRate": 15
 }

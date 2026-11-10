@@ -45,7 +45,8 @@ const CustomOrderDetailModal = ({ order, onClose, onRefresh }) => {
       onRefresh();
       onClose();
     } catch (error) {
-      toast.error('Failed to update order status');
+      const msg = error.response?.data?.error || error.response?.data?.message || 'Failed to update order status';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }

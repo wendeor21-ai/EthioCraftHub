@@ -1,0 +1,275 @@
+[
+  {
+    "id": "69f2876c052762e1a2c49191",
+    "customerId": "6983eea63321e3cbca373dd3",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "productId": null,
+    "gender": "Female",
+    "itemType": "Dress",
+    "measurements": null,
+    "photos": {
+      "back": null,
+      "front": "/uploads/custom-orders/custom-1777502059991-373650230.jpg"
+    },
+    "status": "paid",
+    "price": 200,
+    "commission": 20,
+    "artisanEarning": 180,
+    "paymentMethod": "COD",
+    "transactionId": "CUST-MAN-1777502131653",
+    "description": null,
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-04-29T22:34:20.076Z",
+    "updatedAt": "2026-07-29T16:26:24.475Z"
+  },
+  {
+    "id": "69f3b350f94e560835288f65",
+    "customerId": "6983eea63321e3cbca373dd3",
+    "artisanId": null,
+    "productId": null,
+    "gender": "Female",
+    "itemType": "Dress",
+    "measurements": {
+      "bust": 98,
+      "waist": 67,
+      "length": 98,
+      "shoulder": 82,
+      "armLength": 51
+    },
+    "photos": {
+      "back": null,
+      "front": "/uploads/custom-orders/custom-1777578832193-915181786.png"
+    },
+    "status": "paid",
+    "price": 5000,
+    "commission": 500,
+    "artisanEarning": 4500,
+    "paymentMethod": "MANUAL",
+    "transactionId": "CUST-MAN-1777583373169",
+    "description": null,
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-04-30T19:53:52.276Z",
+    "updatedAt": "2026-07-29T16:26:24.483Z"
+  },
+  {
+    "id": "69f127213baa6807ce7b01ae",
+    "customerId": "6983eea63321e3cbca373dd3",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "productId": null,
+    "gender": "Female",
+    "itemType": "Dress",
+    "measurements": {
+      "hip": null,
+      "bust": 87,
+      "ankle": null,
+      "chest": null,
+      "thigh": null,
+      "waist": 38,
+      "length": 67,
+      "stomach": null,
+      "shoulder": 78,
+      "armLength": 48,
+      "shirtLength": null
+    },
+    "photos": {
+      "back": "/uploads/custom-orders/custom-1777411873547-705171717.png",
+      "front": "/uploads/custom-orders/custom-1777411873540-130125622.jpg"
+    },
+    "status": "paid",
+    "price": 10000,
+    "commission": 1000,
+    "artisanEarning": 9000,
+    "paymentMethod": "COD",
+    "transactionId": "CUST-MAN-1777497534295",
+    "description": "sdjjj",
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-04-28T21:31:13.646Z",
+    "updatedAt": "2026-07-29T16:26:24.452Z"
+  },
+  {
+    "id": "69f128dd1a3f5577c975e0bd",
+    "customerId": "6983eea63321e3cbca373dd3",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "productId": null,
+    "gender": "Male",
+    "itemType": "Shirt",
+    "measurements": {
+      "chest": 60,
+      "length": 80,
+      "stomach": 28,
+      "shoulder": 70,
+      "armLength": 70,
+      "shirtLength": 90
+    },
+    "photos": {
+      "back": "/uploads/custom-orders/custom-1777412317773-705235523.png",
+      "front": "/uploads/custom-orders/custom-1777412317767-930494294.jpg"
+    },
+    "status": "paid",
+    "price": 4500,
+    "commission": 450,
+    "artisanEarning": 4050,
+    "paymentMethod": "COD",
+    "transactionId": "CUST-MAN-1777500737215",
+    "description": null,
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-04-28T21:38:37.885Z",
+    "updatedAt": "2026-07-29T16:26:24.460Z"
+  },
+  {
+    "id": "69f28568cd63e59b08309f43",
+    "customerId": "6983eea63321e3cbca373dd3",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "productId": null,
+    "gender": "Male",
+    "itemType": "Shirt",
+    "measurements": {
+      "chest": 49,
+      "length": 120,
+      "stomach": 78,
+      "shoulder": 69,
+      "armLength": 30,
+      "shirtLength": 69
+    },
+    "photos": {
+      "back": "/uploads/custom-orders/custom-1777501544705-558040254.png",
+      "front": "/uploads/custom-orders/custom-1777501544644-131302413.png"
+    },
+    "status": "paid",
+    "price": 9000,
+    "commission": 900,
+    "artisanEarning": 8100,
+    "paymentMethod": "COD",
+    "transactionId": "CUST-MAN-1777501706194",
+    "description": null,
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-04-29T22:25:44.809Z",
+    "updatedAt": "2026-07-29T16:26:24.468Z"
+  },
+  {
+    "id": "1f01d681e1992a36bf927b50",
+    "customerId": "69d41c54ec0421a390a74198",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "productId": null,
+    "gender": "Female",
+    "itemType": "Dress",
+    "measurements": {
+      "bust": 86,
+      "waist": 75,
+      "length": 75,
+      "shoulder": 65,
+      "armLength": 92
+    },
+    "photos": {
+      "back": "/uploads/custom-orders/custom-1785426073498-650153234.jpg",
+      "front": "/uploads/custom-orders/custom-1785426073410-577955248.png"
+    },
+    "status": "price_quoted",
+    "price": 800,
+    "commission": 0,
+    "artisanEarning": 0,
+    "paymentMethod": "None",
+    "transactionId": null,
+    "description": "",
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-07-30T15:41:13.513Z",
+    "updatedAt": "2026-07-30T15:41:13.513Z"
+  },
+  {
+    "id": "c0f7ba98f170fc64a18131b1",
+    "customerId": "69d41c54ec0421a390a74198",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "productId": null,
+    "gender": "Female",
+    "itemType": "Dress",
+    "measurements": {
+      "bust": 90,
+      "waist": 76,
+      "length": 87,
+      "shoulder": 98,
+      "armLength": 74
+    },
+    "photos": {
+      "back": null,
+      "front": "/uploads/custom-orders/custom-1785427183081-315034781.jpg"
+    },
+    "status": "accepted",
+    "price": 1000,
+    "commission": 100,
+    "artisanEarning": 900,
+    "paymentMethod": "MANUAL",
+    "transactionId": "MAN-1785427531037",
+    "description": "",
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-07-30T15:59:43.218Z",
+    "updatedAt": "2026-07-30T15:59:43.218Z"
+  },
+  {
+    "id": "69f3d41d97cc05c213f237a6",
+    "customerId": "69d41c54ec0421a390a74198",
+    "artisanId": null,
+    "productId": null,
+    "gender": "Male",
+    "itemType": "Trousers",
+    "measurements": {
+      "hip": 47,
+      "ankle": 29,
+      "thigh": 45,
+      "waist": 55,
+      "length": 98,
+      "shoulder": 67
+    },
+    "photos": {
+      "back": null,
+      "front": "/uploads/custom-orders/custom-1777587229094-929989667.jpg"
+    },
+    "status": "accepted",
+    "price": 11000,
+    "commission": 1100,
+    "artisanEarning": 9900,
+    "paymentMethod": "MANUAL",
+    "transactionId": "MAN-1777587372566",
+    "description": null,
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-04-30T22:13:49.134Z",
+    "updatedAt": "2026-07-29T16:26:24.488Z"
+  },
+  {
+    "id": "69f67ae48446e15553221f94",
+    "customerId": "69d41c54ec0421a390a74198",
+    "artisanId": null,
+    "productId": null,
+    "gender": "Female",
+    "itemType": "Dress",
+    "measurements": {
+      "bust": 69,
+      "waist": 81,
+      "length": 60,
+      "shoulder": 50,
+      "armLength": 92
+    },
+    "photos": {
+      "back": null,
+      "front": "/uploads/custom-orders/custom-1777760996894-145672159.jpg"
+    },
+    "status": "accepted",
+    "price": 700,
+    "commission": 70,
+    "artisanEarning": 630,
+    "paymentMethod": "COD",
+    "transactionId": "COD-1777761116739",
+    "description": null,
+    "adminNotes": null,
+    "rejectionReason": null,
+    "createdAt": "2026-05-02T22:29:56.928Z",
+    "updatedAt": "2026-07-29T16:26:24.496Z"
+  }
+]

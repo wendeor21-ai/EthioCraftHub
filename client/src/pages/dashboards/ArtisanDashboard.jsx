@@ -213,18 +213,23 @@ const ArtisanDashboard = ({ user }) => {
     loadActivity();
   }, [loadActivity]);
 
-  // Socket.io for Real-time Dashboard Updates
+    // Socket.io for Real-time Dashboard Updates
   useEffect(() => {
-    if (!user?._id) return;
-    const socketUrl = API_BASE_URL.replace('/api', '');
+    const userId = user?._id || user?.id;
+    if (!userId) return;
+    const socketUrl = API_BASE_URL.replace(/\/api\/?$/, '');
     const newSocket = io(socketUrl, {
       withCredentials: true,
       transports: ['polling', 'websocket'],
-      reconnectionAttempts: 5
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000
     });
     
     newSocket.on('connect', () => {
-      newSocket.emit('join', user._id);
+      newSocket.emit('join', userId);
+      if (user?._id && user?.id && user._id !== user.id) {
+        newSocket.emit('join', user.id);
+      }
     });
     
     newSocket.on('newOrder', (data) => {

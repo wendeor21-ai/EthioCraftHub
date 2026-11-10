@@ -55,6 +55,21 @@ const upload = multer({
 
 const router = express.Router();
 
+function getPlatformRates() {
+  try {
+    const p = path.join(__dirname, '..', 'data', 'platform-settings.json');
+    if (fs.existsSync(p)) {
+      const s = JSON.parse(fs.readFileSync(p, 'utf8'));
+      return {
+        vatRate: typeof s.vatRate === 'number' ? s.vatRate : 15,
+        commissionRate: typeof s.commissionRate === 'number' ? s.commissionRate : 5
+      };
+    }
+  } catch (_) {}
+  return { vatRate: 15, commissionRate: 5 };
+}
+
+
 /**
  * @route   GET /api/orders/track/:orderNumber
  * @desc    Get order details for public tracking lookup
@@ -282,9 +297,13 @@ router.post(
       methodEnum = "Manual";
     }
 
-    // Phase 3 Commission logic: 10% Platform, 90% Artisan
-    const platformCommission = subtotal * 0.10;
-    const artisanEarning = subtotal * 0.90;
+    // Dynamic Platform Commission & Tax logic from Platform Settings
+    const { vatRate: ordVat, commissionRate: ordComm } = getPlatformRates();
+    const platformCommission = Math.round(subtotal * (ordComm / 100) * 100) / 100;
+    const artisanEarning = Math.round((subtotal - platformCommission) * 100) / 100;
+
+    // Determine top-level artisanId (first item's artisan — supports single-artisan orders)
+    const primaryArtisanId = orderItems[0]?.artisan ? String(orderItems[0].artisan) : undefined;
 
     // Create order
     const orderData = {
@@ -305,7 +324,8 @@ router.post(
         amount: subtotal,
       },
       status: "pending",
-      commissionStatus: "pending"
+      commissionStatus: "pending",
+      ...(primaryArtisanId && { artisan: primaryArtisanId }),
     };
 
     const order = new Order(orderData);
@@ -340,22 +360,47 @@ router.post(
       }
     }
 
-    // Emit Socket.io event to involved artisans for real-time dashboard update
+        // Emit Socket.io event to involved artisans for real-time dashboard update
     const io = req.app.get('io');
     if (io) {
-      const artisanIds = [...new Set(orderItems.map(item => item.artisan.toString()))];
+      const artisanIds = [...new Set(
+        orderItems.map(item => item.artisan ? String(item.artisan._id || item.artisan.id || item.artisan) : null)
+          .concat(order.artisanId || (order.artisan && (order.artisan._id || order.artisan.id || order.artisan)) || null)
+          .filter(Boolean)
+      )];
       console.log(`📡 Attempting to notify ${artisanIds.length} artisans via Socket.io:`, artisanIds);
       
+      const payload = {
+        orderId: order._id ? String(order._id) : String(order.id),
+        id: order._id ? String(order._id) : String(order.id),
+        _id: order._id ? String(order._id) : String(order.id),
+        orderNumber: order.orderNumber,
+        total: order.totals?.total || subtotal,
+        totals: order.totals || { total: subtotal, subtotal },
+        status: order.status || "pending",
+        createdAt: order.createdAt || new Date().toISOString(),
+        items: orderItems,
+        customer: req.user ? {
+          _id: String(req.user._id),
+          profile: {
+            firstName: req.user.profile?.firstName || shippingAddress?.firstName || "Customer",
+            lastName: req.user.profile?.lastName || shippingAddress?.lastName || ""
+          }
+        } : null,
+        shippingAddress,
+        payment: { method: methodEnum, status: "pending", amount: subtotal },
+        message: `🛍️ New order #${order.orderNumber} placed!`
+      };
+
       artisanIds.forEach(artisanId => {
-        const roomName = `user_${artisanId}`;
-        io.to(roomName).emit('newOrder', {
-          orderId: order._id,
-          orderNumber: order.orderNumber,
-          total: order.totals.total,
-          message: 'You have a new order!'
-        });
-        console.log(`   👉 Emitted 'newOrder' to room: ${roomName}`);
+        io.to(String(artisanId)).emit('newOrder', payload);
+        io.to(`user_${artisanId}`).emit('newOrder', payload);
+        io.to(`artisan_${artisanId}`).emit('newOrder', payload);
+        console.log(`   👉 Emitted 'newOrder' to rooms: ${artisanId}, user_${artisanId}, artisan_${artisanId}`);
       });
+
+      io.to('role_admin').emit('newOrder', payload);
+      io.to('admin').emit('newOrder', payload);
     } else {
       console.warn("⚠️ Socket.io instance (io) not found in req.app");
     }
@@ -434,20 +479,47 @@ router.get(
       result = await Order.getByCustomer(req.user._id, paginationOptions);
     }
 
-    const orders = await result.query;
-    const totalOrders = await result.total;
+    // getByArtisan returns { orders, total } directly; getByCustomer returns { query, total }
+    const orders = result.orders !== undefined ? result.orders : await result.query;
+    const totalOrders = result.orders !== undefined ? result.total : await result.total;
 
-    const mongoose = require("mongoose");
-    const userId = typeof req.user._id === 'string' ? new mongoose.Types.ObjectId(req.user._id) : req.user._id;
-    // Get dashboard summary stats (counts and earnings)
-    const summaryFilter = req.user.role === "artisan" 
-      ? { "items.artisan": userId } 
-      : { customer: userId };
+    const aid = req.user._id ? String(req.user._id) : null;
+    const { prisma } = require('../lib/prisma');
 
-    const counts = await Order.aggregate([
-      { $match: summaryFilter },
-      { $group: { _id: "$status", count: { $sum: 1 } } }
-    ]);
+    // For artisans we need the SAME query logic as getByArtisan:
+    // match by top-level artisanId FK OR items JSON containing { artisan: aid }
+    let artisanOrderIds = null; // null means "use customerId filter"
+    if (req.user.role === "artisan" && aid) {
+      let byItemsIds = [];
+      try {
+        const rawResults = await prisma.$queryRawUnsafe(
+          `SELECT id FROM orders WHERE JSON_CONTAINS(items, ?) OR JSON_CONTAINS(items, ?)`,
+          JSON.stringify({ artisan: aid }),
+          JSON.stringify({ artisan: { _id: aid } })
+        );
+        byItemsIds = (rawResults || []).map(r => String(r.id));
+      } catch (e) {
+        // Silently fall back to artisanId-only filter
+      }
+      artisanOrderIds = byItemsIds;
+    }
+
+    const buildArtisanWhere = (extra = {}) => {
+      if (req.user.role !== "artisan") {
+        return { customerId: String(req.user._id), ...extra };
+      }
+      const orClauses = [{ artisanId: aid }];
+      if (artisanOrderIds && artisanOrderIds.length > 0) {
+        orClauses.push({ id: { in: artisanOrderIds } });
+      }
+      return { OR: orClauses, ...extra };
+    };
+
+    const counts = await prisma.order.groupBy({
+      by: ['status'],
+      where: buildArtisanWhere(),
+      _count: { status: true },
+    });
 
     const summary = {
       all: 0,
@@ -459,21 +531,24 @@ router.get(
     };
 
     counts.forEach(c => {
-      summary.all += c.count;
-      const status = (c._id || "").toLowerCase();
-      if (["pending", "pending verification"].includes(status)) summary.pending += c.count;
-      else if (["confirmed", "processing"].includes(status)) summary.processing += c.count;
-      else if (status === "shipped") summary.shipped += c.count;
-      else if (["completed", "delivered", "completed/delivered"].includes(status)) summary.completed += c.count;
+      summary.all += c._count.status;
+      const st = (c.status || "").toLowerCase();
+      if (["pending", "pending verification"].includes(st)) summary.pending += c._count.status;
+      else if (["confirmed", "processing"].includes(st)) summary.processing += c._count.status;
+      else if (st === "shipped") summary.shipped += c._count.status;
+      else if (["completed", "delivered", "completed/delivered"].includes(st)) summary.completed += c._count.status;
     });
 
     // Calculate total earnings for artisans
     if (req.user.role === "artisan") {
-      const earnings = await Order.aggregate([
-        { $match: { ...summaryFilter, status: { $in: ["completed", "delivered", "completed/delivered"] } } },
-        { $group: { _id: null, total: { $sum: "$totals.artisanEarning" } } }
-      ]);
-      summary.totalEarnings = earnings[0]?.total || 0;
+      const completedOrders = await prisma.order.findMany({
+        where: buildArtisanWhere({ status: { in: ["completed", "delivered", "completed/delivered"] } }),
+        select: { totals: true },
+      });
+      summary.totalEarnings = completedOrders.reduce((sum, o) => {
+        const t = o.totals;
+        return sum + (t?.artisanEarning || 0);
+      }, 0);
     }
 
     res.json({
@@ -498,7 +573,7 @@ router.get(
   "/:id",
   authenticate,
   asyncHandler(async (req, res) => {
-    const mongoose = require("mongoose");
+    const mongoose = require("../lib/mongoose");
     const { id } = req.params;
 
     // Try to resolve by Mongo ObjectId first; if invalid or not found,

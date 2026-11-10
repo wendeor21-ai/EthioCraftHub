@@ -90,17 +90,10 @@ exports.getUnreadCount = async (req, res) => {
     if (req.user.role === "admin") {
       count = await Message.countDocuments({ read: false });
     } else {
-      // For regular users we want to know:
-      // 1. any admin reply to a message they sent (status Replied + read false)
-      // 2. any direct message sent by admin to them (recipient equals user and read false)
+      // For regular users (customers / artisans): count all unread messages addressed to or sent by them
       count = await Message.countDocuments({
-        $and: [
-          { read: false },
-          {
-            $or: [{ status: "Replied" }, { recipient: req.user._id }],
-          },
-          { $or: [{ sender: req.user._id }, { recipient: req.user._id }] },
-        ],
+        read: false,
+        $or: [{ sender: req.user._id }, { recipient: req.user._id }],
       });
     }
 
@@ -183,13 +176,8 @@ exports.markRead = async (req, res) => {
       unreadCount = await Message.countDocuments({ read: false });
     } else {
       unreadCount = await Message.countDocuments({
-        $and: [
-          { read: false },
-          {
-            $or: [{ status: "Replied" }, { recipient: req.user._id }],
-          },
-          { $or: [{ sender: req.user._id }, { recipient: req.user._id }] },
-        ],
+        read: false,
+        $or: [{ sender: req.user._id }, { recipient: req.user._id }],
       });
     }
 

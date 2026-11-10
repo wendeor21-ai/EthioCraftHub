@@ -62,7 +62,7 @@ function promiseWithTimeout(promise, ms) {
 async function generateWithRetries(groq, messages, options = {}) {
   const retries = options.retries || 3;
   const timeoutMs = options.timeoutMs || 30000;
-  const model = options.model || process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+  const model = options.model || process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
   let lastError = null;
 
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -283,20 +283,34 @@ exports.chat = asyncHandler(async (req, res) => {
     );
 
     // Build AI prompt with context
-    const systemMessage = `You are Zema AI, an intelligent assistant for EthioCraft Global, an Ethiopian artisan marketplace.
+    const systemMessage = `You are Zema AI (ዜማ AI), an intelligent, friendly, and professional AI assistant for EthioCraft Global — an e-commerce platform connecting Ethiopian artisans with global customers.
 
-Your role:
-- Help users discover authentic Ethiopian crafts
-- Provide cultural context about products
-- Assist artisans with inventory and sales insights
-- Answer questions about Ethiopian craftsmanship
+YOUR IDENTITY & ROLE:
+- Name: Zema AI (ዜማ AI)
+- Tone: Polite, warm, respectful, and professional at all times.
+- Purpose: Help customers and artisans with product inquiries, price details, inventory insights, cultural background, and platform support.
+- User Role: ${req.user.role || 'customer'}
 
-Current Context:
-${inventoryContext}
+CRITICAL AMHARIC (አማርኛ) SYSTEM INSTRUCTIONS:
+1. 🔴 NATIVE FLUENCY & GRAMMAR:
+   - Write in natural, grammatically sound, and fluent native Amharic using standard Subject-Object-Verb (SOV) sentence structure.
+   - Punctuation: Use standard spaces between words. NEVER place \`፡\` (ሁለት ነጥብ) after words or sentences. End complete sentences ONLY with \`።\` (አራት ነጥብ - Arat Neteb).
+   - Use polite Amharic honorifics: "እርስዎ", "ማግኘት ይችላሉ", "ይመልከቱ", "አመሰግናለሁ". Avoid awkward direct translations like "የምታገኘው ... አለ" or "ወደ እኛ መግኘት ይቻላል".
 
-User Role: ${req.user.role}
+2. 🔴 DATABASE REPHRASING & CONVERSATIONAL RESPONSE:
+   - Rephrase raw database context into clear, natural, and human-like Amharic sentences.
+   - DO NOT copy database fields verbatim or output awkward word-for-word translations. Frame information gracefully as a knowledgeable assistant.
 
-Respond in a helpful, culturally sensitive manner. Focus on Ethiopian crafts and artisan support.`;
+3. 🔴 PRICE RANGE & PRODUCT SPEC FORMATTING:
+   - Format price ranges and product specifications cleanly using proper Ethiopian currency phrasing.
+   - Price Format Examples: "ከብር 5,999.98 እስከ ብር 7,200.00" or "ከ 5,999.98 እስከ 7,200.00 ብር ባለው ዋጋ ይገኛሉ።"
+   - Use authentic Ethiopian craft terms (e.g., "ሀበሻ ቀሚስ", "የጥልፍ ሥራ", "በእጅ የተሸመነ", "የጥጥ ቀሚስ"). Avoid gibberish or transliteration artifacts (e.g. never use "ቲክሽ").
+
+4. 🔴 MULTILINGUAL MATCHING:
+   - Detect user query language (Amharic, Afaan Oromoo, Tigrinya, or English) and reply ENTIRELY in that exact language.
+
+Current Inventory Context:
+${inventoryContext}`;
 
     const messages = [
       { role: "system", content: systemMessage },
@@ -686,7 +700,7 @@ exports.retryAI = asyncHandler(async (req, res) => {
     // 2. Call Groq
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: "user", content: systemPrompt }],
-      model: "llama-3.3-70b-versatile",
+      model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b",
     });
 
     const aiText = chatCompletion.choices[0]?.message?.content || "";

@@ -308,7 +308,7 @@ router.get(
     const artisanId = req.user._id;
     const Product = require("../models/Product");
     const Order = require("../models/Order");
-    const mongoose = require("mongoose");
+    const mongoose = require("../lib/mongoose");
 
     try {
       const totalProducts = await Product.countDocuments({
@@ -473,7 +473,7 @@ router.get(
     const artisanId = req.user._id;
     const Product = require("../models/Product");
     const Order = require("../models/Order");
-    const mongoose = require("mongoose");
+    const mongoose = require("../lib/mongoose");
 
     try {
       // 1. Product Statistics & Low Stock Alerts
@@ -510,73 +510,75 @@ router.get(
         },
       ]);
 
-      // 2. Order Statistics & Revenue
-      const orderStats = await Order.aggregate([
-        {
-          $match: {
-            "items.artisan": new mongoose.Types.ObjectId(artisanId),
-            status: { $in: ["pending", "processing", "shipped", "delivered"] },
-          },
-        },
-        { $unwind: "$items" },
-        { $match: { "items.artisan": new mongoose.Types.ObjectId(artisanId) } },
-        {
-          $group: {
-            _id: null,
-            totalOrders: { $sum: 1 },
-            totalRevenue: {
-              $sum: { $multiply: ["$items.price", "$items.quantity"] },
-            },
-            completedOrders: {
-              $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] },
-            },
-            pendingOrders: {
-              $sum: {
-                $cond: [{ $in: ["$status", ["pending", "processing"]] }, 1, 0],
-              },
-            },
-            newOrders: {
-              $sum: {
-                $cond: [{ $in: ["$status", ["pending", "confirmed"]] }, 1, 0],
-              },
-            },
-          },
-        },
-      ]);
+      // 2. Order Statistics & Revenue (Compatible with MySQL JSON containment)
+      const aid = String(artisanId);
+      const { prisma } = require("../lib/prisma");
+
+      let artisanOrders = [];
+      try {
+        artisanOrders = await prisma.$queryRawUnsafe(
+          `SELECT id, orderNumber, status, totals, items, createdAt FROM orders WHERE artisanId = ? OR JSON_CONTAINS(items, ?) OR JSON_CONTAINS(items, ?) ORDER BY createdAt DESC`,
+          aid,
+          JSON.stringify({ artisan: aid }),
+          JSON.stringify({ artisan: { _id: aid } })
+        );
+      } catch (e) {
+        artisanOrders = await prisma.order.findMany({
+          where: { artisanId: aid },
+          select: { id: true, orderNumber: true, status: true, totals: true, items: true, createdAt: true },
+          orderBy: { createdAt: 'desc' }
+        });
+      }
+
+      const totalOrders = (artisanOrders || []).length;
+      const pendingOrdersList = (artisanOrders || []).filter(o =>
+        ['pending', 'pending verification'].includes((o.status || '').toLowerCase())
+      );
+      const pendingOrdersCount = pendingOrdersList.length;
+
+      // Compute total revenue earned by this artisan
+      let totalRevenue = 0;
+      for (const order of (artisanOrders || [])) {
+        const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+        const myItems = Array.isArray(items) ? items.filter(i => {
+          const art = i.artisan?._id || i.artisan?.id || i.artisan;
+          return String(art) === aid;
+        }) : [];
+        const orderRev = myItems.reduce((sum, i) => sum + ((Number(i.price) || 0) * (Number(i.quantity) || 1)), 0);
+        totalRevenue += orderRev;
+      }
 
       // 3. Recent Orders — only surface items belonging to this artisan
-      const recentOrderDocs = await Order.find({ "items.artisan": artisanId })
-        .populate("customer", "profile.firstName profile.lastName")
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .select("orderNumber status totals createdAt items");
-
-      // Filter each order's items to only this artisan's items before computing totals
-      const recentOrders = recentOrderDocs.map(order => {
-        const myItems = order.items.filter(
-          item => item.artisan && item.artisan.toString() === artisanId.toString()
-        );
-        const myTotal = myItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const recentOrders = pendingOrdersList.slice(0, 10).map(order => {
+        const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+        const myItems = Array.isArray(items) ? items.filter(i => {
+          const art = i.artisan?._id || i.artisan?.id || i.artisan;
+          return String(art) === aid;
+        }) : [];
+        const myTotal = myItems.reduce((sum, i) => sum + ((Number(i.price) || 0) * (Number(i.quantity) || 1)), 0);
         return {
+          id: String(order.id),
           orderNumber: order.orderNumber,
-          customer: order.customer
-            ? `${order.customer.profile.firstName} ${order.customer.profile.lastName}`
-            : "Guest",
           total: myTotal,
           status: order.status,
           date: order.createdAt,
+          createdAt: order.createdAt
         };
       });
 
       // Canonical response object — all fields are scoped to artisanId
       const stats = {
         products: totalProducts,
+        totalProducts,
         activeProducts,
-        orders: orderStats[0]?.totalOrders || 0,
-        revenue: orderStats[0]?.totalRevenue || 0,
-        pendingOrders: orderStats[0]?.pendingOrders || 0,
-        newOrders: orderStats[0]?.newOrders || 0,
-        rating: productMetrics[0]?.averageRating || 0,
+        orders: totalOrders,
+        totalOrders,
+        revenue: totalRevenue,
+        totalRevenue,
+        pendingOrders: pendingOrdersCount,
+        pendingOrdersCount,
+        newOrders: pendingOrdersCount,
+        rating: productMetrics[0]?.averageRating || 4.8,
         reviews: productMetrics[0]?.totalReviews || 0,
         views: productMetrics[0]?.totalViews || 0,
         likes: productMetrics[0]?.totalLikes || 0,

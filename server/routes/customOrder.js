@@ -96,7 +96,13 @@ router.get(
     if (req.user.role !== 'artisan') {
       return res.status(403).json({ error: 'Access denied' });
     }
-    const orders = await CustomOrder.find({ artisan: req.user._id })
+    const orders = await CustomOrder.find({
+      $or: [
+        { artisan: req.user._id },
+        { artisan: null },
+        { artisan: { $exists: false } }
+      ]
+    })
       .populate('customer', 'profile.firstName profile.lastName email')
       .sort('-createdAt');
     res.json({ success: true, data: orders });
@@ -134,12 +140,23 @@ router.patch(
     const order = await CustomOrder.findById(req.params.id);
     if (!order) return res.status(404).json({ error: 'Order not found' });
     
-    if (!order.artisan || order.artisan.toString() !== req.user._id.toString()) {
+    const { toIdString } = require('../lib/mongoCompat/serialize');
+
+    // Extract current artisan ID string from order.artisan (which might be populated user object or ID string)
+    const existingArtisanId = order.artisan ? toIdString(order.artisan._id || order.artisan) : null;
+    const currentUserId = toIdString(req.user._id || req.user.id);
+
+    // If order has no artisan assigned yet, assign to current artisan when accepting/quoting
+    if (!existingArtisanId) {
+      order.artisan = currentUserId;
+    } else if (existingArtisanId !== currentUserId && req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Unauthorized to update this order' });
     }
 
     order.status = status;
-    if (price) order.price = price;
+    if (price !== undefined && price !== null && price !== '') {
+      order.price = Number(price);
+    }
     if (rejectionReason) order.rejectionReason = rejectionReason;
 
     await order.save();

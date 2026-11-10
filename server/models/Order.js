@@ -1,709 +1,322 @@
 /**
- * Order Model for EthioCraft Global
- * 
- * Manages the complete order lifecycle from cart to delivery:
- * - Order creation and tracking
- * - Payment processing integration
- * - Multi-artisan order support
- * - Delivery coordination
- * - Communication between customers and artisans
+ * Order Model - PostgreSQL/Prisma backend
  */
+const { prisma } = require('../lib/prisma');
+const { createModel, getModel } = require('../lib/mongoCompat/createModel');
+const { defaultTranslateWhere, defaultToPrisma } = require('../lib/mongoCompat/modelHelpers');
+const { toIdString } = require('../lib/mongoCompat/serialize');
 
-const mongoose = require('mongoose');
+const MANUAL_METHODS = [
+  'Manual', 'MANUAL', 'COD', 'manual', 'cash_on_delivery',
+  'CASH_ON_DELIVERY', 'cod', 'bank_transfer', 'telebirr',
+];
 
-// Order item schema for individual products in an order
-const orderItemSchema = new mongoose.Schema({
-    product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: false
+const orderModelDef = {
+  delegate: prisma.order,
+
+  defaultInclude: { customer: true, artisan: true },
+
+  populateMap: {
+    customer: { model: 'User' },
+    artisan: { model: 'User' },
+    'items.product': { model: 'Product' },
+    'items.artisan': { model: 'User' },
+    'items.promotionId': { model: 'Promotion' },
+    'communication.from': { model: 'User' },
+    'communication.to': { model: 'User' },
+    'payment.processedBy': { model: 'User' },
   },
-  isCustomOrder: {
-    type: Boolean,
-    default: false
+
+  async translateWhere(where, ops, rawFilter) {
+    const result = await defaultTranslateWhere(where, ops, rawFilter);
+
+    if (rawFilter.customer) {
+      result.customerId = String(rawFilter.customer._id || rawFilter.customer);
+    }
+    if (rawFilter['items.artisan']) {
+      const aid = String(rawFilter['items.artisan']._id || rawFilter['items.artisan']);
+      // Filter by top-level artisanId FK (set when order is created)
+      // Also include orders where the artisan appears in the items JSON array
+      result.artisanId = aid;
+    }
+    if (rawFilter.status) {
+      if (rawFilter.status.$in) result.status = { in: rawFilter.status.$in };
+      else result.status = rawFilter.status;
+    }
+
+    return result;
   },
-  customOrderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'CustomOrder'
+
+  toPrisma(data) {
+    const prismaData = defaultToPrisma(data, {
+      customer: 'customerId',
+      artisan: 'artisanId',
+    });
+
+    // Strip relation objects — Prisma only accepts scalar FKs
+    const UNKNOWN_FIELDS = [
+      'customer', 'artisan',
+      'earnings', 'commissionPaymentOrders',
+    ];
+    for (const f of UNKNOWN_FIELDS) {
+      delete prismaData[f];
+    }
+
+    if (!prismaData.communication) prismaData.communication = [];
+    if (!prismaData.statusHistory) prismaData.statusHistory = [];
+
+    return prismaData;
   },
-  artisan: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Artisan reference is required']
-  },
-  quantity: {
-    type: Number,
-    required: [true, 'Quantity is required'],
-    min: [1, 'Quantity must be at least 1']
-  },
-  price: {
-    type: Number,
-    required: [true, 'Item price is required'],
-    min: [0, 'Price cannot be negative']
-  },
-  originalPrice: {
-    type: Number,
-    min: [0, 'Original price cannot be negative']
-  },
-  promotionId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Promotion'
-  },
-  promotionDiscount: {
-    type: Number,
-    default: 0,
-    min: [0, 'Promotion discount cannot be negative']
-  },
-  status: {
-    type: String,
-    enum: {
-      values: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
-      message: 'Invalid item status'
+
+  virtuals: {
+    fullShippingAddress: (data) => {
+      const addr = data.shippingAddress;
+      if (!addr) return '';
+      return `${addr.firstName} ${addr.lastName}, ${addr.street}, ${addr.city}, ${addr.region}, ${addr.country}`;
     },
-    default: 'pending'
-  },
-  selectedOptions: [{
-    name: { type: String, trim: true },
-    value: { type: String, trim: true }
-  }],
-  color: {
-    type: String,
-    trim: true
-  },
-  size: {
-    type: String,
-    trim: true
-  },
-  artisanNotes: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Artisan notes cannot exceed 500 characters']
-  }
-}, { _id: true });
-
-// Order totals schema
-const totalsSchema = new mongoose.Schema({
-  subtotal: {
-    type: Number,
-    required: [true, 'Subtotal is required'],
-    min: [0, 'Subtotal cannot be negative']
-  },
-  tax: {
-    type: Number,
-    default: 0,
-    min: [0, 'Tax cannot be negative']
-  },
-  shipping: {
-    type: Number,
-    default: 0,
-    min: [0, 'Shipping cost cannot be negative']
-  },
-  total: {
-    type: Number,
-    required: [true, 'Total is required'],
-    min: [0, 'Total cannot be negative']
-  },
-  platformCommission: {
-    type: Number,
-    default: 0,
-    min: [0, 'Commission cannot be negative']
-  },
-  artisanEarning: {
-    type: Number,
-    default: 0,
-    min: [0, 'Earnings cannot be negative']
-  }
-}, { _id: false });
-
-// Shipping address schema
-const shippingAddressSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, 'First name is required'],
-    trim: true,
-    maxlength: [50, 'First name cannot exceed 50 characters']
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required'],
-    trim: true,
-    maxlength: [50, 'Last name cannot exceed 50 characters']
-  },
-  street: {
-    type: String,
-    required: [true, 'Street address is required'],
-    trim: true,
-    maxlength: [200, 'Street address cannot exceed 200 characters']
-  },
-  city: {
-    type: String,
-    required: [true, 'City is required'],
-    trim: true,
-    maxlength: [100, 'City cannot exceed 100 characters']
-  },
-  region: {
-    type: String,
-    required: [true, 'Region is required'],
-    trim: true,
-    maxlength: [100, 'Region cannot exceed 100 characters']
-  },
-  country: {
-    type: String,
-    required: [true, 'Country is required'],
-    trim: true,
-    default: 'Ethiopia',
-    maxlength: [100, 'Country cannot exceed 100 characters']
-  },
-  postalCode: {
-    type: String,
-    trim: true,
-    maxlength: [20, 'Postal code cannot exceed 20 characters']
-  },
-  phone: {
-    type: String,
-    required: [true, 'Phone number is required'],
-    trim: true,
-    validate: {
-      validator: function(v) {
-        return /^(\+251|0)?[97]\d{8}$/.test(v.replace(/\s/g, ''));
-      },
-      message: 'Please enter a valid Ethiopian phone number'
-    }
-  },
-  isAddressVisible: {
-    type: Boolean,
-    default: false
-  }
-}, { _id: false });
-
-// Payment information schema
-const paymentSchema = new mongoose.Schema({
-  method: {
-    type: String,
-    required: [true, 'Payment method is required'],
-    enum: ['Online', 'Manual', 'MANUAL', 'COD', 'CHAPA', 'stripe', 'paypal', 'bank_transfer', 'BANK_TRANSFER', 'cash_on_delivery', 'CASH_ON_DELIVERY', 'chapa', 'telebirr']
-  },
-  status: {
-    type: String,
-    enum: {
-      values: ['pending', 'paid', 'escrow', 'failed', 'rejected', 'unpaid', 'pending verification', 'completed', 'refunded', 'partially_refunded'],
-      message: 'Invalid payment status'
+    summary: (data) => ({
+      orderNumber: data.orderNumber,
+      itemCount: data.items?.length || 0,
+      total: data.totals?.total,
+      status: data.status,
+      createdAt: data.createdAt,
+    }),
+    artisans: (data) => {
+      const ids = [...new Set((data.items || []).map((item) => toIdString(item.artisan)))];
+      return ids;
     },
-    default: 'pending',
-    lowercase: true
   },
-  receipt: {
-    type: String, // For MANUAL payments
-    trim: true
-  },
-  transactionId: {
-    type: String,
-    trim: true,
-    sparse: true // Allow multiple null values but unique non-null values
-  },
-  amount: {
-    type: Number,
-    required: [true, 'Payment amount is required'],
-    min: [0, 'Payment amount cannot be negative']
-  },
-  currency: {
-    type: String,
-    default: 'ETB',
-    enum: ['ETB', 'USD', 'EUR'],
-    uppercase: true
-  },
-  processedAt: Date,
-  processedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  refundAmount: {
-    type: Number,
-    default: 0,
-    min: [0, 'Refund amount cannot be negative']
-  },
-  refundReason: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Refund reason cannot exceed 500 characters']
-  },
-  expiry: {
-    type: Date,
-    default: function() {
-      const now = new Date();
-      return new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
-    }
-  }
-}, { _id: false });
 
-// Tracking information schema
-const trackingSchema = new mongoose.Schema({
-  carrier: {
-    type: String,
-    trim: true,
-    maxlength: [100, 'Carrier name cannot exceed 100 characters']
-  },
-  trackingNumber: {
-    type: String,
-    trim: true,
-    maxlength: [100, 'Tracking number cannot exceed 100 characters'],
-    validate: {
-      validator: function(v) {
-        // If tracking number is provided, it must be alphanumeric
-        return !v || /^[a-zA-Z0-9\-_]+$/.test(v);
-      },
-      message: 'Tracking number must be alphanumeric'
+  async preSave(doc) {
+    const data = doc._data;
+
+    if (!data.orderNumber) {
+      const date = new Date();
+      const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+      const random = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
+      data.orderNumber = `EC-${dateStr}-${random}`;
+    }
+
+    if (doc.isModified('items') && !data.isCustom) {
+      calculateTotals(data);
     }
   },
-  courierName: {
-    type: String,
-    trim: true,
-    enum: ['DHL', 'FedEx', 'Anbessa Bus', 'Ethiopian Postal Service', 'Local Courier', 'Store Pickup', 'Other'],
-    maxlength: [100, 'Courier name cannot exceed 100 characters']
-  },
-  shippingMethod: {
-    type: String,
-    enum: ['Standard Delivery', 'Express Delivery', 'Store Pickup'],
-    default: 'Standard Delivery'
-  },
-  estimatedDelivery: Date,
-  actualDelivery: Date,
-  shippedAt: Date,
-  deliveredAt: Date,
-  deliveryStatus: {
-    type: String,
-    enum: ['pending', 'processing', 'shipped', 'in transit', 'out for delivery', 'delivered', 'failed', 'returned'],
-    default: 'pending',
-    lowercase: true
-  },
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Shipping notes cannot exceed 500 characters']
-  },
-  deliveryNotes: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Delivery notes cannot exceed 500 characters']
-  },
-  deliveryProofPhoto: {
-    type: String, // URL to uploaded photo
-    trim: true
-  },
-  shippingCost: {
-    type: Number,
-    default: 0,
-    min: [0, 'Shipping cost cannot be negative']
-  }
-}, { _id: false });
 
-// Status history schema for tracking order status changes
-const statusHistorySchema = new mongoose.Schema({
-  status: {
-    type: String,
-    required: true,
-    enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'rejected', 'cancelled']
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now
-  },
-  note: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Status note cannot exceed 500 characters']
-  }
-}, { _id: false });
-
-// Communication schema for order-related messages
-const communicationSchema = new mongoose.Schema({
-  from: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Message sender is required']
-  },
-  to: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Message recipient is required']
-  },
-  message: {
-    type: String,
-    required: [true, 'Message content is required'],
-    trim: true,
-    maxlength: [1000, 'Message cannot exceed 1000 characters']
-  },
-  type: {
-    type: String,
-    enum: {
-      values: ['status_update', 'customer_inquiry', 'artisan_response', 'admin_notification'],
-      message: 'Invalid communication type'
-    },
-    required: [true, 'Communication type is required']
-  },
-  isRead: {
-    type: Boolean,
-    default: false
-  }
-}, { 
-  timestamps: true,
-  _id: true 
-});
-
-// Main Order schema
-const orderSchema = new mongoose.Schema({
-  orderNumber: {
-    type: String,
-    unique: true,
-    uppercase: true
-  },
-  customer: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Customer reference is required']
-  },
-  artisanId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    index: true
-  },
-  cartId: {
-    type: String,
-    index: true
-  },
-  items: {
-    type: [orderItemSchema],
-    validate: {
-      validator: function(v) {
-        return v && v.length > 0;
-      },
-      message: 'Order must contain at least one item'
-    }
-  },
-  totals: {
-    type: totalsSchema,
-    required: true
-  },
-  shippingAddress: {
-    type: shippingAddressSchema,
-    required: true
-  },
-  payment: {
-    type: paymentSchema,
-    required: true
-  },
-  shipping: trackingSchema,
-  communication: [communicationSchema],
-  status: {
-    type: String,
-    enum: {
-      values: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'rejected', 'cancelled', 'refunded'],
-      message: 'Invalid order status'
-    },
-    default: 'pending',
-    lowercase: true
-  },
-  payoutStatus: {
-    type: String,
-    enum: ['pending', 'ready', 'paid', 'n/a'],
-    default: 'pending',
-    lowercase: true
-  },
-  commissionStatus: {
-    type: String,
-    enum: ['pending', 'approved', 'paid'],
-    default: 'pending',
-    lowercase: true
-  },
-  statusHistory: [statusHistorySchema],
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: [1000, 'Order notes cannot exceed 1000 characters']
-  },
-  cancelReason: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Cancel reason cannot exceed 500 characters']
-  },
-  isDisputed: {
-    type: Boolean,
-    default: false
-  },
-  isCustom: {
-    type: Boolean,
-    default: false
-  },
-  photos: {
-    front: String,
-    back: String
-  },
-  debtRecorded: {
-    type: Boolean,
-    default: false
-  }
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
-});
-
-// Virtual for full shipping address
-orderSchema.virtual('fullShippingAddress').get(function() {
-  const addr = this.shippingAddress;
-  return `${addr.firstName} ${addr.lastName}, ${addr.street}, ${addr.city}, ${addr.region}, ${addr.country}`;
-});
-
-// Virtual for order summary
-orderSchema.virtual('summary').get(function() {
-  return {
-    orderNumber: this.orderNumber,
-    itemCount: this.items.length,
-    total: this.totals.total,
-    status: this.status,
-    createdAt: this.createdAt
-  };
-});
-
-// Virtual for unique artisans in order
-orderSchema.virtual('artisans').get(function() {
-  const artisanIds = [...new Set(this.items.map(item => item.artisan.toString()))];
-  return artisanIds;
-});
-
-// Pre-save middleware to generate order number
-orderSchema.pre('save', function(next) {
-  if (!this.orderNumber) {
-    // Generate order number: EC-YYYYMMDD-XXXXX
-    const date = new Date();
-    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const random = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
-    this.orderNumber = `EC-${dateStr}-${random}`;
-  }
-  next();
-});
-
-// Pre-validate middleware to ensure order number is set before validation
-orderSchema.pre('validate', function(next) {
-  if (!this.orderNumber) {
-    // Generate order number: EC-YYYYMMDD-XXXXX
-    const date = new Date();
-    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const random = Math.floor(Math.random() * 99999).toString().padStart(5, '0');
-    this.orderNumber = `EC-${dateStr}-${random}`;
-  }
-  next();
-});
-
-// Pre-save middleware to calculate totals
-orderSchema.pre('save', function(next) {
-  if (this.isModified('items') && !this.isCustom) {
-    this.totals.subtotal = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    
-    // Calculate tax (15% VAT for Ethiopian orders)
-    if (this.shippingAddress.country === 'Ethiopia') {
-      this.totals.tax = Math.round(this.totals.subtotal * 0.15 * 100) / 100;
-    }
-    
-    // Calculate shipping (free for orders over 1000 ETB)
-    if (this.totals.subtotal < 1000 && this.shippingAddress.country === 'Ethiopia') {
-      this.totals.shipping = 50; // 50 ETB shipping fee
-    } else if (this.shippingAddress.country !== 'Ethiopia') {
-      this.totals.shipping = 200; // International shipping
-    }
-    
-    this.totals.total = this.totals.subtotal + this.totals.tax + this.totals.shipping;
-    
-    // Calculate Commission (5%) and Artisan Earnings (95%) - Per latest request
-    this.totals.platformCommission = Math.round(this.totals.total * 0.05 * 100) / 100;
-    this.totals.artisanEarning = Math.round((this.totals.total - this.totals.platformCommission) * 100) / 100;
-    
-    // CRITICAL FIX: Update payment amount to match total
-    if (this.payment) {
-      this.payment.amount = this.totals.total;
-    }
-  }
-  next();
-});
-
-// Method to add communication message
-orderSchema.methods.addMessage = function(from, to, message, type) {
-  this.communication.push({
-    from,
-    to,
-    message,
-    type
-  });
-  return this.save();
-};
-// Pre-save middleware to record commission debt for manual/COD orders
-orderSchema.pre('save', async function(next) {
-  // Only trigger if status just became 'delivered' or 'completed'
-  if (this.isModified('status') && (this.status === 'delivered' || this.status === 'completed') && !this.debtRecorded) {
-    const manualMethods = ['Manual', 'MANUAL', 'COD', 'manual', 'cash_on_delivery', 'CASH_ON_DELIVERY', 'cod', 'bank_transfer', 'telebirr'];
-    if (manualMethods.includes(this.payment.method)) {
-      console.log(`💰 [Model Auto-Debt] Processing commission for order #${this.orderNumber}`);
-      
-      const User = mongoose.model('User');
-      const artisanDebts = {};
-      
-      this.items.forEach(item => {
-        const artisanId = item.artisan._id ? item.artisan._id.toString() : item.artisan.toString();
-        const itemCommission = (item.price * item.quantity * 0.05);
-        artisanDebts[artisanId] = (artisanDebts[artisanId] || 0) + itemCommission;
+  methods: {
+    async addMessage(from, to, message, type) {
+      const crypto = require('crypto');
+      this._data.communication = this._data.communication || [];
+      this._data.communication.push({
+        _id: crypto.randomBytes(12).toString('hex'),
+        from: toIdString(from),
+        to: toIdString(to),
+        message,
+        type,
+        isRead: false,
+        createdAt: new Date(),
       });
+      this.markModified('communication');
+      return this.save();
+    },
 
-      try {
-        for (const [artisanId, amount] of Object.entries(artisanDebts)) {
-          const roundedAmount = Number(amount.toFixed(2));
-          await User.findByIdAndUpdate(artisanId, {
-            $inc: { unpaidCommission: roundedAmount }
-          });
-          console.log(`   ✅ Recorded ${roundedAmount} ETB commission debt for artisan ${artisanId}`);
+    async updateStatus(newStatus, notes = '') {
+      this._data.status = newStatus;
+      this._data.statusHistory = this._data.statusHistory || [];
+      this._data.statusHistory.push({
+        status: newStatus,
+        timestamp: new Date(),
+        note: notes,
+      });
+      if (notes) this._data.notes = notes;
+
+      const payment = this._data.payment || {};
+      if (
+        (newStatus === 'confirmed' || newStatus === 'processing') &&
+        (payment.status === 'pending' || payment.status === 'unpaid')
+      ) {
+        if (['CHAPA', 'stripe'].includes(payment.method)) {
+          payment.status = 'paid';
+          payment.processedAt = new Date();
         }
-        this.debtRecorded = true;
-        this.commissionStatus = 'pending';
-      } catch (err) {
-        console.error('❌ Failed to record commission debt in pre-save:', err.message);
+      } else if (['cancelled', 'rejected'].includes(newStatus)) {
+        payment.status = 'failed';
+      } else if (newStatus === 'refunded') {
+        payment.status = 'refunded';
       }
-    }
-  }
-  next();
-});
 
-// Method to update order status
-orderSchema.methods.updateStatus = function(newStatus, notes = '') {
-  this.status = newStatus;
-  
-  if (!this.statusHistory) { this.statusHistory = []; }
-  this.statusHistory.push({
-    status: newStatus,
-    timestamp: new Date(),
-    note: notes
-  });
-  
-  if (notes) { this.notes = notes; }
-  
-  // Update payment status
-  if ((newStatus === 'confirmed' || newStatus === 'processing') && 
-      (this.payment.status === 'pending' || this.payment.status === 'unpaid')) {
-    if (['CHAPA', 'stripe'].includes(this.payment.method)) {
-      this.payment.status = 'paid';
-      this.payment.processedAt = new Date();
-    }
-  } else if (['cancelled', 'rejected'].includes(newStatus)) {
-    this.payment.status = 'failed';
-  } else if (newStatus === 'refunded') {
-    this.payment.status = 'refunded';
-  }
+      if (
+        (newStatus === 'delivered' || newStatus === 'completed') &&
+        (payment.status === 'paid' || payment.status === 'completed')
+      ) {
+        this._data.payoutStatus = 'ready';
+      }
 
-  if ((newStatus === 'delivered' || newStatus === 'completed') && 
-      (this.payment.status === 'paid' || this.payment.status === 'completed')) {
-    this.payoutStatus = 'Ready';
-  }
-  
-  // Update item statuses
-  this.items.forEach(item => {
-    if (item.status === 'pending' && newStatus === 'confirmed') item.status = 'confirmed';
-    else if (newStatus === 'cancelled') item.status = 'cancelled';
-  });
-  
-  return this.save();
+      for (const item of this._data.items || []) {
+        if (item.status === 'pending' && newStatus === 'confirmed') item.status = 'confirmed';
+        else if (newStatus === 'cancelled') item.status = 'cancelled';
+      }
+
+      this._data.payment = payment;
+      this.markModified('status');
+      this.markModified('payment');
+      this.markModified('statusHistory');
+      this.markModified('items');
+      return this.save();
+    },
+
+    async updateItemStatus(itemId, newStatus, artisanNotes = '') {
+      const item = (this._data.items || []).find(
+        (i) => toIdString(i._id) === toIdString(itemId)
+      );
+      if (!item) throw new Error('Order item not found');
+
+      item.status = newStatus;
+      if (artisanNotes) item.artisanNotes = artisanNotes;
+
+      const allStatuses = (this._data.items || []).map((i) => i.status);
+      if (allStatuses.every((s) => s === 'delivered')) this._data.status = 'delivered';
+      else if (allStatuses.every((s) => s === 'shipped' || s === 'delivered'))
+        this._data.status = 'shipped';
+      else if (allStatuses.some((s) => s === 'processing' || s === 'shipped'))
+        this._data.status = 'processing';
+
+      if (
+        (this._data.status === 'delivered' || this._data.status === 'completed') &&
+        (this._data.payment?.status === 'paid' || this._data.payment?.status === 'completed')
+      ) {
+        this._data.payoutStatus = 'ready';
+      }
+
+      this.markModified('items');
+      return this.save();
+    },
+  },
 };
 
-// Method to update item status
-orderSchema.methods.updateItemStatus = function(itemId, newStatus, artisanNotes = '') {
-  const item = this.items.id(itemId);
-  if (!item) {
-    throw new Error('Order item not found');
-  }
-  
-  item.status = newStatus;
-  if (artisanNotes) {
-    item.artisanNotes = artisanNotes;
-  }
-  
-  // Update overall order status
-  const allStatuses = this.items.map(i => i.status);
-  if (allStatuses.every(s => s === 'delivered')) {
-    this.status = 'delivered';
-  } else if (allStatuses.every(s => s === 'shipped' || s === 'delivered')) {
-    this.status = 'shipped';
-  } else if (allStatuses.some(s => s === 'processing' || s === 'shipped')) {
-    this.status = 'processing';
+function calculateTotals(data) {
+  const totals = data.totals || {};
+  totals.subtotal = (data.items || []).reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  if (data.shippingAddress?.country === 'Ethiopia') {
+    totals.tax = Math.round(totals.subtotal * 0.15 * 100) / 100;
+  } else {
+    totals.tax = totals.tax || 0;
   }
 
-  if ((this.status === 'delivered' || this.status === 'completed') && 
-      (this.payment.status === 'paid' || this.payment.status === 'completed')) {
-    this.payoutStatus = 'ready';
+  if (totals.subtotal < 1000 && data.shippingAddress?.country === 'Ethiopia') {
+    totals.shipping = 50;
+  } else if (data.shippingAddress?.country !== 'Ethiopia') {
+    totals.shipping = 200;
+  } else {
+    totals.shipping = totals.shipping || 0;
   }
 
-  // --- AUTO-INVENTORY CONTROL ---
-  if (
-    this.isModified('payment.status') && 
-    ['paid', 'confirmed'].includes(this.payment.status.toLowerCase())
-  ) {
-    const Product = mongoose.model('Product');
-    Promise.all(this.items.map(item => 
-      Product.findByIdAndUpdate(item.product, {
-        $inc: { 'inventory.quantity': -item.quantity }
-      })
-    )).catch(err => console.error('Auto-Inventory decrement failed: ', err));
-  }
-  
-  return this.save();
-};
+  totals.total = totals.subtotal + totals.tax + totals.shipping;
+  totals.platformCommission = Math.round(totals.total * 0.05 * 100) / 100;
+  totals.artisanEarning = Math.round((totals.total - totals.platformCommission) * 100) / 100;
 
-// Static method to get orders by customer with pagination
-orderSchema.statics.getByCustomer = function(customerId, { page = 1, limit = 10, status } = {}) {
+  data.totals = totals;
+  if (data.payment) data.payment.amount = totals.total;
+}
+
+const Order = createModel('Order', orderModelDef);
+
+Order.getByCustomer = function (customerId, { page = 1, limit = 10, status } = {}) {
   const filter = { customer: customerId };
   if (status) filter.status = status;
-
-  const query = this.find(filter)
+  const query = Order.find(filter)
     .populate('items.product', 'name images price')
     .populate('items.artisan', 'profile.firstName profile.lastName')
-    .sort({ createdAt: -1 });
-  
-  const skip = (page - 1) * limit;
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit);
   return {
-    query: query.skip(skip).limit(limit),
-    total: this.countDocuments(filter)
+    query,
+    total: Order.countDocuments(filter),
   };
 };
 
-// Static method to get orders by artisan with pagination
-orderSchema.statics.getByArtisan = function(artisanId, { page = 1, limit = 10, status } = {}) {
-  const filter = { 'items.artisan': artisanId };
+Order.getByArtisan = async function (artisanId, { page = 1, limit = 10, status } = {}) {
+  const aid = String(artisanId._id || artisanId);
+
+  // Build status filter for Prisma
+  let statusFilterWhere = {};
   if (status) {
-    if (status === 'pending') {
-      filter.status = { $in: ['pending', 'pending verification'] };
-    } else if (status === 'processing') {
-      filter.status = { $in: ['confirmed', 'processing'] };
-    } else {
-      filter.status = status;
-    }
+    if (status === 'pending') statusFilterWhere = { status: { in: ['pending', 'pending verification'] } };
+    else if (status === 'processing') statusFilterWhere = { status: { in: ['confirmed', 'processing'] } };
+    else statusFilterWhere = { status };
   }
 
-  const query = this.find(filter)
-    .select('orderNumber status totals payment shippingAddress createdAt customer items payoutStatus commissionStatus isCustom photos')
-    .populate('customer', 'profile.firstName profile.lastName profile.phone email')
-    .populate('items.product', 'name images price')
-    .sort({ createdAt: -1 });
-  
-  const skip = (page - 1) * limit;
-  return {
-    query: query.skip(skip).limit(limit),
-    total: this.countDocuments(filter)
-  };
+  const { prisma } = require('../lib/prisma');
+
+  // Step 1: find order IDs where items JSON array contains { artisan: aid }
+  // Uses PostgreSQL JSONB containment operator @> for reliable matching
+  let byItemsIds = [];
+  try {
+    const rawResults = await prisma.$queryRawUnsafe(
+      `SELECT id FROM orders WHERE JSON_CONTAINS(items, ?) OR JSON_CONTAINS(items, ?)`,
+      JSON.stringify({ artisan: aid }),
+      JSON.stringify({ artisan: { _id: aid } })
+    );
+    byItemsIds = (rawResults || []).map(r => String(r.id));
+  } catch (e) {
+    console.warn('[getByArtisan] Raw JSON containment query failed:', e.message);
+  }
+
+  // Step 2: Build a unified OR clause: artisanId FK match OR items-json match
+  const orClauses = [{ artisanId: aid }];
+  if (byItemsIds.length > 0) {
+    orClauses.push({ id: { in: byItemsIds } });
+  }
+  const baseWhere = { OR: orClauses, ...statusFilterWhere };
+
+  // Step 3: Count total + fetch page in parallel
+  const [total, page_results_raw] = await Promise.all([
+    prisma.order.count({ where: baseWhere }),
+    prisma.order.findMany({
+      where: baseWhere,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+  ]);
+
+  // Convert to compat docs and populate fields
+  const { toMongoDoc } = require('../lib/mongoCompat/serialize');
+  const User = require('./User');
+  const Product = require('./Product');
+
+  const orders = await Promise.all(page_results_raw.map(async (raw) => {
+    const doc = toMongoDoc(raw);
+
+    // Populate customer
+    if (doc.customer && typeof doc.customer === 'string') {
+      const cust = await User.findById(doc.customer).lean();
+      if (cust) doc.customer = cust;
+    }
+
+    // Populate items: product + artisan user
+    if (Array.isArray(doc.items)) {
+      doc.items = await Promise.all(doc.items.map(async (item) => {
+        if (item.product && typeof item.product === 'string') {
+          const prod = await Product.findById(item.product).lean();
+          if (prod) item.product = prod;
+        }
+        if (item.artisan && typeof item.artisan === 'string') {
+          const art = await User.findById(item.artisan).lean();
+          if (art) item.artisan = art;
+        }
+        return item;
+      }));
+    }
+
+    return doc;
+  }));
+
+  return { query: { then: (res) => res(orders), exec: async () => orders }, orders, total };
 };
 
-// Indexes for performance optimization
-orderSchema.index({ customer: 1, createdAt: -1 });
-orderSchema.index({ orderNumber: 1 }, { unique: true });
-orderSchema.index({ 'items.artisan': 1, createdAt: -1 }); // Optimized for artisan dashboard
-orderSchema.index({ 'items.artisan': 1, status: 1 }); // Optimized for tab filtering
-orderSchema.index({ status: 1 });
-orderSchema.index({ createdAt: -1 });
-orderSchema.index({ 'payment.transactionId': 1 }, { sparse: true });
-
-module.exports = mongoose.model('Order', orderSchema);
+module.exports = Order;

@@ -103,27 +103,34 @@ router.post(
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    // 1. Update Profile/Business Info
-    user.profile.businessInfo = {
-      businessName: businessName || user.profile.businessInfo.businessName,
-      tinNumber: tinNumber || user.profile.businessInfo.tinNumber,
-      tradeLicenseNumber: tradeLicenseNumber || user.profile.businessInfo.tradeLicenseNumber
+    // 1. Update Profile/Business Info — safely merge with existing data
+    const existingProfile = user.profile || {};
+    const existingBusinessInfo = existingProfile.businessInfo || {};
+    const updatedProfile = {
+      ...existingProfile,
+      businessInfo: {
+        ...existingBusinessInfo,
+        businessName: businessName || existingBusinessInfo.businessName || '',
+        tinNumber: tinNumber || existingBusinessInfo.tinNumber || '',
+        tradeLicenseNumber: tradeLicenseNumber || existingBusinessInfo.tradeLicenseNumber || '',
+      }
     };
 
-    // 2. Update Bank/Payment Details
-    user.bankDetails = {
-      bankName: bankName || user.bankDetails.bankName,
-      accountHolderName: accountHolderName || user.bankDetails.accountHolderName,
-      accountNumber: accountNumber || user.bankDetails.accountNumber,
-      telebirrNumber: telebirrNumber || user.bankDetails.telebirrNumber,
-      updatedAt: new Date()
+    // 2. Update Bank/Payment Details — safely merge with existing data
+    const existingBankDetails = user.bankDetails || {};
+    const updatedBankDetails = {
+      ...existingBankDetails,
+      bankName: bankName || existingBankDetails.bankName || '',
+      accountHolderName: accountHolderName || existingBankDetails.accountHolderName || '',
+      accountNumber: accountNumber || existingBankDetails.accountNumber || '',
+      telebirrNumber: telebirrNumber || existingBankDetails.telebirrNumber || '',
+      updatedAt: new Date(),
     };
 
-    // 3. Update Detailed Verification Status
+    // 3. Build verification object
     const photos = getPaths('productPhotos');
     const videos = getPaths('workVideos');
-    
-    user.verification = {
+    const updatedVerification = {
       status: 'pending',
       submittedAt: new Date(),
       identityCard: getPath('identity'),
@@ -132,17 +139,25 @@ router.post(
       productPhotos: photos,
       workVideos: videos,
       termsAccepted: termsAccepted === 'true' || termsAccepted === true,
-      // Fallback for legacy support
       documents: [getPath('identity'), getPath('tradeLicense'), getPath('tinCertificate'), ...photos, ...videos].filter(Boolean),
-      feedback: ''
+      feedback: '',
     };
 
-    await user.save();
+    // Use Prisma directly to avoid MongoCompat nested JSON mutation issues
+    const { prisma } = require('../lib/prisma');
+    await prisma.user.update({
+      where: { id: String(req.user._id) },
+      data: {
+        profile: updatedProfile,
+        bankDetails: updatedBankDetails,
+        verification: updatedVerification,
+      },
+    });
 
     res.status(200).json({
       success: true,
       message: 'Verification submitted successfully. Your account is now under review.',
-      verification: user.verification
+      verification: updatedVerification,
     });
   })
 );

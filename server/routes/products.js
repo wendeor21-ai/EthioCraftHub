@@ -10,7 +10,7 @@
  */
 
 const express = require("express");
-const mongoose = require("mongoose");
+const mongoose = require("../lib/mongoose");
 const fs = require("fs");
 const path = require("path");
 const multer = require("multer");
@@ -665,9 +665,10 @@ router.post(
       .isLength({ min: 3, max: 100 })
       .withMessage("Product name must be between 3 and 100 characters"),
     body("description")
+      .optional()
       .trim()
-      .isLength({ min: 20, max: 2000 })
-      .withMessage("Description must be between 20 and 2000 characters"),
+      .isLength({ min: 0, max: 2000 })
+      .withMessage("Description must be at most 2000 characters"),
     body("category")
       .isIn([
         "Textiles",
@@ -684,10 +685,11 @@ router.post(
       .isFloat({ min: 0.01 })
       .withMessage("Price must be a positive number"),
     body("materials")
-      .trim()
-      .notEmpty()
-      .withMessage("Materials description is required"),
-    body("story").trim().notEmpty().withMessage("Product story is required"),
+      .optional()
+      .trim(),
+    body("story")
+      .optional()
+      .trim(),
     body("images")
       .optional()
       .isArray({ min: 1, max: 10 })
@@ -774,20 +776,32 @@ router.post(
         console.warn("Ignoring invalid video URL:", videoCandidate);
       }
 
+      const rawName = (req.body.name || "").trim();
+      const baseSlug = rawName
+        ? rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+        : 'product';
+      const uniqueSuffix = `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+      const generatedSlug = (baseSlug || 'product') + '-' + uniqueSuffix;
+
       const productData = {
-        name: (req.body.name || "").trim(),
-        description: (req.body.description || "").trim(),
+        brandName: (req.body.brandName || "").trim(),
+        name: rawName,
+        description: (req.body.description || "").trim() || rawName,
         shortDescription: (req.body.shortDescription || "").trim(),
-        slug: req.body.slug || (req.body.name || "product").toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') + '-' + Date.now(),
+        slug: req.body.slug && req.body.slug !== 'product' && !req.body.slug.startsWith('product-')
+          ? req.body.slug
+          : generatedSlug,
         originRegion: (req.body.originRegion || "").trim(),
+        originZone: (req.body.originZone || "").trim(),
+        subcategory: req.body.subcategory || "",
         price: req.body.price,
         category: req.body.category,
-        materials: req.body.materials || "",
-        dimensions: req.body.dimensions || "",
+        materials: (req.body.materials || "").trim(),
+        dimensions: (req.body.dimensions || "").trim(),
         craftingTime: Number(req.body.craftingTime) || 0,
-        story: req.body.story || "",
-        careInstructions: req.body.careInstructions || "",
-        weight: req.body.weight || 0,
+        story: (req.body.story || "").trim(),
+        careInstructions: (req.body.careInstructions || "").trim(),
+        weight: Number(req.body.weight) || 0,
         videoUrl,
         images: req.body.images || [],
         customizable: req.body.customizable || false,
@@ -808,17 +822,15 @@ router.post(
           keywords: req.body.seo?.keywords || []
         },
         shipping: {
-          weight: req.body.shipping?.weight || req.body.weight || 0,
-          shippingClass: req.body.shipping?.shippingClass || "",
+          weight: Number(req.body.shipping?.weight) || Number(req.body.weight) || 0,
+          shippingClass: req.body.shipping?.shippingClass || "standard",
           estimatedDelivery: req.body.shipping?.estimatedDelivery || "",
-          lowStockThreshold: req.body.shipping?.lowStockThreshold || 5
+          lowStockThreshold: Number(req.body.shipping?.lowStockThreshold) || 5
         },
         artisan: req.user._id,
         status: requestedStatus,
-        isAvailable: requestedStatus === "active",
         inventory: {
-          // quantity will be corrected by pre-save hook if variations provided
-          quantity: 1,
+          quantity: Number(req.body.stock) || Number(req.body.inventory?.quantity) || 1,
           reserved: 0,
         },
         metrics: {
@@ -847,13 +859,17 @@ router.post(
         status: savedProduct.status,
       });
 
-      // Log business event
-      logBusinessEvent("product_created", req.user._id, {
-        productId: savedProduct._id,
-        category: savedProduct.category,
-        price: savedProduct.price,
-        status: savedProduct.status,
-      });
+      // Log business event safely
+      try {
+        logBusinessEvent("product_created", req.user._id, {
+          productId: savedProduct._id,
+          category: savedProduct.category,
+          price: savedProduct.price,
+          status: savedProduct.status,
+        });
+      } catch (evtError) {
+        console.error("[Business Event] Failed to log product creation:", evtError.message);
+      }
 
       // Activity logging depending on status
       try {
@@ -897,7 +913,7 @@ router.post(
       res.status(201).json({
         success: true,
         message: "Product created successfully",
-        product: populatedProduct,
+        product: populatedProduct || savedProduct,
       });
     } catch (error) {
       console.error("❌ Error creating product:", error);
@@ -926,35 +942,102 @@ router.post(
         });
       }
 
-      if (error.code === 11000) {
-        console.log("❌ Duplicate key error:", error.keyPattern);
+      if (error.code === 11000 || error.code === "P2002") {
+        console.log("❌ Duplicate key error:", error.keyPattern || error.meta?.target);
         let message = "A product with this information already exists";
         
-        // Identify which field caused the duplicate error
-        if (error.keyPattern) {
-          if (error.keyPattern.name) {
-            message = "A product with this name already exists. Please choose a unique name.";
-          } else if (error.keyPattern.slug) {
-            message = "A product with this URL slug already exists (duplicate name/slug).";
-          } else if (error.keyPattern.sku || JSON.stringify(error.keyPattern).includes('sku')) {
-            message = "This SKU is already in use. Each product/variant must have a unique SKU.";
-          }
+        const targetField = error.keyPattern
+          ? Object.keys(error.keyPattern)[0]
+          : error.meta?.target
+          ? error.meta.target[0]
+          : null;
+
+        if (targetField === "name") {
+          message = "A product with this name already exists. Please choose a unique name.";
+        } else if (targetField === "slug") {
+          message = "A product with this URL slug already exists. Please modify the product title or submit again.";
+        } else if (targetField === "sku" || (targetField && String(targetField).includes("sku"))) {
+          message = "This SKU is already in use. Each product/variant must have a unique SKU.";
         }
 
         return res.status(400).json({
           error: "Duplicate product",
           message,
           code: "DUPLICATE_PRODUCT",
-          field: error.keyPattern ? Object.keys(error.keyPattern)[0] : null
+          field: targetField,
         });
       }
 
       res.status(500).json({
         error: "Server error",
-        message: "Failed to create product. Please try again.",
+        message: error.message || "Failed to create product. Please try again.",
         code: "INTERNAL_ERROR",
+        details: process.env.NODE_ENV !== "production" ? error.message : undefined,
       });
     }
+  }),
+);
+
+/**
+ * @route   PATCH /api/products/:id/restock
+ * @desc    Increment product stock quantity (Artisan owner only)
+ * @access  Private (Artisan owner)
+ */
+router.patch(
+  "/:id/restock",
+  authenticate,
+  requireArtisan,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { prisma } = require("../lib/prisma");
+    const amount = parseInt(req.body.amount);
+
+    if (!amount || isNaN(amount) || amount <= 0) {
+      return res.status(400).json({
+        error: "Validation failed",
+        message: "Amount must be a positive number",
+        code: "VALIDATION_ERROR",
+      });
+    }
+
+    // Fetch the product directly via Prisma to get the raw inventory JSON
+    const whereClause = { id };
+    if (req.user.role !== "admin") {
+      whereClause.artisanId = req.user._id;
+    }
+
+    const existing = await prisma.product.findFirst({ where: whereClause });
+    if (!existing) {
+      throw createForbiddenError("Product not found or you do not have permission to edit it");
+    }
+
+    const currentInventory = (existing.inventory && typeof existing.inventory === 'object')
+      ? existing.inventory
+      : {};
+    const currentQty = Number(currentInventory.quantity) || 0;
+    const newQty = currentQty + amount;
+
+    // Use Prisma directly to update the inventory JSON field atomically,
+    // bypassing the MongoCompat preSave hook that would overwrite quantity.
+    await prisma.product.update({
+      where: { id },
+      data: {
+        inventory: { ...currentInventory, quantity: newQty },
+        status: newQty > 0 && existing.status === 'sold' ? 'active' : existing.status,
+        updatedAt: new Date(),
+      },
+    });
+
+    logBusinessEvent("product_restocked", req.user._id, {
+      productId: id,
+      addedQty: amount,
+      newQty,
+    });
+
+    res.json({
+      message: `Stock updated to ${newQty} units`,
+      newQuantity: newQty,
+    });
   }),
 );
 
@@ -1030,15 +1113,19 @@ router.put(
     }
 
     // Use findOneAndUpdate for atomic update + ownership check
-    const product = await Product.findOneAndUpdate(
+    const updated = await Product.findOneAndUpdate(
       query,
       { $set: updateData },
       { new: true, runValidators: true }
-    ).populate("artisan", "profile.firstName profile.lastName email");
+    );
 
-    if (!product) {
+    if (!updated) {
       throw createForbiddenError("Product not found or you do not have permission to edit it");
     }
+
+    // Re-fetch with artisan populated
+    const product = await Product.findById(updated._id)
+      .populate("artisan", "profile.firstName profile.lastName email");
 
     console.log("✅ Product updated successfully:", {
       productId: product._id,
@@ -1093,9 +1180,16 @@ router.delete(
     }
 
     // Check ownership (admins can delete any product)
+    // product.artisan may be a populated User object or a plain ID string,
+    // so extract the real ID in both cases.
+    const productArtisanId =
+      product.artisan && typeof product.artisan === 'object'
+        ? (product.artisan._id || product.artisan.id || product.artisan).toString()
+        : String(product.artisan);
+
     if (
       req.user.role !== "admin" &&
-      product.artisan.toString() !== req.user._id.toString()
+      productArtisanId !== req.user._id.toString()
     ) {
       throw createForbiddenError("You can only delete your own products");
     }

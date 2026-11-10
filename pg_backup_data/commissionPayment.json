@@ -1,0 +1,77 @@
+[
+  {
+    "id": "69c8078c58c2d5747522f1f7",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "amount": 1999.99,
+    "paymentMethod": "bank transfer",
+    "notes": null,
+    "receiptImage": "/uploads/commission-1774716812294-Data Analaysis.png",
+    "status": "confirmed",
+    "orderIds": [
+      "69c7e7959f2eedcc541b78ec",
+      "69c7d811f6fc6fb8c0af0d3f",
+      "69c7fdf9ce56aea4dd00c3e6",
+      "69c7d350ae06becfd2e8ec86",
+      "69c7ea2d9f2eedcc541b7cc8",
+      "69c7f07a2e2fd0485d8aa633",
+      "69c7fad783023193e0d0c86b",
+      "69c7d4e8ae06becfd2e8f072",
+      "69c7d41eae06becfd2e8ef30",
+      "69c7dcca9f2eedcc541b74f7",
+      "69c7dd939f2eedcc541b76cb",
+      "69c7d564ae06becfd2e8f21b",
+      "69c7e89e9f2eedcc541b7ae5",
+      "69c7f3a2353e0118ba79a997",
+      "69c7f88f7c37cd9f98475652",
+      "69c7fb0683023193e0d0c92f"
+    ],
+    "createdAt": "2026-03-28T16:53:32.350Z",
+    "updatedAt": "2026-07-29T16:26:24.719Z"
+  },
+  {
+    "id": "69c853466bde6f18b53f0fe0",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "amount": 1700,
+    "paymentMethod": "bank transfer",
+    "notes": null,
+    "receiptImage": "/uploads/commission-1774736198895-f7fbe90f-49fb-4a80-b701-d5121019c460.jpg",
+    "status": "confirmed",
+    "orderIds": [],
+    "createdAt": "2026-03-28T22:16:38.947Z",
+    "updatedAt": "2026-07-29T16:26:24.723Z"
+  },
+  {
+    "id": "667c8c083a8f59c691341c20",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "amount": 1999.99,
+    "paymentMethod": "Bank Transfer",
+    "notes": "",
+    "receiptImage": "/uploads/commission-1785428550161-9277-information-systems-poster-thumbnail-0-1200x628.png",
+    "status": "confirmed",
+    "orderIds": [
+      "41d4d0e82aef3cb473ba82ca",
+      "70a0bd788e738af786f9f2b2",
+      "09eb53590942584f60af24b5",
+      "69d6d3d3507d18da985a9bb7"
+    ],
+    "createdAt": "2026-07-30T16:22:30.183Z",
+    "updatedAt": "2026-07-30T21:32:29.757Z"
+  },
+  {
+    "id": "2d9f4c89a8ff74700caf4d7c",
+    "artisanId": "6983ef193321e3cbca373ddc",
+    "amount": 500,
+    "paymentMethod": "Bank Transfer",
+    "notes": "thanks ",
+    "receiptImage": "/uploads/commission-1785447268445-COLOURBOX9513899.webp",
+    "status": "confirmed",
+    "orderIds": [
+      "69c7ca35695e189677e775b3",
+      "cc64247c097a974f4fe5c406",
+      "69f1418b580ec5448402aa20",
+      "6a11ca898001868c4706b434"
+    ],
+    "createdAt": "2026-07-30T21:34:28.488Z",
+    "updatedAt": "2026-07-30T21:34:55.785Z"
+  }
+]

@@ -4,7 +4,7 @@
  *
  * This server handles:
  * - Express.js application setup with security middleware
- * - MongoDB connection with Mongoose ODM
+ * - Database connection with Prisma ORM
  * - JWT-based authentication and authorization
  * - RESTful API routes for all platform features
  * - File upload handling for product images
@@ -12,11 +12,27 @@
  */
 
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 require("dotenv").config();
+
+// ── SEC-01: Fatal startup assertions for required secrets ────────────────────
+const WEAK_SECRETS = [
+  'ethiocraft_super_secret_jwt_key_2024_development',
+  'secret', 'changeme', 'development', 'jwt_secret', '',
+];
+if (!process.env.JWT_SECRET || WEAK_SECRETS.includes(process.env.JWT_SECRET)) {
+  console.error('FATAL: Missing or weak JWT_SECRET environment variable. Set a strong random secret before starting.');
+  process.exit(1);
+}
+if (!process.env.DATABASE_URL) {
+  console.error('FATAL: Missing DATABASE_URL environment variable.');
+  process.exit(1);
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+const { connectDB, disconnectDB } = require("./lib/prisma");
 
 // Import route handlers
 const authRoutes = require("./routes/auth");
@@ -85,11 +101,12 @@ app.use(
   }),
 );
 
-// Rate limiting middleware (apply only in production to avoid dev friction)
-if (process.env.NODE_ENV === "production") {
+// SEC-05: Rate limiting — active in production and staging; skipped only in development
+const isDevOnly = process.env.NODE_ENV === "development";
+if (!isDevOnly) {
   const limiter = rateLimit({
-    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+    max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
     message: {
       error: "Too many requests from this IP, please try again later.",
       code: "RATE_LIMIT_EXCEEDED",
@@ -98,8 +115,9 @@ if (process.env.NODE_ENV === "production") {
     legacyHeaders: false,
   });
   app.use("/api/", limiter);
+  console.log(`✅ Rate limiter active (NODE_ENV=${process.env.NODE_ENV})`);
 } else {
-  console.log("⚠️ Rate limiter skipped in development (NODE_ENV!=production)");
+  console.log("⚠️ Rate limiter skipped in development (NODE_ENV=development)");
 }
 
 // Note: simpleCors has already been applied at the top to ensure preflight
@@ -118,7 +136,13 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    // SEC-05: Enable secure cookies whenever the connection is HTTPS.
+    // This covers production, staging, and any environment behind a TLS proxy.
+    secure: process.env.COOKIE_SECURE === 'true' ||
+            process.env.NODE_ENV === 'production' ||
+            (process.env.HTTPS === 'true'),
+    httpOnly: true,
+    sameSite: 'lax',
     maxAge: 10 * 60 * 1000, // 10 minutes — only needed for OAuth flow
   },
 }));
@@ -158,11 +182,20 @@ try {
   console.error("Failed to create uploads directory:", err);
 }
 
+// SEC-03: Restrict /uploads CORS to configured allowed origins only
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+  : [process.env.CLIENT_URL || 'http://localhost:3000'];
+
 app.use(
   "/uploads",
   (req, res, next) => {
-    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    const origin = req.headers.origin;
+    res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+    if (origin && allowedOrigins.includes(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
+    }
     next();
   },
   express.static(uploadsDir),
@@ -260,34 +293,27 @@ app.use("*", (req, res) => {
 // Global error handling middleware
 app.use(errorHandler);
 
-// MongoDB connection with retry logic
-const connectDB = async () => {
+// Database connection with retry logic
+const connectDatabase = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
-    console.log(`📊 Database: ${conn.connection.name}`);
+    await connectDB();
   } catch (error) {
-    console.error("❌ MongoDB connection error:", error.message); // Retry connection after 5 seconds
-
-    console.log("🔄 Retrying MongoDB connection in 5 seconds...");
-    setTimeout(connectDB, 5000);
+    console.error("❌ Database connection error:", error.message);
+    console.log("🔄 Retrying Database connection in 5 seconds...");
+    setTimeout(connectDatabase, 5000);
   }
 };
 
 // Graceful shutdown handling
 process.on("SIGTERM", async () => {
   console.log("🛑 SIGTERM received. Shutting down gracefully...");
-  await mongoose.connection.close();
+  await disconnectDB();
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   console.log("🛑 SIGINT received. Shutting down gracefully...");
-  await mongoose.connection.close();
+  await disconnectDB();
   process.exit(0);
 });
 
@@ -319,8 +345,12 @@ io.on("connection", (socket) => {
 
   socket.on("join", (userId) => {
     if (userId) {
-      socket.join(`user_${userId}`);
-      console.log(`👤 User ${userId} joined room: user_${userId} (Total rooms for this socket: ${socket.rooms.size})`);
+      const cleanId = String(userId).replace(/^(user_|artisan_)/, '');
+      socket.join(String(userId));
+      socket.join(cleanId);
+      socket.join(`user_${cleanId}`);
+      socket.join(`artisan_${cleanId}`);
+      console.log(`👤 User ${cleanId} joined rooms: [${cleanId}, user_${cleanId}, artisan_${cleanId}] (Total rooms: ${socket.rooms.size})`);
     } else {
       console.warn(`⚠️ Socket ${socket.id} tried to join room with empty userId`);
     }
@@ -335,8 +365,8 @@ const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
   try {
-    // Connect to MongoDB first
-    await connectDB(); 
+    // Connect to PostgreSQL first
+    await connectDatabase(); 
 
     // Pre-load the MobileNet model for faster visual search response times
     // This is especially important for the first search request

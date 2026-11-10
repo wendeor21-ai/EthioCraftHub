@@ -459,7 +459,7 @@ const AddProduct = () => {
     setError('');
 
     try {
-      // Advanced front-end validation for publish
+      // Only 5 required fields for publish; all others are optional
       if (status === 'active') {
         if (!formData.name || formData.name.trim().length < 3) {
           setError('Product name is required and must be at least 3 characters.');
@@ -477,22 +477,11 @@ const AddProduct = () => {
           setError('At least one product image is required.');
           setLoading(false); return;
         }
-        if (!formData.description || formData.description.trim().length < 20) {
-          setError('Full description must be at least 20 characters.');
+        if (!formData.description || formData.description.trim().length < 5) {
+          setError('A short product description (at least 5 characters) is required.');
           setLoading(false); return;
         }
-        if (!formData.materials || formData.materials.trim().length === 0) {
-          setError('Materials description is required (e.g. "Cotton, natural dye").');
-          setLoading(false); return;
-        }
-        if (!formData.story || formData.story.trim().length === 0) {
-          setError('Product story is required. Share the cultural background of your craft.');
-          setLoading(false); return;
-        }
-        if (formData.stock !== undefined && formData.stock !== '' && !Number.isInteger(Number(formData.stock))) {
-          setError('Stock quantity must be a whole number.');
-          setLoading(false); return;
-        }
+        // materials, story, dimensions, etc. are optional
       }
 
       // Upload pending images

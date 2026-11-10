@@ -1,33 +1,29 @@
-const mongoose = require("mongoose");
+/**
+ * NotificationSetting Model - PostgreSQL/Prisma backend
+ */
+const { prisma } = require('../lib/prisma');
+const { createModel } = require('../lib/mongoCompat/createModel');
+const { defaultTranslateWhere, defaultToPrisma } = require('../lib/mongoCompat/modelHelpers');
 
-const notificationSettingSchema = new mongoose.Schema(
-  {
-    adminUserId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
-    email: {
-      type: String,
-      trim: true,
-      lowercase: true,
-    },
-    enabled: {
-      type: Boolean,
-      default: true,
-    },
-    enabledAlerts: {
-      security: { type: Boolean, default: true },
-      content: { type: Boolean, default: true },
-      dailySummary: { type: Boolean, default: true },
-    },
-    lastNotifiedAt: Date,
+const notificationSettingModelDef = {
+  delegate: prisma.notificationSetting,
+  defaultInclude: { adminUser: true },
+
+  populateMap: {
+    adminUserId: { model: 'User' },
   },
-  { timestamps: true },
-);
 
-module.exports = mongoose.model(
-  "NotificationSetting",
-  notificationSettingSchema,
-);
+  async translateWhere(where, ops, rawFilter) {
+    const result = await defaultTranslateWhere(where, ops, rawFilter);
+    if (rawFilter.adminUserId) {
+      result.adminUserId = String(rawFilter.adminUserId._id || rawFilter.adminUserId);
+    }
+    return result;
+  },
+
+  toPrisma(data) {
+    return defaultToPrisma(data, { adminUserId: 'adminUserId' });
+  },
+};
+
+module.exports = createModel('NotificationSetting', notificationSettingModelDef);

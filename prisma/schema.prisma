@@ -1,0 +1,442 @@
+// EthioCraft Global - MySQL schema (migrated from PostgreSQL)
+// IDs preserve MongoDB ObjectId strings (24-char hex) for API compatibility
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String    @id @db.VarChar(24)
+  email                 String    @unique
+  password              String?
+  googleId              String?   @unique
+  authProvider          String    @default("local")
+  role                  String
+  profile               Json
+  verification          Json?
+  preferences           Json      @default("{}")
+  wishlist              Json      @default("[]")
+  cart                  Json      @default("[]")
+  shippingAddresses     Json      @default("[]")
+  isActive              Boolean   @default(true)
+  isVerified            Boolean   @default(false)
+  isFlagged             Boolean   @default(false)
+  mustChangePassword    Boolean   @default(false)
+  hasAcceptedGuidelines Boolean   @default(false)
+  tempPasswordExpiry    DateTime?
+  flags                 Json      @default("[]")
+  alerts                Json      @default("[]")
+  lastLogin             DateTime?
+  loginAttempts         Int       @default(0)
+  lockUntil             DateTime?
+  bankDetails           Json?
+  notificationPreferences Json?
+  storeSettings         Json?
+  shippingSettings      Json?
+  twoFactorEnabled      Boolean   @default(false)
+  lastPasswordChange    DateTime?
+  tokenVersion          Int       @default(0)
+  passwordResetToken    String?
+  passwordResetExpires  DateTime?
+  unpaidCommission      Float     @default(0)
+  paidCommission        Float     @default(0)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  artisanProducts       Product[]         @relation("ArtisanProducts")
+  customerOrders        Order[]           @relation("CustomerOrders")
+  artisanOrders         Order[]           @relation("ArtisanOrders")
+  customOrdersAsCustomer CustomOrder[]    @relation("CustomOrderCustomer")
+  customOrdersAsArtisan  CustomOrder[]    @relation("CustomOrderArtisan")
+  promotions            Promotion[]
+  earnings              Earning[]         @relation("ArtisanEarnings")
+  earningsProcessed     Earning[]         @relation("EarningsProcessedBy")
+  commissionPayments    CommissionPayment[]
+  withdrawalAuditLogs   WithdrawalAuditLog[] @relation("WithdrawalAuditArtisan")
+  withdrawalAuditPerformed WithdrawalAuditLog[] @relation("WithdrawalAuditPerformer")
+  messagesSent          Message[]         @relation("MessageSender")
+  messagesReceived      Message[]         @relation("MessageRecipient")
+  userInteractions      UserInteraction[]
+  aiChatLogs            AIChatLog[]       @relation("AIChatUser")
+  aiChatLogsReviewed    AIChatLog[]       @relation("AIChatReviewer")
+  notificationSettings  NotificationSetting[]
+
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Product {
+  id                 String    @id @db.VarChar(24)
+  brandName          String    @default("")
+  name               String
+  description        String    @db.Text
+  shortDescription   String?   @db.Text
+  slug               String?   @unique
+  originRegion       String?
+  originZone         String?
+  category           String
+  materials          String    @default("") @db.Text
+  dimensions         String    @default("") @db.Text
+  craftingTime       Int       @default(0)
+  story              String    @default("") @db.Text
+  careInstructions   String    @default("") @db.Text
+  weight             Float     @default(0)
+  videoUrl           String?   @db.Text
+  subcategory        String?
+  price              Float
+  currency           String    @default("ETB")
+  artisanId          String
+  artisan            User      @relation("ArtisanProducts", fields: [artisanId], references: [id], onDelete: Cascade)
+  images             Json      @default("[]")
+  culturalStory      Json?
+  specifications     Json?
+  inventory          Json?
+  aiTags             Json      @default("[]")
+  culturalTags       Json      @default("[]")
+  variations         Json      @default("[]")
+  options            Json      @default("[]")
+  metrics            Json?
+  status             String    @default("draft")
+  featured           Boolean   @default(false)
+  tags               Json      @default("[]")
+  reviews            Json      @default("[]")
+  promotionActive    Boolean   @default(false)
+  promotionId        String?
+  promotion          Promotion? @relation(fields: [promotionId], references: [id], onDelete: SetNull)
+  discountPrice      Float?
+  seo                Json?
+  shipping           Json?
+  imageFeatureVector Json?     @default("[]")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  customOrders       CustomOrder[]
+  earnings           Earning[]
+  userInteractions   UserInteraction[]
+  aiChatLogs         AIChatLog[]
+  promotionProducts  PromotionProduct[]
+
+  @@index([category, status])
+  @@index([artisanId])
+  @@index([createdAt])
+  @@index([status])
+  @@index([featured, status])
+  @@map("products")
+}
+
+model Order {
+  id               String    @id @db.VarChar(24)
+  orderNumber      String    @unique
+  customerId       String
+  customer         User      @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+  artisanId        String?
+  artisan          User?     @relation("ArtisanOrders", fields: [artisanId], references: [id], onDelete: SetNull)
+  cartId           String?
+  items            Json
+  totals           Json
+  shippingAddress  Json
+  payment          Json
+  shipping         Json?
+  communication    Json      @default("[]")
+  status           String    @default("pending")
+  payoutStatus     String    @default("pending")
+  commissionStatus String    @default("pending")
+  statusHistory    Json      @default("[]")
+  notes            String?   @db.Text
+  cancelReason     String?   @db.Text
+  isDisputed       Boolean   @default(false)
+  isCustom         Boolean   @default(false)
+  photos           Json?
+  debtRecorded     Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  earnings         Earning[]
+  commissionPaymentOrders CommissionPaymentOrder[]
+
+  @@index([customerId, createdAt])
+  @@index([artisanId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model CustomOrder {
+  id              String    @id @db.VarChar(24)
+  customerId      String
+  customer        User      @relation("CustomOrderCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  artisanId       String?
+  artisan         User?     @relation("CustomOrderArtisan", fields: [artisanId], references: [id], onDelete: SetNull)
+  productId       String?
+  product         Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  gender          String
+  itemType        String
+  measurements    Json?
+  photos          Json?
+  status          String    @default("pending")
+  price           Float     @default(0)
+  commission      Float     @default(0)
+  artisanEarning  Float     @default(0)
+  paymentMethod   String    @default("None")
+  transactionId   String?
+  description     String?   @db.Text
+  adminNotes      String?   @db.Text
+  rejectionReason String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([customerId])
+  @@index([artisanId])
+  @@index([status])
+  @@map("custom_orders")
+}
+
+model Promotion {
+  id              String    @id @db.VarChar(24)
+  name            String
+  artisanId       String
+  artisan         User      @relation(fields: [artisanId], references: [id], onDelete: Cascade)
+  discountType    String
+  discountValue   Float
+  couponCode      String?   @unique
+  startDate       DateTime
+  endDate         DateTime
+  targetType      String    @default("all")
+  urgencyBadge    Boolean   @default(false)
+  badgeText       String    @default("Limited Time Offer")
+  minOrderValue   Float     @default(0)
+  status          String    @default("active")
+  analytics       Json      @default("{\"totalSales\":0,\"revenue\":0,\"uses\":0}")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  products        Product[]
+  selectedProducts PromotionProduct[]
+
+  @@index([artisanId, status])
+  @@index([endDate])
+  @@map("promotions")
+}
+
+model PromotionProduct {
+  promotionId String
+  productId   String
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, productId])
+  @@map("promotion_products")
+}
+
+model Message {
+  id            String   @id @db.VarChar(24)
+  senderId      String
+  sender        User     @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  recipientId   String?
+  recipient     User?    @relation("MessageRecipient", fields: [recipientId], references: [id], onDelete: SetNull)
+  senderRole    String
+  subject       String
+  message       String   @db.Text
+  status        String   @default("New")
+  adminResponse String   @default("") @db.Text
+  read          Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("messages")
+}
+
+model Earning {
+  id                       String    @id @db.VarChar(24)
+  artisanId                String
+  artisan                  User      @relation("ArtisanEarnings", fields: [artisanId], references: [id], onDelete: Cascade)
+  transactionType          String
+  amount                   Float
+  platformFee              Float     @default(0)
+  netAmount                Float
+  orderId                  String?
+  order                    Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  productId                String?
+  product                  Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  withdrawalMethod         String?
+  withdrawalStatus         String?
+  withdrawalAccountDetails Json?
+  status                   String    @default("completed")
+  description              String?   @db.Text
+  processedById            String?
+  processedBy              User?     @relation("EarningsProcessedBy", fields: [processedById], references: [id], onDelete: SetNull)
+  processedAt              DateTime?
+  failureReason            String?   @db.Text
+  metadata                 Json?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  withdrawalAuditLogs      WithdrawalAuditLog[]
+
+  @@index([artisanId, createdAt])
+  @@index([transactionType, status])
+  @@index([withdrawalStatus])
+  @@map("earnings")
+}
+
+model CommissionPayment {
+  id            String   @id @db.VarChar(24)
+  artisanId     String
+  artisan       User     @relation(fields: [artisanId], references: [id], onDelete: Cascade)
+  amount        Float
+  paymentMethod String
+  notes         String?  @db.Text
+  receiptImage  String?  @db.Text
+  status        String   @default("pending admin approval")
+  orderIds      Json     @default("[]")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderLinks    CommissionPaymentOrder[]
+
+  @@map("commission_payments")
+}
+
+model CommissionPaymentOrder {
+  commissionPaymentId String
+  orderId             String
+  commissionPayment   CommissionPayment @relation(fields: [commissionPaymentId], references: [id], onDelete: Cascade)
+  order               Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@id([commissionPaymentId, orderId])
+  @@map("commission_payment_orders")
+}
+
+model WithdrawalAuditLog {
+  id             String   @id @db.VarChar(24)
+  earningId      String
+  earning        Earning  @relation(fields: [earningId], references: [id], onDelete: Cascade)
+  artisanId      String
+  artisan        User     @relation("WithdrawalAuditArtisan", fields: [artisanId], references: [id], onDelete: Cascade)
+  action         String
+  previousStatus String?
+  newStatus      String?
+  performedById  String
+  performedBy    User     @relation("WithdrawalAuditPerformer", fields: [performedById], references: [id], onDelete: Cascade)
+  notes          String?  @db.Text
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([earningId, createdAt])
+  @@index([artisanId, createdAt])
+  @@map("withdrawal_audit_logs")
+}
+
+model UserInteraction {
+  id              String   @id @db.VarChar(24)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  interactionType String
+  duration        Float?
+  quantity        Int?
+  metadata        Json?
+  sessionId       String
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([productId])
+  @@index([createdAt])
+  @@map("user_interactions")
+}
+
+model AIChatLog {
+  id                    String    @id @db.VarChar(24)
+  userId                String?
+  user                  User?     @relation("AIChatUser", fields: [userId], references: [id], onDelete: SetNull)
+  userEmail             String?
+  userRole              String    @default("anonymous")
+  userQuery             String    @db.Text
+  sanitizedQuery        String    @db.Text
+  aiResponse            String    @default("") @db.Text
+  conversationContext   String    @default("general")
+  productId             String?
+  product               Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  containsSensitiveData Boolean   @default(false)
+  sanitizationApplied   Boolean   @default(false)
+  flaggedForReview      Boolean   @default(false)
+  responseTime          Float?
+  tokenCount            Int?
+  sessionId             String?
+  ipAddress             String?
+  userAgent             String?
+  reviewedById          String?
+  reviewedBy            User?     @relation("AIChatReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAt            DateTime?
+  reviewNotes           String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([flaggedForReview, createdAt])
+  @@map("ai_chat_logs")
+}
+
+model AlertLog {
+  id        String   @id @db.VarChar(24)
+  type      String
+  level     String   @default("info")
+  details   Json?
+  to        String?
+  subject   String?
+  message   String?  @db.Text
+  success   Boolean  @default(false)
+  error     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("alert_logs")
+}
+
+model SiteConfig {
+  id                    String   @id @db.VarChar(24)
+  configType            String   @unique @default("homepage")
+  heroSlides            Json     @default("[]")
+  heritageTitle_en      String?
+  heritageTitle_am      String?
+  heritageTitle_or      String?
+  heritageTitle_ti      String?
+  heritageDescription_en String?  @db.Text
+  heritageDescription_am String?  @db.Text
+  heritageDescription_or String?  @db.Text
+  heritageDescription_ti String?  @db.Text
+  heritageImage         String?
+  headerLogo            String?
+  footerLogo            String?
+  commissionRate        Float    @default(5)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("site_configs")
+}
+
+model NotificationSetting {
+  id            String    @id @db.VarChar(24)
+  adminUserId   String
+  adminUser     User      @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  email         String
+  enabled       Boolean   @default(true)
+  enabledAlerts Json?
+  lastNotifiedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("notification_settings")
+}

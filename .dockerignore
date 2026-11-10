@@ -1,0 +1,13 @@
+.git
+.github
+node_modules
+client/node_modules
+client/build
+server/logs/*.log
+temp
+tmp
+*.zip
+.env
+.env.production
+migration-report.json
+*.md

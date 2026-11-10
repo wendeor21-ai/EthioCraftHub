@@ -37,18 +37,84 @@ function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null);
-  const [unreadMessages, setUnreadMessages] = useState(0); // Changed from hardcoded 3 to 0
+  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [artisanOrdersCount, setArtisanOrdersCount] = useState(0);
+  const [recentArtisanOrders, setRecentArtisanOrders] = useState([]);
+  const notificationDropdownRef = useRef(null);
   const prevUnreadRef = useRef(null);
   const dropdownRef = useRef(null);
   const pollRef = useRef(false);
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
-  const { settings, homeConfig, broadcasts } = useSettings();
+  const { settings, homeConfig, broadcasts, dismissBroadcast } = useSettings();
   const { t } = useCustomTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
   const headerLogo = homeConfig?.headerLogo;
+
+  // Fetch artisan order count and recent orders
+  const fetchArtisanOrders = async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!token || user?.role !== 'artisan') return;
+      const res = await fetch('/api/users/artisan/dashboard-stats', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) return;
+      const body = await res.json();
+      const stats = body.data || body.stats || {};
+      const pendingCount = stats.pendingOrdersCount ?? stats.newOrders ?? stats.orders?.newOrders ?? stats.pendingOrders ?? 0;
+      setArtisanOrdersCount(pendingCount);
+      setRecentArtisanOrders(stats.recentOrders || []);
+    } catch (err) {
+      console.error('Navbar artisan stats error:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'artisan') {
+      fetchArtisanOrders();
+      const interval = setInterval(fetchArtisanOrders, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated, user?.role]);
+
+  // Listen for real-time newOrder events dispatched by useInventoryAlerts
+  useEffect(() => {
+    const handleNewOrder = (e) => {
+      setArtisanOrdersCount(prev => prev + 1);
+      const newO = e?.detail;
+      if (newO) {
+        setRecentArtisanOrders(prev => [newO, ...prev.slice(0, 9)]);
+      }
+    };
+    window.addEventListener('artisanNewOrder', handleNewOrder);
+    return () => window.removeEventListener('artisanNewOrder', handleNewOrder);
+  }, []);
+
+  // Close notification dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutsideNotif = (event) => {
+      if (
+        notificationDropdownRef.current &&
+        !notificationDropdownRef.current.contains(event.target)
+      ) {
+        setIsNotificationOpen(false);
+      }
+    };
+    if (isNotificationOpen) {
+      document.addEventListener('mousedown', handleClickOutsideNotif);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutsideNotif);
+    };
+  }, [isNotificationOpen]);
+
+  const totalNotifications = user?.role === 'artisan'
+    ? (unreadMessages + artisanOrdersCount)
+    : unreadMessages;
 
   // Fetch unread messages count based on user role
   useEffect(() => {
@@ -191,8 +257,23 @@ function Navbar() {
         (() => {
           const relevant = broadcasts.find(b => b.target === 'all' || (user && (b.target === user.role || (b.target === 'artisans' && user.role === 'artisan'))));
           return relevant ? (
-            <div className="bg-ethiopian-gold text-white text-center py-1.5 sm:py-2 text-xs sm:text-sm px-4">
-              {relevant.message}
+            <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-white py-2 px-4 shadow-sm flex items-center justify-between gap-3 text-xs sm:text-sm animate-fadeIn">
+              <div className="flex items-center gap-2 max-w-5xl mx-auto flex-1 justify-center">
+                <span className="flex-shrink-0 bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">
+                  📢 {relevant.target === 'artisans' ? 'Artisan Notice' : 'Notice'}
+                </span>
+                <span className="font-medium text-center truncate sm:whitespace-normal">
+                  {relevant.message}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => dismissBroadcast && dismissBroadcast(relevant._id)}
+                title="Dismiss announcement"
+                className="flex-shrink-0 text-white/80 hover:text-white hover:bg-black/10 rounded-full p-1 transition"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
             </div>
           ) : null;
         })()
@@ -273,19 +354,125 @@ function Navbar() {
               )}
             </Link>
 
-            {/* Notifications/Messages - Only show when authenticated */}
+            {/* Notifications/Orders Bell - Only show when authenticated */}
             {isAuthenticated && (
-              <Link
-                to="/messages"
-                className="relative p-2 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
-              >
-                <BellIcon className="w-6 h-6" />
-                {unreadMessages > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium animate-pulse">
-                    {unreadMessages > 99 ? '99+' : unreadMessages}
-                  </span>
+              <div className="relative" ref={notificationDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                  className="relative p-2 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200 focus:outline-none"
+                  title={user?.role === 'artisan' ? t('nav.notifications', 'Order & Message Notifications') : t('nav.notifications', 'Notifications')}
+                >
+                  <BellIcon className="w-6 h-6" />
+                  {totalNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-amber-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-md animate-pulse">
+                      {totalNotifications > 99 ? '99+' : totalNotifications}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notifications Dropdown */}
+                {isNotificationOpen && (
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 py-3 z-50 animate-fadeIn">
+                    <div className="px-4 py-2 border-b border-gray-100 flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <BellIcon className="w-5 h-5 text-amber-600" />
+                        <span className="font-bold text-gray-900 text-sm">{t('nav.notifications', 'Notifications')}</span>
+                      </div>
+                      {totalNotifications > 0 && (
+                        <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                          {totalNotifications} new
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="max-h-80 overflow-y-auto divide-y divide-gray-50">
+                      {/* For Artisan: Pending Orders Card */}
+                      {user?.role === 'artisan' && artisanOrdersCount > 0 && (
+                        <Link
+                          to="/artisan/orders"
+                          onClick={() => setIsNotificationOpen(false)}
+                          className="flex items-start space-x-3 px-4 py-3 hover:bg-amber-50/70 transition-colors group block"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <ShoppingCartIcon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold text-gray-900">
+                                {t('artisan_panel.pending_orders', 'New Orders')}
+                              </p>
+                              <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.5 rounded">Action Required</span>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-0.5">
+                              You have <span className="font-bold text-amber-700">{artisanOrdersCount}</span> unread / pending orders.
+                            </p>
+                            {recentArtisanOrders.length > 0 && (
+                              <p className="text-[11px] text-gray-500 mt-1 truncate">
+                                Latest: #{recentArtisanOrders[0].orderNumber} ({recentArtisanOrders[0].total} ETB)
+                              </p>
+                            )}
+                          </div>
+                        </Link>
+                      )}
+
+                      {/* Messages Card */}
+                      {unreadMessages > 0 && (
+                        <Link
+                          to="/messages"
+                          onClick={() => setIsNotificationOpen(false)}
+                          className="flex items-start space-x-3 px-4 py-3 hover:bg-blue-50/70 transition-colors group block"
+                        >
+                          <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                            <SparklesIcon className="w-5 h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs font-bold text-gray-900">
+                                {t('sidebar.messages', 'Messages')}
+                              </p>
+                              <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-1.5 py-0.5 rounded">New</span>
+                            </div>
+                            <p className="text-xs text-gray-600 mt-0.5">
+                              You have <span className="font-bold text-blue-700">{unreadMessages}</span> unread messages.
+                            </p>
+                          </div>
+                        </Link>
+                      )}
+
+                      {/* Empty state */}
+                      {totalNotifications === 0 && (
+                        <div className="px-4 py-8 text-center text-gray-400">
+                          <BellIcon className="w-8 h-8 mx-auto mb-2 opacity-40 text-gray-400" />
+                          <p className="text-xs font-medium text-gray-500">{t('nav.no_notifications', 'No new notifications')}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-4 pt-2 border-t border-gray-100 mt-1 flex justify-between items-center text-xs">
+                      {user?.role === 'artisan' ? (
+                        <Link
+                          to="/artisan/orders"
+                          onClick={() => setIsNotificationOpen(false)}
+                          className="text-amber-700 hover:text-amber-800 font-bold"
+                        >
+                          Manage Orders →
+                        </Link>
+                      ) : (
+                        <span />
+                      )}
+                      <Link
+                        to="/messages"
+                        onClick={() => setIsNotificationOpen(false)}
+                        className="text-gray-500 hover:text-gray-700 font-medium"
+                      >
+                        All Messages →
+                      </Link>
+                    </div>
+                  </div>
                 )}
-              </Link>
+              </div>
             )}
 
             {/* Back to Store & Public Shop */}
@@ -522,13 +709,14 @@ function Navbar() {
             {/* Mobile Notifications - Only show when authenticated */}
             {isAuthenticated && (
               <Link
-                to="/messages"
+                to={user?.role === 'artisan' ? "/artisan/orders" : "/messages"}
                 className="relative p-1.5 text-gray-700 hover:text-ethiopian-gold transition-colors duration-200"
+                title={user?.role === 'artisan' ? "Manage Orders" : "Messages"}
               >
                 <BellIcon className="w-5 h-5" />
-                {unreadMessages > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-medium animate-pulse">
-                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                {totalNotifications > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-amber-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-bold animate-pulse">
+                    {totalNotifications > 99 ? '99+' : totalNotifications}
                   </span>
                 )}
               </Link>

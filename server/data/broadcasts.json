@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "_id": "1794266429201",
+    "message": "hi",
+    "target": "artisans",
+    "type": "targeted",
+    "createdAt": "2026-11-09T23:20:29.201Z"
+  }
+]

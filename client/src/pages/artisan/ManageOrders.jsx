@@ -8,7 +8,7 @@
  * UI: Modern, clean, responsive dashboard with enhanced action buttons
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import io from 'socket.io-client';
@@ -76,6 +76,9 @@ const ManageOrders = () => {
   });
   const [socket, setSocket] = useState(null);
   const [isSocketConnected, setIsSocketConnected] = useState(false);
+  // Track latest known order ID for polling-based new order detection
+  const latestOrderIdRef = useRef(null);
+  const isFirstPollRef = useRef(true);
 
   // Status badge styles
   const statusStyles = {
@@ -103,64 +106,194 @@ const ManageOrders = () => {
     { key: 'custom', label: 'Custom Orders', icon: SparklesIcon },
   ];
 
-  // Socket.io Real-time Connection
+    // Keep refs for live callbacks inside socket listener
+  const filterRef = useRef(filter);
+  const fetchOrdersRef = useRef(null);
+  const fetchCustomOrdersRef = useRef(null);
+
+  // Socket.io Real-time Connection (connected continuously for artisan)
   useEffect(() => {
-    if (!user?._id) return;
-    const socketUrl = API_BASE_URL.replace('/api', '');
+    const userId = user?._id || user?.id;
+    if (!userId) return;
+
+    const socketUrl = API_BASE_URL.replace(/\/api\/?$/, '');
     const newSocket = io(socketUrl, {
       withCredentials: true,
       transports: ['polling', 'websocket'],
-      reconnectionAttempts: 5
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000
     });
     setSocket(newSocket);
+
     newSocket.on('connect', () => {
       setIsSocketConnected(true);
-      newSocket.emit('join', user._id);
+      console.log('📡 [ManageOrders] Socket connected! Joining room for user:', userId);
+      newSocket.emit('join', userId);
+      if (user?._id && user?.id && user._id !== user.id) {
+        newSocket.emit('join', user.id);
+      }
     });
+
     newSocket.on('connect_error', () => setIsSocketConnected(false));
     newSocket.on('disconnect', () => setIsSocketConnected(false));
-    newSocket.on('newOrder', (data) => {
-      playNotificationSound();
-      toast.success(`🛍️ New order #${data.orderNumber || data.orderId?.slice(-8)}`, { duration: 10000 });
+
+    const handleIncomingOrder = (data) => {
+      if (!data) return;
+      console.log('🔔 [ManageOrders] Incoming real-time order received:', data);
       
-      // Browser notification
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        new Notification('New Order on EthioCraft Global', {
-          body: `A new order has been placed! Order #${data.orderNumber || data.orderId?.slice(-8)}`,
+      // 1. Play loud clear notification sound immediately
+      playNotificationSound();
+
+      // 2. Format incoming order object and place it at the VERY TOP of the list
+      const orderId = data.orderId || data.id || data._id;
+      const orderNumber = data.orderNumber || (orderId ? `EC-${String(orderId).slice(-6)}` : `EC-${Date.now()}`);
+      const newOrderDoc = {
+        _id: orderId,
+        id: orderId,
+        orderNumber,
+        status: data.status || 'pending',
+        createdAt: data.createdAt || new Date().toISOString(),
+        totals: data.totals || { total: data.total || 0, subtotal: data.total || 0, artisanEarning: data.total || 0 },
+        items: data.items || [],
+        customer: data.customer || { profile: { firstName: 'Customer', lastName: '' } },
+        shippingAddress: data.shippingAddress || {},
+        payment: data.payment || { method: 'COD', status: 'pending' },
+        ...data
+      };
+
+      setOrders(prev => {
+        const withoutCurrent = prev.filter(o => {
+          const matchNum = o.orderNumber && orderNumber && o.orderNumber === orderNumber;
+          const matchId = (o._id || o.id) && orderId && (o._id || o.id) === orderId;
+          return !matchNum && !matchId;
         });
+        return [newOrderDoc, ...withoutCurrent];
+      });
+
+      // Increment pending badge counts in summary
+      setSummary(prev => ({
+        ...prev,
+        all: (prev.all || 0) + 1,
+        pending: (prev.pending || 0) + 1
+      }));
+
+      // 3. Display prominent toast notification
+      const totalAmount = data.total ? ` (${data.total} ETB)` : '';
+      toast.success(`🛍️ አዲስ ትዕዛዝ #${orderNumber}${totalAmount}! New customer order received.`, {
+        duration: 12000,
+        icon: '🔔',
+        style: {
+          background: '#111827',
+          color: '#f9fafb',
+          border: '2px solid #f59e0b',
+          borderRadius: '12px',
+          padding: '16px',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+        }
+      });
+      
+      // 4. Browser system notification
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification('🛍️ New Order on EthioCraft Global', {
+            body: `Order #${orderNumber} has arrived! Check your orders.`,
+            icon: '/favicon.ico'
+          });
+        } catch (_) {}
       }
 
-      fetchOrders(1);
-    });
+      // 5. Update full orders list from backend
+      if (fetchOrdersRef.current) {
+        fetchOrdersRef.current(1);
+      }
+    };
+
+    newSocket.on('newOrder', handleIncomingOrder);
+
+    // Also listen to window event in case useInventoryAlerts caught it first
+    const handleWindowEvent = (e) => handleIncomingOrder(e.detail);
+    window.addEventListener('artisanNewOrder', handleWindowEvent);
+
     newSocket.on('newCustomOrder', (data) => {
       playNotificationSound();
-      toast.success(`✨ NEW CUSTOM DESIGN: ${data.customerName} requested a ${data.itemType}!`, { 
+      toast.success(`✨ NEW CUSTOM DESIGN: ${data.customerName || 'Customer'} requested a ${data.itemType || 'design'}!`, { 
         duration: 10000,
         icon: '🎨',
         style: { border: '2px solid #b87b2e', padding: '16px', fontWeight: 'bold' }
       });
-      if (filter === 'custom') fetchCustomOrders();
-      else fetchOrders(1);
+      if (filterRef.current === 'custom' && fetchCustomOrdersRef.current) {
+        fetchCustomOrdersRef.current();
+      } else if (fetchOrdersRef.current) {
+        fetchOrdersRef.current(1);
+      }
     });
+
     newSocket.on('customOrderPaid', (data) => {
       playNotificationSound();
       toast.success(`✨ Custom order paid! Check your custom orders.`);
-      if (filter === 'custom') fetchCustomOrders();
-      else fetchOrders(1);
+      if (filterRef.current === 'custom' && fetchCustomOrdersRef.current) {
+        fetchCustomOrdersRef.current();
+      } else if (fetchOrdersRef.current) {
+        fetchOrdersRef.current(1);
+      }
     });
 
     // Request browser notification permissions if not set
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+      Notification.requestPermission().catch(() => {});
     }
 
     return () => {
+      window.removeEventListener('artisanNewOrder', handleWindowEvent);
       newSocket.off('newOrder');
       newSocket.off('newCustomOrder');
       newSocket.off('customOrderPaid');
       newSocket.disconnect();
     };
-  }, [user?._id, filter]);
+  }, [user?._id, user?.id]);
+
+  // Polling fallback — detects new orders every 30s when socket is unavailable
+  useEffect(() => {
+    const userId = user?._id || user?.id;
+    if (!userId) return;
+    const poll = async () => {
+      try {
+        const response = await api.get('/orders', { params: { page: 1, limit: 1, status: undefined } });
+        const latest = (response.data.orders || [])[0];
+        if (!latest) return;
+        const latestId = latest._id || latest.id;
+        if (isFirstPollRef.current) {
+          latestOrderIdRef.current = latestId;
+          isFirstPollRef.current = false;
+          return;
+        }
+        if (latestId && latestId !== latestOrderIdRef.current) {
+          latestOrderIdRef.current = latestId;
+          playNotificationSound();
+          toast.success(
+            `🛍️ New order #${latest.orderNumber}`,
+            {
+              duration: 10000,
+              position: 'top-right',
+              style: { background: '#FFF9F0', border: '1px solid #CFA66E', borderRadius: '12px' }
+            }
+          );
+          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification('New Order on EthioCraft Global', {
+              body: `Order #${latest.orderNumber} received!`,
+            });
+          }
+          fetchOrders(1);
+        }
+      } catch {
+        // silent — don't disrupt UI on poll failure
+      }
+    };
+    const interval = setInterval(poll, 30000);
+    return () => clearInterval(interval);
+  }, [user?._id]);
 
   useEffect(() => {
     fetchOrders(currentPage);
@@ -199,6 +332,10 @@ const ManageOrders = () => {
     }
   };
 
+  filterRef.current = filter;
+  fetchOrdersRef.current = fetchOrders;
+  fetchCustomOrdersRef.current = fetchCustomOrders;
+
   useEffect(() => {
     if (filter === 'custom') {
       fetchCustomOrders();
@@ -208,18 +345,21 @@ const ManageOrders = () => {
   }, [currentPage, filter]);
 
   const filtered = useMemo(() => {
-    let list = orders;
+    let list = [...orders];
+    // Always sort descending: newest order at the very top!
+    list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
     if (filter !== 'all') {
       if (filter === 'pending') {
-        list = orders.filter(o => ['pending', 'pending verification'].includes(o.status));
+        list = list.filter(o => ['pending', 'pending verification'].includes(o.status));
       } else if (filter === 'processing') {
-        list = orders.filter(o => ['confirmed', 'processing'].includes(o.status));
+        list = list.filter(o => ['confirmed', 'processing'].includes(o.status));
       } else if (filter === 'shipped') {
-        list = orders.filter(o => o.status === 'shipped');
+        list = list.filter(o => o.status === 'shipped');
       } else if (filter === 'completed') {
-        list = orders.filter(o => ['completed', 'delivered'].includes(o.status));
+        list = list.filter(o => ['completed', 'delivered'].includes(o.status));
       } else {
-        list = orders.filter(o => o.status === filter);
+        list = list.filter(o => o.status === filter);
       }
     }
     if (searchTerm) {
@@ -778,6 +918,7 @@ const ManageOrders = () => {
                               alt="Design"
                               className="w-14 h-14 rounded-2xl object-cover bg-gray-100 border border-gray-200"
                               crossOrigin="anonymous"
+                              onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
                             />
                           ) : (
                             <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center border border-amber-100 italic text-[10px] text-amber-400 text-center px-1 font-black">
@@ -804,7 +945,12 @@ const ManageOrders = () => {
                         </div>
                         <div>
                           <p className="font-semibold text-gray-700">Requested</p>
-                          <p className="mt-1 text-gray-600">{new Date(order.createdAt).toLocaleDateString()}</p>
+                          <div className="text-xs text-gray-600 mt-1">
+                            <div>{order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</div>
+                            <div className="text-[11px] text-gray-400 font-mono mt-0.5">
+                              {order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                            </div>
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-3">
@@ -852,6 +998,7 @@ const ManageOrders = () => {
                                 alt="Design" 
                                 className="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-200"
                                 crossOrigin="anonymous"
+                                onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
                               />
                             ) : (
                               <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100 italic text-[8px] text-amber-400 text-center px-1 font-black">NO PHOTO</div>
@@ -884,8 +1031,13 @@ const ManageOrders = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-600 font-medium">{new Date(order.createdAt).toLocaleDateString()}</div>
-                          <div className="text-[10px] text-gray-400">{new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                          <div className="text-sm text-gray-600 font-medium">
+                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
+                          </div>
+                          <div className="text-[11px] text-gray-400 font-mono flex items-center gap-1 mt-0.5">
+                            <span>🕒</span>
+                            <span>{order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</span>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className={`text-sm font-bold ${order.price ? 'text-amber-600' : 'text-gray-400'}`}>
@@ -935,7 +1087,7 @@ const ManageOrders = () => {
             ) : filtered.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm p-12 text-center">
                 <DocumentTextIcon className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-                <p className="text-lg font-medium text-gray-600">{t('errors.generic', 'No orders found')}</p>
+                <p className="text-lg font-medium text-gray-600">{t('common.no_orders_found', 'No orders found')}</p>
                 <button
                   onClick={() => { setFilter('all'); setSearchTerm(''); }}
                   className="mt-4 text-ethiopian-gold hover:underline font-medium"
@@ -953,7 +1105,12 @@ const ManageOrders = () => {
                         <div className="flex items-start justify-between gap-3 mb-4">
                           <div>
                             <p className="text-sm font-semibold text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
-                            <p className="text-xs text-gray-500 mt-1">{new Date(order.createdAt).toLocaleDateString()}</p>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-600 mt-1">
+                              <span>{order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
+                              <span className="font-mono text-gray-500 font-medium">
+                                {order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                              </span>
+                            </div>
                           </div>
                           <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold border ${
                             order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-100' :
@@ -997,20 +1154,24 @@ const ManageOrders = () => {
                                 alt="Custom Design"
                                 className="w-14 h-14 rounded-3xl object-cover bg-amber-50 border border-amber-100"
                                 crossOrigin="anonymous"
-                              />
-                            ) : order.items?.[0]?.product?.images?.[0] ? (
-                              <img
-                                src={getFileUrl(
-                                  typeof order.items[0].product.images[0] === 'string'
-                                    ? order.items[0].product.images[0]
-                                    : order.items[0].product.images[0].url
-                                )}
-                                alt="Product"
-                                className="w-14 h-14 rounded-3xl object-cover bg-gray-100 border border-gray-100"
-                                crossOrigin="anonymous"
+                                onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
                               />
                             ) : (
-                              <div className="flex h-14 w-14 items-center justify-center rounded-3xl bg-gray-100 text-[11px] text-gray-400">No image</div>
+                              <img
+                                src={
+                                  order.items?.[0]?.product?.images?.[0]
+                                    ? getFileUrl(
+                                        typeof order.items[0].product.images[0] === 'string'
+                                          ? order.items[0].product.images[0]
+                                          : order.items[0].product.images[0].url
+                                      )
+                                    : (order.items?.[0]?.image ? getFileUrl(order.items[0].image) : '/placeholder-product.svg')
+                                }
+                                alt={order.items?.[0]?.product?.name || 'Product'}
+                                className="w-14 h-14 rounded-3xl object-cover bg-gray-100 border border-gray-100"
+                                crossOrigin="anonymous"
+                                onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
+                              />
                             )}
                             <div className="min-w-0">
                               <p className="text-sm font-semibold text-gray-900 truncate">{order.isCustom ? 'Special Clothing Design' : order.items?.[0]?.product?.name || 'Product'}</p>
@@ -1072,7 +1233,13 @@ const ManageOrders = () => {
                             )}
                             <td className="px-6 py-4">
                               <div className="text-sm font-semibold text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</div>
-                              <div className="text-xs text-gray-400 mt-0.5">{new Date(order.createdAt).toLocaleDateString()}</div>
+                              <div className="text-xs text-gray-600 font-medium mt-1">
+                                {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
+                              </div>
+                              <div className="text-[11px] text-gray-500 font-mono flex items-center gap-1 mt-0.5">
+                                <span>🕒</span>
+                                <span>{order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</span>
+                              </div>
                             </td>
                             <td className="px-6 py-4">
                               <div className="text-sm font-medium text-gray-900">
@@ -1099,17 +1266,23 @@ const ManageOrders = () => {
                                       alt="Custom Design"
                                       className="w-10 h-10 rounded-lg object-cover bg-amber-50 border border-amber-100 shadow-sm"
                                       crossOrigin="anonymous"
+                                      onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
                                     />
-                                  ) : order.items?.[0]?.product?.images?.[0] && (
+                                  ) : (
                                     <img
-                                      src={getFileUrl(
-                                        typeof order.items[0].product.images[0] === 'string'
-                                          ? order.items[0].product.images[0]
-                                          : order.items[0].product.images[0].url
-                                      )}
-                                      alt=""
+                                      src={
+                                        order.items?.[0]?.product?.images?.[0]
+                                          ? getFileUrl(
+                                              typeof order.items[0].product.images[0] === 'string'
+                                                ? order.items[0].product.images[0]
+                                                : order.items[0].product.images[0].url
+                                            )
+                                          : (order.items?.[0]?.image ? getFileUrl(order.items[0].image) : '/placeholder-product.svg')
+                                      }
+                                      alt={order.items?.[0]?.product?.name || ''}
                                       className="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-100"
                                       crossOrigin="anonymous"
+                                      onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
                                     />
                                   )}
                                   {order.isCustom && (

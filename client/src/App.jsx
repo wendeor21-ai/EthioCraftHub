@@ -71,6 +71,7 @@ import FAQ from './pages/FAQ';
 import CustomOrderForm from './pages/orders/CustomOrderForm';
 
 // Admin Pages
+import AddExecutive from './pages/admin/AddExecutive';
 import ManageUsers from './pages/admin/ManageUsers';
 import VerifyArtisans from './pages/admin/VerifyArtisans';
 import ModerateProducts from './pages/admin/ModerateProducts';
@@ -485,6 +486,14 @@ function App() {
                         />
 
                         {/* Admin-specific Routes */}
+                        <Route
+                          path="/admin/executives/add"
+                          element={
+                            <AdminRoute>
+                              <AddExecutive />
+                            </AdminRoute>
+                          }
+                        />
                         <Route
                           path="/admin/users"
                           element={

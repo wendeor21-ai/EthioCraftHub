@@ -12,7 +12,6 @@ import {
   AlertTriangle,
   Package,
   TrendingUp,
-  Edit,
   Plus,
   Clock,
   CheckCircle,
@@ -26,9 +25,10 @@ const InventoryAlerts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, low, out
-  const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const [updatingStock, setUpdatingStock] = useState(null);
   const [stockHistory, setStockHistory] = useState([]);
+  const [restockModal, setRestockModal] = useState(null); // { productId, productName, currentStock }
+  const [restockAmount, setRestockAmount] = useState('10');
 
   useEffect(() => {
     fetchProducts();
@@ -38,7 +38,7 @@ const InventoryAlerts = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/products');
+      const response = await api.get('/products?includeOutOfStock=true');
       const allProducts = response.data.products || [];
 
       // Filter to only artisan's products
@@ -75,35 +75,28 @@ const InventoryAlerts = () => {
     ]);
   };
 
-  const updateStock = async (productId, currentStock, increment) => {
+  const updateStock = async (productId, amount) => {
     try {
       setUpdatingStock(productId);
-      const newStock = Math.max(0, currentStock + increment);
 
-      await api.put(`/products/${productId}`, {
-        inventory: {
-          quantity: newStock,
-          lowStockThreshold: lowStockThreshold
-        },
-        // Auto-toggle availability based on stock
-        isAvailable: newStock > 0
-      });
+      const response = await api.patch(`/products/${productId}/restock`, { amount: parseInt(amount) });
+      const newQty = response.data.newQuantity;
 
-      toast.success(`Stock updated to ${newStock} units`);
+      toast.success(`Stock updated to ${newQty} units`);
+      setRestockModal(null);
+      setRestockAmount('10');
       fetchProducts();
     } catch (error) {
       console.error('Error updating stock:', error);
-      toast.error('Failed to update stock');
+      toast.error(error.response?.data?.message || 'Failed to update stock');
     } finally {
       setUpdatingStock(null);
     }
   };
 
-  const quickRestock = async (productId, currentStock) => {
-    const amount = window.prompt('Enter quantity to add:', '10');
-    if (amount && !isNaN(amount)) {
-      await updateStock(productId, currentStock, parseInt(amount));
-    }
+  const quickRestock = (productId, productName, currentStock) => {
+    setRestockAmount('10');
+    setRestockModal({ productId, productName, currentStock });
   };
 
   // Calculate stats using strict global thresholds
@@ -127,7 +120,7 @@ const InventoryAlerts = () => {
       // Prioritize: out of stock > low stock > sales velocity
       if (a.inventory?.quantity === 0 && b.inventory?.quantity !== 0) return -1;
       if (a.inventory?.quantity !== 0 && b.inventory?.quantity === 0) return 1;
-      return (b.metrics?.totalSales || 0) - (a.metrics?.totalSales || 0);
+      return (b.metrics?.purchases || 0) - (a.metrics?.purchases || 0);
     })
     .slice(0, 5);
 
@@ -287,12 +280,12 @@ const InventoryAlerts = () => {
                       <p className="font-medium text-gray-900">{product.name}</p>
                       <p className="text-xs text-gray-500">
                         Current: {product.inventory?.quantity || 0} units •
-                        Sold: {product.metrics?.totalSales || 0} units
+                        Sold: {product.metrics?.purchases || 0} units
                       </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => quickRestock(product._id, product.inventory?.quantity || 0)}
+                    onClick={() => quickRestock(product._id, product.name, product.inventory?.quantity || 0)}
                     disabled={updatingStock === product._id}
                     className="px-4 py-2 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
@@ -376,14 +369,14 @@ const InventoryAlerts = () => {
                           </div>
                           <div className="rounded-2xl bg-white p-3 border border-gray-200">
                             <p className="font-semibold text-gray-900">Sales</p>
-                            <p>{product.metrics?.totalSales || 0}</p>
+                            <p>{product.metrics?.purchases || 0}</p>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div className="mt-4 flex flex-col gap-3">
                       <button
-                        onClick={() => quickRestock(product._id, product.inventory?.quantity || 0)}
+                        onClick={() => quickRestock(product._id, product.name, product.inventory?.quantity || 0)}
                         disabled={updatingStock === product._id}
                         className="w-full rounded-2xl bg-ethiopian-gold px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-ethiopian-earth transition-colors disabled:opacity-60"
                       >
@@ -445,12 +438,12 @@ const InventoryAlerts = () => {
                         </td>
                         <td className="px-6 py-4">{getStockBadge(product.inventory?.quantity || 0)}</td>
                         <td className="px-6 py-4">
-                          <p className="text-sm text-gray-900">{product.metrics?.totalSales || 0} units</p>
+                          <p className="text-sm text-gray-900">{product.metrics?.purchases || 0} units</p>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-wrap gap-2">
                             <button
-                              onClick={() => quickRestock(product._id, product.inventory?.quantity || 0)}
+                              onClick={() => quickRestock(product._id, product.name, product.inventory?.quantity || 0)}
                               disabled={updatingStock === product._id}
                               className="rounded-full bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
                             >
@@ -497,6 +490,44 @@ const InventoryAlerts = () => {
           </div>
         )}
       </div>
+
+      {/* Quick Restock Modal */}
+      {restockModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Quick Restock</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              {restockModal.productName} — current stock: <strong>{restockModal.currentStock}</strong> units
+            </p>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Quantity to add
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={restockAmount}
+              onChange={e => setRestockAmount(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-ethiopian-gold mb-5"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setRestockModal(null); setRestockAmount('10'); }}
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => updateStock(restockModal.productId, restockAmount)}
+                disabled={!restockAmount || isNaN(restockAmount) || parseInt(restockAmount) <= 0 || updatingStock === restockModal.productId}
+                className="flex-1 rounded-xl bg-ethiopian-gold px-4 py-2.5 text-sm font-semibold text-white hover:bg-ethiopian-earth transition-colors disabled:opacity-50"
+              >
+                {updatingStock === restockModal.productId ? 'Updating...' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

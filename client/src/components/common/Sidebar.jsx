@@ -13,6 +13,7 @@ import {
   FileText,
   Settings,
   Users,
+  UserPlus,
   Shield,
   Eye,
   Bell,
@@ -139,7 +140,7 @@ const Sidebar = ({ onCollapsedChange }) => {
       label: t('sidebar.orders_delivery', 'Orders & Delivery'),
       icon: ShoppingCart,
       items: [
-        { label: t('sidebar.manage_orders', 'Manage Orders'), path: '/artisan/orders', icon: ShoppingCart, badge: pendingOrdersCount, badgeColor: 'bg-[#CFA66E] text-[#1C1C1C]' },
+        { label: t('sidebar.manage_orders', 'Manage Orders'), path: '/artisan/orders', icon: ShoppingCart, badge: pendingOrdersCount, badgeColor: pendingOrdersCount > 0 ? 'bg-amber-500 text-white font-bold animate-pulse' : 'bg-gray-200 text-gray-600' },
         { label: t('sidebar.shipping_delivery', 'Shipping & Delivery'), path: '/artisan/shipping', icon: Truck },
         { label: t('sidebar.messages', 'Messages'), path: '/messages', icon: MessageSquare, badge: unreadMessages > 0 ? unreadMessages : null, badgeColor: 'bg-red-500 text-white' }
       ]
@@ -166,6 +167,7 @@ const Sidebar = ({ onCollapsedChange }) => {
   const adminMenuItems = [
     { label: t('sidebar.dashboard', 'Dashboard'), path: '/admin/dashboard', icon: LayoutDashboard, isTopLevel: true },
     { label: t('sidebar.manage_users', 'Manage Users'), path: '/admin/users', icon: Users, isTopLevel: true },
+    { label: t('sidebar.add_executive', 'Add Executive'), path: '/admin/executives/add', icon: UserPlus, isTopLevel: true },
     { label: t('sidebar.verify_artisans', 'Verify Artisans'), path: '/admin/verifications', icon: Shield, isTopLevel: true },
     { label: t('sidebar.moderate_products', 'Moderate Products'), path: '/admin/products', icon: Eye, isTopLevel: true },
     { label: t('sidebar.custom_orders', 'Custom Orders'), path: '/admin/custom-orders', icon: Scissors, isTopLevel: true },

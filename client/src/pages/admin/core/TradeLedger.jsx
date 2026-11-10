@@ -105,9 +105,9 @@ const OrderDetailModal = ({ order, onClose }) => {
           {/* Financials */}
           <Section icon={CreditCard} title={t('checkout.billing_details', 'Financials')}>
             <Row label={t('checkout.payment_method')} value={order.payment?.method} />
-            <Row label={t('checkout.total')} value={`${order.totals?.total?.toFixed(2)} ETB`} className="text-gray-900" />
-            <Row label={t('artisan_panel.paid_commission', 'Platform Commission (10%)')} value={`${(order.totals?.platformCommission || order.totals?.total * 0.1)?.toFixed(2)} ETB`} className="text-amber-600" />
-            <Row label={t('artisan_panel.your_balance', 'Artisan Earning (90%)')} value={`${(order.totals?.artisanEarning || order.totals?.total * 0.9)?.toFixed(2)} ETB`} className="text-green-700" />
+            <Row label={t('checkout.total')} value={`${(order.totals?.total ?? 0).toFixed(2)} ETB`} className="text-gray-900" />
+            <Row label={t('artisan_panel.paid_commission', 'Platform Commission (10%)')} value={`${(order.totals?.platformCommission ?? ((order.totals?.total ?? 0) * 0.1)).toFixed(2)} ETB`} className="text-amber-600" />
+            <Row label={t('artisan_panel.your_balance', 'Artisan Earning (90%)')} value={`${(order.totals?.artisanEarning ?? ((order.totals?.total ?? 0) * 0.9)).toFixed(2)} ETB`} className="text-green-700" />
             <Row label={t('common.status', 'Commission Status')} value={order.commissionStatus || 'Pending'} className="capitalize" />
             <Row label={t('admin_panel.payouts', 'Payout Status')} value={order.payoutStatus || 'Pending'} className="capitalize" />
             {order.payment?.receipt && (
@@ -619,7 +619,7 @@ const TradeLedger = () => {
               color: 'green',
               label: t('artisan_panel.paid_commission'),
               value: `${(commissionSummary.totalPaidCommission || 0).toFixed(2)} ETB`,
-              sub: t('success')
+              sub: 'Settled commission earnings'
             },
             {
               icon: ClipboardList,

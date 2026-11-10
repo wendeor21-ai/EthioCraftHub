@@ -1,54 +1,32 @@
 /**
- * Support Message Model
- * Fields: sender (User ID), senderRole, subject, message, status, adminResponse
+ * Message Model - PostgreSQL/Prisma backend
  */
-const mongoose = require("mongoose");
+const { prisma } = require('../lib/prisma');
+const { createModel } = require('../lib/mongoCompat/createModel');
+const { defaultTranslateWhere, defaultToPrisma } = require('../lib/mongoCompat/modelHelpers');
 
-const messageSchema = new mongoose.Schema(
-  {
-    sender: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    recipient: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: false,
-    },
-    senderRole: {
-      type: String,
-      enum: ["customer", "artisan", "admin"],
-      required: true,
-    },
-    subject: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    message: {
-      type: String,
-      trim: true,
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ["New", "Replied"],
-      default: "New",
-    },
-    adminResponse: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-    read: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  {
-    timestamps: true,
-  },
-);
+const messageModelDef = {
+  delegate: prisma.message,
+  defaultInclude: { sender: true, recipient: true },
 
-module.exports = mongoose.model("Message", messageSchema);
+  populateMap: {
+    sender: { model: 'User' },
+    recipient: { model: 'User' },
+  },
+
+  async translateWhere(where, ops, rawFilter) {
+    const result = await defaultTranslateWhere(where, ops, rawFilter);
+    if (rawFilter.sender) result.senderId = String(rawFilter.sender._id || rawFilter.sender);
+    if (rawFilter.recipient) result.recipientId = String(rawFilter.recipient._id || rawFilter.recipient);
+    return result;
+  },
+
+  toPrisma(data) {
+    return defaultToPrisma(data, {
+      sender: 'senderId',
+      recipient: 'recipientId',
+    });
+  },
+};
+
+module.exports = createModel('Message', messageModelDef);

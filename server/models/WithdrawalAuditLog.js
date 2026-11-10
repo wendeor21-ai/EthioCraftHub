@@ -1,72 +1,34 @@
 /**
- * Withdrawal Audit Log Model
- * Tracks all status changes and actions on withdrawal requests
+ * WithdrawalAuditLog Model - PostgreSQL/Prisma backend
  */
+const { prisma } = require('../lib/prisma');
+const { createModel } = require('../lib/mongoCompat/createModel');
+const { defaultTranslateWhere, defaultToPrisma } = require('../lib/mongoCompat/modelHelpers');
 
-const mongoose = require('mongoose');
+const withdrawalAuditLogModelDef = {
+  delegate: prisma.withdrawalAuditLog,
+  defaultInclude: { earning: true, artisan: true, performedBy: true },
 
-const withdrawalAuditLogSchema = new mongoose.Schema(
-  {
-    earningId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Earning',
-      required: true,
-      index: true,
-    },
-    
-    artisan: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-      index: true,
-    },
-    
-    action: {
-      type: String,
-      enum: [
-        'created',
-        'approved',
-        'processing',
-        'completed',
-        'failed',
-        'cancelled',
-        'status_changed',
-      ],
-      required: true,
-    },
-    
-    previousStatus: {
-      type: String,
-      enum: ['pending', 'processing', 'completed', 'failed', 'cancelled', null],
-    },
-    
-    newStatus: {
-      type: String,
-      enum: ['pending', 'processing', 'completed', 'failed', 'cancelled'],
-    },
-    
-    performedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    
-    notes: {
-      type: String,
-      trim: true,
-    },
-    
-    metadata: {
-      type: mongoose.Schema.Types.Mixed,
-    },
+  populateMap: {
+    earningId: { model: 'Earning' },
+    artisan: { model: 'User' },
+    performedBy: { model: 'User' },
   },
-  {
-    timestamps: true,
-  }
-);
 
-// Indexes
-withdrawalAuditLogSchema.index({ earningId: 1, createdAt: -1 });
-withdrawalAuditLogSchema.index({ artisan: 1, createdAt: -1 });
+  async translateWhere(where, ops, rawFilter) {
+    const result = await defaultTranslateWhere(where, ops, rawFilter);
+    if (rawFilter.artisan) result.artisanId = String(rawFilter.artisan._id || rawFilter.artisan);
+    if (rawFilter.earningId) result.earningId = String(rawFilter.earningId._id || rawFilter.earningId);
+    return result;
+  },
 
-module.exports = mongoose.model('WithdrawalAuditLog', withdrawalAuditLogSchema);
+  toPrisma(data) {
+    return defaultToPrisma(data, {
+      earningId: 'earningId',
+      artisan: 'artisanId',
+      performedBy: 'performedById',
+    });
+  },
+};
+
+module.exports = createModel('WithdrawalAuditLog', withdrawalAuditLogModelDef);

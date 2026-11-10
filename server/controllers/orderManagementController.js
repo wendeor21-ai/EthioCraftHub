@@ -16,7 +16,7 @@ const PLATFORM_FEE_PERCENTAGE = 5;
  */
 const findOrder = async (id) => {
   console.log(`🔍 Finding order for ID/Number: ${id}`);
-  const mongoose = require('mongoose');
+  const mongoose = require('../lib/mongoose');
   try {
     if (mongoose.Types.ObjectId.isValid(id)) {
       const order = await Order.findById(id);
@@ -395,21 +395,24 @@ exports.markAsDelivered = asyncHandler(async (req, res) => {
 
   // Record earnings for each artisan (only if not already created)
   for (const item of order.items) {
+    const prodId = item.product ? (item.product._id || item.product) : null;
+    const artisanId = item.artisan ? (item.artisan._id || item.artisan) : (order.artisan ? (order.artisan._id || order.artisan) : null);
+
     // Check for existing earning for this item to prevent duplicates
-    const existingEarning = await Earning.findOne({ orderId: order._id, productId: item.product._id || item.product });
-    if (!existingEarning) {
+    const existingEarning = await Earning.findOne({ orderId: order._id, ...(prodId ? { productId: prodId } : {}) });
+    if (!existingEarning && artisanId) {
       const saleAmount = item.price * item.quantity;
       const platformFee = (saleAmount * PLATFORM_FEE_PERCENTAGE) / 100;
       const artisanEarning = saleAmount - platformFee;
 
       await Earning.create({
-        artisan: item.artisan._id || item.artisan,
+        artisan: artisanId,
         transactionType: 'sale',
         amount: saleAmount,
         platformFee: platformFee,
         netAmount: artisanEarning,
         orderId: order._id,
-        productId: item.product._id || item.product,
+        productId: prodId,
         status: 'completed',
         description: `Sale of ${item.quantity}x items from order #${order.orderNumber}`
       });
@@ -417,8 +420,41 @@ exports.markAsDelivered = asyncHandler(async (req, res) => {
   }
 
   // Mark as completed using the model's updateStatus method
-  // This will AUTOMATICALLY trigger the commission debt recording if payment is Manual/COD
   await order.updateStatus('completed', `Order delivered and marked as completed by ${req.user.role === 'admin' ? 'Admin' : 'Artisan'}.`);
+
+  // Record commission debt for Manual/COD orders directly via Prisma (bypass MongoCompat preSave)
+  const { prisma } = require('../lib/prisma');
+  const MANUAL_METHODS = ['Manual', 'MANUAL', 'COD', 'manual', 'cash_on_delivery', 'CASH_ON_DELIVERY', 'cod', 'bank_transfer', 'telebirr'];
+  const isManual = MANUAL_METHODS.includes(order.payment?.method);
+
+  // Re-fetch order to check debtRecorded (updateStatus may have changed it)
+  const freshOrder = await prisma.order.findUnique({ where: { id: String(order._id) } });
+  if (isManual && freshOrder && !freshOrder.debtRecorded) {
+    // Calculate debt per artisan from items JSON
+    const artisanDebts = {};
+    for (const item of (freshOrder.items || [])) {
+      const artId = item.artisan ? String(item.artisan._id || item.artisan) : null;
+      if (!artId) continue;
+      const commission = (item.price || 0) * (item.quantity || 1) * 0.05;
+      artisanDebts[artId] = (artisanDebts[artId] || 0) + commission;
+    }
+
+    for (const [artId, amount] of Object.entries(artisanDebts)) {
+      const rounded = Number(amount.toFixed(2));
+      if (rounded <= 0) continue;
+      await prisma.user.update({
+        where: { id: artId },
+        data: { unpaidCommission: { increment: rounded } },
+      });
+      console.log(`💰 Commission debt +${rounded} ETB recorded for artisan ${artId}`);
+    }
+
+    // Mark order so we don't double-count
+    await prisma.order.update({
+      where: { id: String(order._id) },
+      data: { debtRecorded: true, commissionStatus: 'pending' },
+    });
+  }
 
 
   console.log(`✅ Order #${order.orderNumber} successfully delivered and debt (if any) processed.`);
@@ -922,9 +958,12 @@ exports.uploadReceipt = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "Order not found" });
   }
 
-  // Check if it's the right customer
-  if (order.customer.toString() !== req.user._id.toString()) {
-    console.log(`❌ Unauthorized: Order customer ${order.customer} !== User ${req.user._id}`);
+  // Check if it's the right customer — customer may be a populated object or raw ID string
+  const customerId = order.customer?._id
+    ? order.customer._id.toString()
+    : order.customer?.toString();
+  if (customerId !== req.user._id.toString()) {
+    console.log(`❌ Unauthorized: Order customer ${customerId} !== User ${req.user._id}`);
     return res.status(403).json({ success: false, message: "Unauthorized" });
   }
 

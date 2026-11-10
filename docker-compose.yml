@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: ethiocraft_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: securepassword
+      MYSQL_DATABASE: ethiocraft_global
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ethiocraft_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=mysql://root:securepassword@db:3306/ethiocraft_global
+      - NODE_ENV=production
+      - PORT=5000
+    depends_on:
+      - db
+    volumes:
+      - uploads_data:/usr/src/app/server/uploads
+      - logs_data:/usr/src/app/server/logs
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: ethiocraft_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysqldata:
+  uploads_data:
+  logs_data:
