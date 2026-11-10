@@ -808,8 +808,8 @@ router.post(
         password: "Admin123!",
         role: "admin",
       },
-      loginUrl: "http://localhost:3000/login",
-      dashboardUrl: "http://localhost:3000/admin/dashboard",
+      loginUrl: `${process.env.CLIENT_URL || "http://localhost:3000"}/login`,
+      dashboardUrl: `${process.env.CLIENT_URL || "http://localhost:3000"}/admin/dashboard`,
     });
   }),
 );

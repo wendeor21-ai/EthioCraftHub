@@ -78,11 +78,46 @@ const app = express();
 // FIX 2: Trust proxy for proper IP handling
 app.set("trust proxy", 1);
 
-// CORS: Allow frontend at http://localhost:3000 (placed before routes)
-const simpleCors = cors({ origin: "http://localhost:3000", credentials: true });
-app.use(simpleCors);
-// Ensure preflight OPTIONS are handled
-app.options("*", simpleCors);
+// CORS: Configure allowed origins dynamically for development and production (ethiocrafthub.com)
+const defaultOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://ethiocrafthub.com",
+  "https://www.ethiocrafthub.com",
+];
+
+const envOrigins = [
+  process.env.ALLOWED_ORIGINS,
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+]
+  .filter(Boolean)
+  .flatMap((o) => o.split(",").map((s) => s.trim()))
+  .filter(Boolean);
+
+const allowedOriginsList = Array.from(new Set([...defaultOrigins, ...envOrigins]));
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (
+      allowedOriginsList.includes(origin) ||
+      allowedOriginsList.includes("*") ||
+      /^https?:\/\/([a-z0-9-]+\.)?ethiocrafthub\.com$/i.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    if (process.env.NODE_ENV === "production") {
+      console.warn(`⚠️ Blocked by CORS: ${origin}`);
+      return callback(new Error("Not allowed by CORS"));
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 // Security middleware
 app.use(
@@ -93,8 +128,28 @@ app.use(
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:", "http://localhost:5000", "http://localhost:5001"],
-        connectSrc: ["'self'", "http://localhost:5000", "http://localhost:5001", "ws://localhost:5000", "ws://localhost:5001"],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https:",
+          "http://localhost:5000",
+          "http://localhost:5001",
+          "https://ethiocrafthub.com",
+          "https://*.ethiocrafthub.com",
+        ],
+        connectSrc: [
+          "'self'",
+          "http://localhost:5000",
+          "http://localhost:5001",
+          "ws://localhost:5000",
+          "ws://localhost:5001",
+          "https://ethiocrafthub.com",
+          "https://*.ethiocrafthub.com",
+          "wss://ethiocrafthub.com",
+          "wss://*.ethiocrafthub.com",
+          "https://api.chapa.co",
+          "https://checkout.chapa.co",
+        ],
         scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
       },
     },
@@ -183,9 +238,7 @@ try {
 }
 
 // SEC-03: Restrict /uploads CORS to configured allowed origins only
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-  : [process.env.CLIENT_URL || 'http://localhost:3000'];
+const allowedOrigins = allowedOriginsList;
 
 app.use(
   "/uploads",
@@ -327,9 +380,16 @@ const server = http.createServer(app);
 // Initialize Socket.io
 const io = new Server(server, {
   cors: {
-    origin: process.env.NODE_ENV === "production" 
-      ? process.env.FRONTEND_URL 
-      : ["http://localhost:3000", "http://localhost:5173"],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOriginsList.includes(origin) ||
+        /^https?:\/\/([a-z0-9-]+\.)?ethiocrafthub\.com$/i.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   },
 });

@@ -856,6 +856,111 @@ router.get(
 );
 
 /**
+ * @route   GET /api/admin/payments/:id
+ * @desc    Get single payment/order transaction details
+ * @access  Private (Admin)
+ */
+router.get(
+  "/payments/:id",
+  asyncHandler(async (req, res) => {
+    const { prisma } = require("../lib/prisma");
+    const { toMongoDoc } = require("../lib/mongoCompat/serialize");
+    const { id } = req.params;
+
+    const raw = await prisma.order.findFirst({
+      where: {
+        OR: [{ id }, { orderNumber: id }],
+      },
+      include: { customer: true },
+    });
+
+    if (!raw) {
+      return res.status(404).json({ success: false, message: "Payment/Order not found" });
+    }
+
+    const order = toMongoDoc(raw);
+    res.json({ success: true, payment: order.payment || {}, order });
+  }),
+);
+
+/**
+ * @route   GET /api/admin/disputes
+ * @desc    Get all disputes & flagged orders for resolution tracking
+ * @access  Private (Admin)
+ */
+router.get(
+  "/disputes",
+  asyncHandler(async (req, res) => {
+    const { prisma } = require("../lib/prisma");
+    const { toMongoDoc } = require("../lib/mongoCompat/serialize");
+
+    const rawOrders = await prisma.order.findMany({
+      where: {
+        OR: [{ isDisputed: true }, { status: "disputed" }],
+      },
+      include: { customer: true },
+      orderBy: { updatedAt: "desc" },
+    });
+
+    const cases = rawOrders.map((raw) => {
+      const order = toMongoDoc(raw);
+      const cust = order.customer || {};
+      const custProfile = cust.profile || {};
+      return {
+        _id: order._id,
+        id: order._id,
+        orderId: order.orderNumber,
+        customerEmail: cust.email || order.shippingAddress?.email || custProfile.email || "N/A",
+        reason: order.notes || (order.isDisputed ? "Order flagged for dispute review" : "Dispute reported"),
+        status: order.isDisputed ? "open" : (order.status || "resolved"),
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        amount: order.totals?.total || order.totalAmount || 0,
+        currency: order.currency || "ETB",
+      };
+    });
+
+    res.json({ success: true, cases });
+  }),
+);
+
+/**
+ * @route   POST /api/admin/disputes/:id/status
+ * @desc    Update dispute status
+ * @access  Private (Admin)
+ */
+router.post(
+  "/disputes/:id/status",
+  asyncHandler(async (req, res) => {
+    const { prisma } = require("../lib/prisma");
+    const { toMongoDoc } = require("../lib/mongoCompat/serialize");
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [{ id }, { orderNumber: id }],
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Dispute order not found" });
+    }
+
+    const isResolved = status === "resolved" || status === "closed";
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        isDisputed: !isResolved,
+        notes: (order.notes || "") + ` | Dispute status set to ${status}`,
+      },
+    });
+
+    res.json({ success: true, message: `Dispute status updated to ${status}`, order: toMongoDoc(updated) });
+  }),
+);
+
+/**
  * @route   GET /api/admin/commissions
  * @desc    Get commission tracking summary per artisan
  * @access  Private (Admin)
@@ -1060,7 +1165,7 @@ router.get(
  * @access  Private (Admin)
  */
 router.get(
-  "/commission/balances",
+  ["/commission/balances", "/artisans/debt"],
   asyncHandler(async (req, res) => {
     // PRIMARY SOURCE OF TRUTH: Query artisans directly from User model where unpaidCommission > 0
     // This avoids case-sensitivity issues with Order.commissionStatus and status fields
@@ -1208,7 +1313,7 @@ router.post(
  * @access  Private (Admin)
  */
 router.put(
-  "/commission/clear/:id",
+  ["/commission/clear/:id", "/artisans/:id/clear-debt"],
   asyncHandler(async (req, res) => {
     const artisanId = req.params.id;
     

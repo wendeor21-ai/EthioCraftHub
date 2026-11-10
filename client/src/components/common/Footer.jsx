@@ -8,33 +8,47 @@ import { Link } from "react-router-dom";
 import { useSettings } from "../../contexts/SettingsContext";
 import api from "../../utils/api";
 import { useCustomTranslation } from "../../hooks/useCustomTranslation";
+import wasihunPhoto from "../../assets/developers/wasihun.jpg";
+import wendwesenPhoto from "../../assets/developers/wendwesen.jpg";
 
 const developers = [
   {
     name: "Wasihun Abera",
     role: "Full-Stack Developer",
-    stack: "React · Node.js · PostgreSQL",
+    specialty: "Frontend & Platform Architecture",
+    initials: "WA",
+    photo: wasihunPhoto,
+    fallbackPhoto: "/images/developers/wasihun.jpg",
+    skills: ["React", "Node.js", "PostgreSQL", "Express", "Tailwind CSS", "REST API"],
     email: "wasihuna29@gmail.com",
     phone: "+251 964 377 965",
     location: "Addis Abeba, Ethiopia",
     linkedin: "https://linkedin.com/in/wasihun-abera-91268037b",
     portfolio: "https://wasihun-portfolio.netlify.app",
-    initials: "WA",
-    gradient: "from-amber-500 to-orange-600",
+    gradient: "from-amber-400 via-orange-500 to-amber-600",
     accent: "#F59E0B",
+    glowColor: "rgba(245, 158, 11, 0.3)",
+    tagBg: "rgba(245, 158, 11, 0.12)",
+    tagBorder: "rgba(245, 158, 11, 0.25)",
   },
   {
     name: "Wendwesen Wagaw",
     role: "Full-Stack Developer",
-    stack: "Python · Java · React · Node.js · AI/ML · MongoDB",
+    specialty: "Backend, AI/ML & Systems Engineering",
+    initials: "WW",
+    photo: wendwesenPhoto,
+    fallbackPhoto: "/images/developers/wendwesen.jpg",
+    skills: ["Python", "Java", "React", "Node.js", "AI/ML", "MongoDB", "DevOps"],
     email: "wendeor21@gmail.com",
     phone: "+251 914 22 57 24",
     location: "Gondar, Amhara, Ethiopia",
     linkedin: "https://linkedin.com/in/wendwesen-wagaw-0b482a38b",
     portfolio: "https://wendewesen-wagaw.netlify.app/",
-    initials: "WW",
-    gradient: "from-violet-500 to-purple-700",
-    accent: "#8B5CF6",
+    gradient: "from-purple-400 via-violet-500 to-indigo-600",
+    accent: "#A855F7",
+    glowColor: "rgba(168, 85, 247, 0.3)",
+    tagBg: "rgba(168, 85, 247, 0.12)",
+    tagBorder: "rgba(168, 85, 247, 0.25)",
   },
 ];
 
@@ -47,6 +61,15 @@ const Footer = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [devModalOpen, setDevModalOpen] = useState(false);
   const [linksOpen, setLinksOpen] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(null);
+
+  const handleCopy = (text, key) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey(null), 2000);
+    }
+  };
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -367,34 +390,51 @@ const Footer = () => {
       </div>
       {/* END DESKTOP FOOTER */}
 
-      {/* ── Developers Modal (shared, works on both) ── */}
+      {/* ── Developers Modal (shared, works on both mobile & desktop) ── */}
       {devModalOpen && (
         <div
-          className="fixed inset-0 z-[9000] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm p-0 md:p-4"
+          className="fixed inset-0 z-[9000] flex items-end md:items-center justify-center bg-black/85 backdrop-blur-md p-0 md:p-4 transition-all duration-300"
           onClick={() => setDevModalOpen(false)}
         >
           <div
-            className="relative w-full md:max-w-3xl rounded-t-2xl md:rounded-2xl overflow-hidden shadow-2xl flex flex-col"
+            className="relative w-full md:max-w-4xl rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-white/10"
             style={{
-              background: "linear-gradient(135deg,#0f0f13 0%,#1a1a2e 50%,#0f0f13 100%)",
-              maxHeight: "90vh",
+              background: "linear-gradient(145deg, #0e111a 0%, #151828 50%, #0b0d14 100%)",
+              maxHeight: "92vh",
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Handle (mobile) */}
+            {/* Top ambient lights */}
+            <div className="absolute top-0 left-1/4 w-72 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-1/4 w-72 h-32 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Mobile Drag Indicator */}
             <div className="flex justify-center pt-3 pb-1 md:hidden">
-              <div className="w-10 h-1 bg-white/20 rounded-full" />
+              <div className="w-12 h-1.5 bg-white/20 rounded-full" />
             </div>
 
             {/* Header */}
-            <div className="flex items-center justify-between px-5 md:px-8 pt-4 md:pt-7 pb-3 shrink-0">
+            <div className="relative z-10 flex items-start justify-between px-5 md:px-8 pt-4 md:pt-6 pb-4 border-b border-white/5 shrink-0">
               <div>
-                <h2 className="text-base md:text-2xl font-black text-white">{t('footer.engineering_team', 'The Engineering Team')}</h2>
-                <p className="text-[10px] md:text-xs text-slate-500 mt-0.5">{t('footer.tech_support_msg', 'Technical support & deployment assistance')}</p>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/25 text-yellow-400 text-[10px] md:text-xs font-bold uppercase tracking-wider mb-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                  EthioCraft Engineering Core
+                </div>
+                <h2 className="text-xl md:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                  {t('footer.engineering_team', 'የምህንድስና ቡድን')}
+                  <span className="text-[11px] font-semibold text-slate-400 border border-white/10 bg-white/5 px-2 py-0.5 rounded-full">
+                    2 Engineers
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-400 mt-0.5 max-w-xl">
+                  {t('footer.tech_support_msg', 'The architects behind the platform — technical support, continuous delivery & engineering excellence.')}
+                </p>
               </div>
+
               <button
                 onClick={() => setDevModalOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                className="w-9 h-9 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors shrink-0"
+                title="Close"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -402,84 +442,212 @@ const Footer = () => {
               </button>
             </div>
 
-            {/* Scrollable cards */}
-            <div className="overflow-y-auto flex-1 px-3 md:px-6 pb-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Scrollable Profiles */}
+            <div className="relative z-10 overflow-y-auto flex-1 px-4 md:px-8 py-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {developers.map((dev, i) => (
                   <div
                     key={i}
-                    className="rounded-xl p-4 md:p-6 flex flex-col gap-4"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    className="group relative rounded-2xl p-5 md:p-6 flex flex-col justify-between bg-zinc-900/70 hover:bg-zinc-900/90 border border-white/10 hover:border-white/20 transition-all duration-300 shadow-xl overflow-hidden"
                   >
-                    {/* Avatar + name */}
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-11 h-11 md:w-14 md:h-14 rounded-xl bg-gradient-to-br ${dev.gradient} flex items-center justify-center text-white font-black text-base md:text-lg shadow-lg shrink-0`}
-                      >
-                        {dev.initials}
+                    {/* Top Accent Gradient Line */}
+                    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${dev.gradient} opacity-80`} />
+
+                    {/* Ambient Glow */}
+                    <div
+                      className="absolute -top-16 -right-16 w-36 h-36 rounded-full blur-3xl pointer-events-none transition-opacity duration-300 opacity-20 group-hover:opacity-40"
+                      style={{ background: dev.accent }}
+                    />
+
+                    <div className="space-y-4">
+                      {/* Avatar + Main Info */}
+                      <div className="flex items-center gap-4">
+                        {/* Photo Container */}
+                        <div className="relative group/photo shrink-0">
+                          <div
+                            className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl p-[2px] bg-gradient-to-br ${dev.gradient} shadow-lg shadow-black/50`}
+                          >
+                            <img
+                              src={dev.photo}
+                              alt={dev.name}
+                              className="w-full h-full object-cover object-top rounded-[14px] bg-zinc-950"
+                              onError={(e) => {
+                                if (e.currentTarget.src !== dev.fallbackPhoto) {
+                                  e.currentTarget.src = dev.fallbackPhoto;
+                                } else {
+                                  e.currentTarget.style.display = "none";
+                                  const fallbackEl = document.getElementById(`fallback-avatar-${i}`);
+                                  if (fallbackEl) fallbackEl.style.display = "flex";
+                                }
+                              }}
+                            />
+                            {/* Fallback initials if image fails completely */}
+                            <div
+                              id={`fallback-avatar-${i}`}
+                              style={{ display: "none" }}
+                              className={`w-full h-full rounded-[14px] bg-gradient-to-br ${dev.gradient} items-center justify-center text-white font-black text-xl`}
+                            >
+                              {dev.initials}
+                            </div>
+                          </div>
+
+                          {/* Active Beacon */}
+                          <span
+                            className="absolute -bottom-1 -right-1 flex h-4 w-4"
+                            title="Active & Available"
+                          >
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-zinc-900"></span>
+                          </span>
+                        </div>
+
+                        {/* Developer Meta */}
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-white font-black text-base md:text-lg leading-tight truncate">
+                            {dev.name}
+                          </h3>
+                          <div
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold mt-1"
+                            style={{
+                              background: dev.tagBg,
+                              border: `1px solid ${dev.tagBorder}`,
+                              color: dev.accent,
+                            }}
+                          >
+                            {dev.role}
+                          </div>
+                          <p className="text-[11px] text-slate-400 font-medium mt-1 leading-snug">
+                            {dev.specialty}
+                          </p>
+                        </div>
                       </div>
+
+                      {/* Tech Stack Badges */}
                       <div>
-                        <h3 className="text-white font-bold text-sm md:text-base leading-tight">{dev.name}</h3>
-                        <p className="text-[11px] font-semibold mt-0.5" style={{ color: dev.accent }}>{dev.role}</p>
-                        <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed">{dev.stack}</p>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-slate-500 mb-1.5">
+                          Tech Stack & Expertise
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {dev.skills.map((skill, sIdx) => (
+                            <span
+                              key={sIdx}
+                              className="text-[10px] md:text-[11px] font-medium px-2 py-0.5 rounded-md bg-white/[0.04] text-slate-300 border border-white/[0.08] hover:border-white/20 transition-colors"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <div
+                        className="h-px w-full"
+                        style={{ background: `linear-gradient(90deg, ${dev.accent}50, transparent)` }}
+                      />
+
+                      {/* Contact Details */}
+                      <div className="space-y-2 text-xs">
+                        {/* Email */}
+                        <div className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-colors">
+                          <a
+                            href={`mailto:${dev.email}`}
+                            className="flex items-center gap-2.5 text-slate-300 hover:text-white truncate"
+                            title={`Email ${dev.name}`}
+                          >
+                            <span className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center shrink-0 text-slate-400">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                            </span>
+                            <span className="truncate text-xs font-medium">{dev.email}</span>
+                          </a>
+                          <button
+                            onClick={() => handleCopy(dev.email, `email-${i}`)}
+                            className="px-2 py-1 text-[10px] font-semibold rounded bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors shrink-0"
+                            title="Copy email"
+                          >
+                            {copiedKey === `email-${i}` ? "✓ Copied" : "Copy"}
+                          </button>
+                        </div>
+
+                        {/* Phone */}
+                        <div className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 transition-colors">
+                          <a
+                            href={`tel:${dev.phone.replace(/\s+/g, "")}`}
+                            className="flex items-center gap-2.5 text-slate-300 hover:text-white truncate"
+                            title={`Call ${dev.name}`}
+                          >
+                            <span className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center shrink-0 text-slate-400">
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                            </span>
+                            <span className="truncate text-xs font-medium">{dev.phone}</span>
+                          </a>
+                          <button
+                            onClick={() => handleCopy(dev.phone, `phone-${i}`)}
+                            className="px-2 py-1 text-[10px] font-semibold rounded bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors shrink-0"
+                            title="Copy phone"
+                          >
+                            {copiedKey === `phone-${i}` ? "✓ Copied" : "Copy"}
+                          </button>
+                        </div>
+
+                        {/* Location */}
+                        <div className="flex items-center gap-2.5 px-2 py-1 text-slate-400 text-xs">
+                          <span className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center shrink-0 text-slate-400">
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          </span>
+                          <span className="font-medium text-slate-400">{dev.location}</span>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="h-px w-full" style={{ background: `linear-gradient(90deg,${dev.accent}50,transparent)` }} />
-
-                    {/* Contact */}
-                    <div className="space-y-2 text-xs">
-                      <a href={`mailto:${dev.email}`} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
-                        <span className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                        </span>
-                        <span className="truncate">{dev.email}</span>
-                      </a>
-                      <div className="flex items-center gap-2 text-slate-400">
-                        <span className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                          </svg>
-                        </span>
-                        {dev.phone}
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-400">
-                        <span className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                        </span>
-                        {dev.location}
-                      </div>
-                    </div>
-
-                    {/* Links */}
-                    <div className="flex gap-2">
+                    {/* Social & Portfolio Links */}
+                    <div className="flex gap-2.5 mt-5 pt-3 border-t border-white/5">
                       <a
                         href={dev.linkedin}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border border-white/10 bg-white/5 text-[10px] font-bold text-slate-400 hover:text-white hover:bg-white/10 transition-all uppercase tracking-widest"
+                        className="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-white/10 bg-white/[0.04] text-[11px] font-bold text-slate-300 hover:text-white hover:bg-white/[0.08] hover:border-[#0077b5]/50 transition-all uppercase tracking-wider group/btn"
                       >
-                        LinkedIn
+                        <svg className="w-3.5 h-3.5 fill-[#0a66c2] group-hover/btn:scale-110 transition-transform" viewBox="0 0 24 24">
+                          <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                        </svg>
+                        <span>LinkedIn</span>
                       </a>
                       <a
                         href={dev.portfolio}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all"
-                        style={{ border: `1px solid ${dev.accent}50`, color: dev.accent, background: `${dev.accent}15` }}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all shadow-md group/btn"
+                        style={{
+                          background: `linear-gradient(135deg, ${dev.accent}20 0%, ${dev.accent}08 100%)`,
+                          border: `1px solid ${dev.accent}60`,
+                          color: dev.accent,
+                        }}
                       >
-                        Portfolio
+                        <span>Portfolio</span>
+                        <svg className="w-3.5 h-3.5 stroke-current fill-none group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" viewBox="0 0 24 24" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
                       </a>
                     </div>
                   </div>
                 ))}
               </div>
-              <p className="text-center text-[10px] text-slate-600 mt-4">EthioCraft Global v1.0 · {t('footer.built_with_love', 'Built with love in Ethiopia')} · 2026</p>
+
+              {/* Bottom Stamp */}
+              <div className="flex items-center justify-center gap-2 mt-5 text-[11px] text-slate-500 font-medium">
+                <span>EthioCraft Global v1.0</span>
+                <span>•</span>
+                <span>{t('footer.built_with_love', 'Built with dedication in Ethiopia')} 🇪🇹</span>
+                <span>•</span>
+                <span>2026</span>
+              </div>
             </div>
           </div>
         </div>
