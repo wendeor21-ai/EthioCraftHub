@@ -41,16 +41,19 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Only clear session and redirect on 401 with specific auth failure codes.
-    // Do NOT redirect on 401s caused by missing resources or verification checks —
-    // those would log the user out mid-session.
+    // Only clear session and redirect on 401 with explicit expired/invalid token codes.
+    // Do NOT redirect if user is already on login page or for transient errors.
     if (error.response?.status === 401) {
       const code = error.response?.data?.code;
-      const authFailureCodes = ['NO_TOKEN', 'INVALID_TOKEN', 'TOKEN_EXPIRED', 'USER_NOT_FOUND', 'ACCOUNT_SUSPENDED'];
+      const authFailureCodes = ['NO_TOKEN', 'INVALID_TOKEN', 'TOKEN_EXPIRED'];
       if (authFailureCodes.includes(code)) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+        const isAuthPage = window.location.pathname === '/login' || window.location.pathname === '/register';
+        if (!isAuthPage) {
+          console.warn('🔒 Auth token expired or invalid, redirecting to login');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
       }
     }
 

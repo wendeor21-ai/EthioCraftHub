@@ -1,6 +1,23 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/ethiocaq/EthioCraftHub"
+PassengerBaseURI "/api"
+PassengerNodejs "/home/ethiocaq/nodevenv/EthioCraftHub/24/bin/node"
+PassengerAppType node
+PassengerStartupFile server/server.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Socket.io requests proxy to Node.js /api
+  RewriteRule ^socket\.io(.*)$ /api/socket.io$1 [PT,L,QSA]
+
+  # 1. Do NOT rewrite API, uploads, or static backend paths to index.html
+  RewriteCond %{REQUEST_URI} ^/(api|uploads|images|health|socket\.io) [NC]
+  RewriteRule ^ - [L]
+
+  # 2. React Client Routing
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

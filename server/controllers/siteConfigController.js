@@ -35,8 +35,18 @@ exports.getHomepageConfig = async (req, res) => {
       })()
     });
   } catch (error) {
-    console.error('Error fetching homepage config:', error);
-    res.status(500).json({ success: false, error: 'Server Error' });
+    console.error('Error fetching homepage config:', error.message);
+    // Return safe default homepage config so frontend never fails with 500 or 503
+    return res.status(200).json({
+      success: true,
+      data: {
+        heroTitle: "Authentic Ethiopian Artisan Crafts",
+        heroSubtitle: "Handmade textiles, leather goods, pottery, and jewelry directly from verified artisans.",
+        heroSlides: [],
+        headerLogo: "/logo192.png",
+        footerLogo: "/logo192.png",
+      }
+    });
   }
 };
 

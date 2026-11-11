@@ -30,6 +30,7 @@ tmp/
 node_modules/.prisma/
 
 # OS artifacts
+*.zip
 .DS_Store
 Thumbs.db
 

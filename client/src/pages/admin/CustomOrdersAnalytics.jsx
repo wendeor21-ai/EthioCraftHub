@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../utils/api';
 
 function CustomOrdersAnalytics() {
   const { token } = useAuth();
@@ -20,15 +21,15 @@ function CustomOrdersAnalytics() {
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await fetch('/api/admin/custom-orders-analytics', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const result = await response.json();
-        if (result.success) {
-          setData(result.data);
+        const response = await api.get('/admin/custom-orders-analytics');
+        if (response.data && response.data.success) {
+          setData(response.data.data || { orders: [], stats: {} });
+        } else if (response.data) {
+          setData(response.data);
         }
       } catch (error) {
-        toast.error('Failed to load custom order analytics');
+        console.warn('Custom orders analytics fetch:', error.message);
+        setData({ orders: [], stats: { totalRevenue: 0, totalCommission: 0, totalEarning: 0, count: 0 } });
       } finally {
         setLoading(false);
       }

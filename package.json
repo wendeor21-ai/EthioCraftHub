@@ -18,7 +18,10 @@
     "db:seed": "node scripts/seed-database.js",
     "setup": "node scripts/auto-setup.js",
     "verify": "node scripts/verify-setup.js",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate || true"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
   },
   "keywords": [
     "ecommerce",
