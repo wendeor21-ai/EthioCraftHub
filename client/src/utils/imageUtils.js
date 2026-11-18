@@ -4,45 +4,42 @@
  * Handles image URL construction and fallbacks
  */
 
-const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-const API_BASE_URL = apiUrl.replace(/\/api\/?$/, "");
-
 /**
- * Get full image URL from backend
+ * Get clean image URL from backend
  * @param {string} imagePath - Image path from database
- * @returns {string} Full image URL
+ * @returns {string} Full image URL or relative path
  */
 export const getImageUrl = (imagePath) => {
   if (!imagePath) return null;
+  let path = String(imagePath).trim();
 
-  // If already a full URL, return as is
-  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-    return imagePath;
+  // Strip localhost / 127.0.0.1 origins completely to avoid Mixed Content errors
+  if (/^https?:\/\/localhost(:\d+)?/i.test(path)) {
+    path = path.replace(/^https?:\/\/localhost(:\d+)?/i, "");
+  }
+  if (/^https?:\/\/127\.0\.0\.1(:\d+)?/i.test(path)) {
+    path = path.replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/i, "");
   }
 
-  // If starts with /images, it's stored in the client public folder – return the path directly
-  // (the browser will load from /images/… relative to the app).
-  if (imagePath.startsWith("/images")) {
-    return imagePath;
+  // If already an external absolute URL (https://...)
+  if (path.startsWith("https://") || (path.startsWith("http://") && !path.includes("localhost"))) {
+    return path;
   }
 
-  // If starts with /placeholder, it's also a public path – return as is
-  if (imagePath.startsWith("/placeholder")) {
-    return imagePath;
+  // Public asset paths
+  if (path.startsWith("/images") || path.startsWith("/placeholder") || path.startsWith("/logo")) {
+    return path;
   }
 
-  // If starts with /uploads, prepend API base URL (these are files stored by our backend)
-  if (imagePath.startsWith("/uploads")) {
-    return `${API_BASE_URL}${imagePath}`;
+  // Uploaded backend files - clean relative path works both in dev (via proxy) and prod (/uploads/...)
+  if (path.startsWith("/uploads/")) {
+    return path;
+  }
+  if (path.startsWith("uploads/")) {
+    return `/${path}`;
   }
 
-  // If starts with uploads (no slash), add slash and prepend
-  if (imagePath.startsWith("uploads")) {
-    return `${API_BASE_URL}/${imagePath}`;
-  }
-
-  // For any other path, assume it's in uploads folder on backend
-  return `${API_BASE_URL}/uploads/${imagePath}`;
+  return `/uploads/${path}`;
 };
 
 /**

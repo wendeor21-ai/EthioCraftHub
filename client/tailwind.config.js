@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
@@ -19,7 +20,7 @@ module.exports = {
       },
       fontFamily: {
         'display': ['Playfair Display', 'serif'],
-        'body': ['Inter', 'sans-serif'],
+        'body': ['Inter', 'Noto Sans Ethiopic', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
         'ethiopian-gradient': 'linear-gradient(135deg, #FEF3C7 0%, #FED7AA 50%, #FECACA 100%)',

@@ -382,7 +382,7 @@ function ProductCard({ product, showArtisan = true, className = '', lazyLoad = t
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  window.location.href = `/products/${product._id}`;
+                  navigate(`/products/${product._id}`);
                 }}
                 className="px-3 py-1.5 md:px-4 md:py-2 bg-white text-gray-800 font-bold rounded-full shadow-lg hover:bg-gray-800 hover:text-white transition-all duration-300 flex items-center gap-1.5 text-xs md:text-sm"
               >

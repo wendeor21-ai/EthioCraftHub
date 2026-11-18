@@ -148,6 +148,63 @@ exports.getTransactions = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @route   DELETE /api/earnings/transactions/:id
+ * @desc    Delete a single transaction record
+ * @access  Private (Artisan)
+ */
+exports.deleteTransaction = asyncHandler(async (req, res) => {
+  const artisanId = req.user._id;
+  const { id } = req.params;
+
+  const transaction = await Earning.findOne({ _id: id, artisan: artisanId });
+  if (!transaction) {
+    return res.status(404).json({
+      success: false,
+      message: 'Transaction not found or unauthorized'
+    });
+  }
+
+  await Earning.findByIdAndDelete(id);
+
+  res.json({
+    success: true,
+    message: 'Transaction record deleted successfully'
+  });
+});
+
+/**
+ * @route   POST /api/earnings/transactions/delete-batch
+ * @desc    Delete multiple transaction records
+ * @access  Private (Artisan)
+ */
+exports.deleteTransactionsBatch = asyncHandler(async (req, res) => {
+  const artisanId = req.user._id;
+  const { ids } = req.body;
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'No transaction IDs provided'
+    });
+  }
+
+  let deletedCount = 0;
+  for (const id of ids) {
+    const item = await Earning.findOne({ _id: id, artisan: artisanId });
+    if (item) {
+      await Earning.findByIdAndDelete(id);
+      deletedCount++;
+    }
+  }
+
+  res.json({
+    success: true,
+    message: `Successfully deleted ${deletedCount} transaction record(s)`,
+    deletedCount
+  });
+});
+
+/**
  * @route   POST /api/earnings/withdraw
  * @desc    Create withdrawal request
  * @access  Private (Artisan)

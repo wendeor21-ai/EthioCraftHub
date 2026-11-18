@@ -1,6 +1,16 @@
+/**
+ * Custom Design & Tailoring Order Form - EthioCraft Global
+ * 
+ * Features:
+ * - Direct artisan routing with verified artisan selector
+ * - Compact, mobile-first, high-readability UI
+ * - Minimal scroll complexity with responsive compact cards & inputs
+ * - Step-by-step guidance: 1. Style & Photos, 2. Measurements, 3. Review & Submit
+ * - Full bilingual support (Amharic & English)
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { 
   Ruler, 
   Camera, 
@@ -12,34 +22,68 @@ import {
   User,
   Check,
   Image as ImageIcon,
-  Shirt
+  Shirt,
+  Sparkles,
+  Store
 } from 'lucide-react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
 const CustomOrderForm = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { t } = useCustomTranslation();
+
   const urlArtisanId = searchParams.get('artisanId');
   const { productId, artisanId: stateArtisanId, productName } = location.state || {};
   
-  // Use artisanId from URL if present, otherwise fallback to state
-  const targetArtisanId = urlArtisanId || stateArtisanId;
-
+  // Initial artisan ID from URL or navigation state
+  const initialArtisanId = urlArtisanId || stateArtisanId || '';
+  const [selectedArtisanId, setSelectedArtisanId] = useState(initialArtisanId);
   const [artisanName, setArtisanName] = useState(null);
+  const [artisansList, setArtisansList] = useState([]);
+  const [loadingArtisans, setLoadingArtisans] = useState(false);
 
-  // Fetch artisan name when a direct artisanId is present
+  // Fetch verified artisans list if none pre-selected
   useEffect(() => {
-    if (!targetArtisanId) return;
-    api.get(`/users/artisan/${targetArtisanId}`)
+    let mounted = true;
+    api.get('/users/artisans?limit=50')
       .then(res => {
-        const a = res.data.artisan || res.data;
-        const name = a?.name || (a?.profile ? `${a.profile.firstName || ''} ${a.profile.lastName || ''}`.trim() : null);
+        if (!mounted) return;
+        const list = res.data?.artisans || [];
+        setArtisansList(list);
+        
+        // If an artisanId is provided, look up their name
+        if (selectedArtisanId) {
+          const match = list.find(a => String(a._id || a.id) === String(selectedArtisanId));
+          if (match) {
+            const name = match.profile?.storeName || 
+              `${match.profile?.firstName || ''} ${match.profile?.lastName || ''}`.trim();
+            setArtisanName(name);
+          }
+        }
+      })
+      .catch(() => {});
+    return () => { mounted = false; };
+  }, [selectedArtisanId]);
+
+  // Lookup single artisan name if direct URL parameter was provided
+  useEffect(() => {
+    if (!selectedArtisanId) {
+      setArtisanName(null);
+      return;
+    }
+    api.get(`/users/artisan/${selectedArtisanId}`)
+      .then(res => {
+        const a = res.data?.artisan || res.data;
+        const name = a?.profile?.storeName || 
+          (a?.profile ? `${a.profile.firstName || ''} ${a.profile.lastName || ''}`.trim() : a?.name);
         if (name) setArtisanName(name);
       })
-      .catch(() => {}); // Silently fail — form still works
-  }, [targetArtisanId]);
+      .catch(() => {});
+  }, [selectedArtisanId]);
 
   const [gender, setGender] = useState('Female');
   const [itemType, setItemType] = useState('Dress');
@@ -47,8 +91,17 @@ const CustomOrderForm = () => {
   const [loading, setLoading] = useState(false);
 
   const [measurements, setMeasurements] = useState({
-    length: '', shoulder: '', bust: '', chest: '', waist: '',
-    stomach: '', hip: '', thigh: '', ankle: '', armLength: '', shirtLength: ''
+    length: '',
+    shoulder: '',
+    bust: '',
+    chest: '',
+    waist: '',
+    stomach: '',
+    hip: '',
+    thigh: '',
+    ankle: '',
+    armLength: '',
+    shirtLength: ''
   });
 
   const [photos, setPhotos] = useState({ front: null, back: null });
@@ -56,9 +109,9 @@ const CustomOrderForm = () => {
   const [description, setDescription] = useState('');
 
   const STEPS = [
-    { number: 1, title: 'Style & Photos' },
-    { number: 2, title: 'Measurements' },
-    { number: 3, title: 'Review & Submit' }
+    { number: 1, title: 'ስታይል እና ፎቶ', subtitle: 'Style & Photos' },
+    { number: 2, title: 'ልኬቶች', subtitle: 'Measurements' },
+    { number: 3, title: 'ማረጋገጫ', subtitle: 'Review & Submit' }
   ];
 
   const handleInputChange = (e) => {
@@ -68,6 +121,10 @@ const CustomOrderForm = () => {
   const handlePhotoChange = (e, type) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 8 * 1024 * 1024) {
+        toast.error('የምስሉ መጠን ከ 8MB መብለጥ የለበትም');
+        return;
+      }
       setPhotos({ ...photos, [type]: file });
       setPreviews({ ...previews, [type]: URL.createObjectURL(file) });
     }
@@ -78,7 +135,7 @@ const CustomOrderForm = () => {
     setLoading(true);
 
     const formData = new FormData();
-    if (targetArtisanId) formData.append('artisanId', targetArtisanId);
+    if (selectedArtisanId) formData.append('artisanId', selectedArtisanId);
     if (productId) formData.append('productId', productId);
     formData.append('gender', gender);
     formData.append('itemType', itemType);
@@ -92,10 +149,10 @@ const CustomOrderForm = () => {
       await api.post('/custom-orders', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      toast.success('Custom order request sent successfully!');
+      toast.success('የብጁ ዲዛይን ጥያቄዎ በተሳካ ሁኔታ ተልኳል! ወደ ትዕዛዞች ገጽ በመሄድ ይከታተሉ።', { duration: 6000 });
       navigate('/orders');
     } catch (error) {
-      toast.error('Failed to send custom order request.');
+      toast.error(error.response?.data?.message || 'ትዕዛዙን መላክ አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
       console.error(error);
     } finally {
       setLoading(false);
@@ -103,365 +160,393 @@ const CustomOrderForm = () => {
   };
 
   const nextStep = () => {
-     if (step === 1 && !photos.front && !photos.back) {
-         toast('Reminder: Reference photos help the artisan.', { icon: '📸' });
-     }
-     setStep(Math.min(3, step + 1));
-  }
-  const prevStep = () => setStep(Math.max(1, step - 1));
+    if (step === 1 && !photos.front && !photos.back) {
+      toast('ማስታወሻ፦ የማጣቀሻ ፎቶ ማከል ባለሙያው ዲዛይኑን በትክክል እንዲረዳ ያግዛል', { icon: '📸' });
+    }
+    setStep(Math.min(3, step + 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-  // Motion variants
-  const slideVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
+  const prevStep = () => {
+    setStep(Math.max(1, step - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 pt-24 pb-20 px-4 font-['Inter',sans-serif]">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[#F8F9FB] font-sans pb-16 pt-3 sm:pt-6">
+      {/* Top Accent Strip */}
+      <div className="h-1.5 bg-gradient-to-r from-green-600 via-amber-400 to-red-600 w-full mb-4" />
+
+      <div className="max-w-3xl mx-auto px-3 sm:px-6">
         {/* Top Back Navigation */}
-        <button 
-          onClick={() => navigate('/products')}
-          className="flex items-center gap-2 text-neutral-500 hover:text-[#4A3018] font-bold text-sm mb-6 transition-all group"
-        >
-          <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          Back to Shop
-        </button>
-        
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-neutral-200/60">
+        <div className="flex items-center justify-between mb-3">
+          <button 
+            type="button"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-xs font-bold text-gray-600 hover:text-amber-800 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>ተመለስ (Back)</span>
+          </button>
+          <span className="text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+            <Scissors className="w-3 h-3 text-amber-600" />
+            የግል ዲዛይን ስፌት
+          </span>
+        </div>
+
+        {/* Main Card Container */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           
-          {/* Elegant Header */}
-          <div className="bg-[#4A3018] px-8 py-10 text-[#F3E5D8] relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-10 transform -rotate-12 translate-x-12 -translate-y-8">
-              <Scissors size={200} />
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-[#1C1C1C] via-[#2A241C] to-[#1C1C1C] px-4 py-4 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-base sm:text-lg font-bold text-amber-400 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  የብጁ/የግል ዲዛይን ማዘዣ (Custom Tailoring)
+                </h1>
+                <p className="text-xs text-gray-300 mt-0.5">
+                  የራስዎን ልክና ምርጫ በማስገባት በባህላዊ እደ-ጥበብ ባለሙያዎች በትክክል ያስሰፉ
+                </p>
+              </div>
+              <div className="hidden sm:flex w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 items-center justify-center border border-amber-500/30">
+                <Ruler className="w-5 h-5" />
+              </div>
             </div>
-            <div className="relative z-10">
-              <span className="inline-flex items-center gap-2 px-3 py-1 bg-[#F3E5D8]/10 text-white text-xs font-semibold rounded-full mb-4 tracking-widest uppercase border border-white/10">
-                <Ruler className="w-3.5 h-3.5" />
-                EthioCraft Tailoring
-              </span>
-              <h1 className="text-4xl md:text-5xl font-['Playfair_Display',serif] font-bold mb-3">
-                Order Custom Design
-              </h1>
-              <p className="text-white/80 font-light text-lg max-w-xl">
-                Experience the luxury of garments crafted specifically for your measurements by our master Ethiopian artisans.
-              </p>
-              {productName && (
-                <div className="mt-4 inline-block bg-black/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm border border-white/10">
-                  <span className="text-white/60">Base Design Inspiration:</span> <strong className="text-white ml-1">{productName}</strong>
-                </div>
-              )}
-              {/* Direct-to-artisan confirmation banner */}
-              {targetArtisanId && (
-                <div className="mt-4 flex items-center gap-3 bg-white/10 backdrop-blur-sm px-5 py-3 rounded-2xl border border-white/15 w-fit">
-                  <span className="text-xl">✂️</span>
-                  <span className="text-white/90 font-semibold text-sm">
-                    ለባለሙያ{artisanName ? ` ${artisanName}` : ''} ትዕዛዝ እየላኩ ነው
-                  </span>
+
+            {/* Targeted Artisan Card Banner */}
+            <div className="mt-3 pt-3 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+              <div className="flex items-center gap-2">
+                <Store className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="text-gray-300">የተመረጠ ባለሙያ (Artisan):</span>
+                <span className="font-bold text-white bg-white/10 px-2 py-0.5 rounded">
+                  {artisanName || (selectedArtisanId ? 'የተመረጠ ባለሙያ' : 'ማንኛውም ዝግጁ ባለሙያ (Open Order)')}
+                </span>
+              </div>
+
+              {/* Artisan Selector Dropdown if not fixed from URL */}
+              {!initialArtisanId && artisansList.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <label className="text-[11px] text-gray-400">ባለሙያ ይምረጡ:</label>
+                  <select
+                    value={selectedArtisanId}
+                    onChange={(e) => setSelectedArtisanId(e.target.value)}
+                    className="bg-black/40 text-amber-300 text-xs border border-white/20 rounded-lg px-2 py-1 outline-none focus:border-amber-400"
+                  >
+                    <option value="" className="bg-gray-900 text-white">ማንኛውም ምርጥ ባለሙያ (Any Available)</option>
+                    {artisansList.map(a => {
+                      const aId = String(a._id || a.id);
+                      const name = a.profile?.storeName || `${a.profile?.firstName || ''} ${a.profile?.lastName || ''}`.trim() || 'ባለሙያ';
+                      return (
+                        <option key={aId} value={aId} className="bg-gray-900 text-white">
+                          {name}
+                        </option>
+                      );
+                    })}
+                  </select>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="p-8 lg:p-12">
-            
-            {/* Elegant Stepper */}
-            <div className="mb-12 relative flex items-center justify-between mx-auto max-w-md">
-              <div className="absolute left-10 right-10 top-1/2 -translate-y-1/2 h-[2px] bg-neutral-200 -z-10"></div>
-              <div 
-                className="absolute left-10 top-1/2 -translate-y-1/2 h-[2px] bg-[#CFA66E] transition-all duration-700 ease-in-out -z-10" 
-                style={{ width: `${((step - 1) / 2) * 100}%` }}
-              ></div>
-              
+          <div className="p-3 sm:p-5">
+            {/* Compact Stepper */}
+            <div className="grid grid-cols-3 gap-2 mb-5">
               {STEPS.map((s) => {
                 const isActive = step === s.number;
                 const isCompleted = step > s.number;
-                
                 return (
-                  <div key={s.number} className="flex flex-col items-center gap-3 relative z-10 bg-white px-2">
-                    <div 
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-500 shadow-sm ${
-                        isActive 
-                          ? 'bg-[#CFA66E] text-white ring-4 ring-[#CFA66E]/20 scale-110' 
-                          : isCompleted 
-                            ? 'bg-[#4A3018] text-white' 
-                            : 'bg-white border-2 border-neutral-200 text-neutral-400'
-                      }`}
-                    >
-                      {isCompleted ? <Check className="w-5 h-5" /> : s.number}
-                    </div>
-                    <span className={`text-[10px] sm:text-xs font-semibold tracking-wide uppercase absolute -bottom-8 w-max text-center ${
-                      isActive ? 'text-[#CFA66E]' : isCompleted ? 'text-[#4A3018]' : 'text-neutral-400'
+                  <button
+                    key={s.number}
+                    type="button"
+                    onClick={() => setStep(s.number)}
+                    className={`flex items-center space-x-2 p-2 rounded-xl text-left transition-all ${
+                      isActive
+                        ? 'bg-amber-500 text-white shadow-sm'
+                        : isCompleted
+                          ? 'bg-amber-50 text-amber-900 border border-amber-200'
+                          : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                      isActive
+                        ? 'bg-white text-amber-600'
+                        : isCompleted
+                          ? 'bg-amber-600 text-white'
+                          : 'bg-gray-200 text-gray-600'
                     }`}>
-                      {s.title}
-                    </span>
-                  </div>
+                      {isCompleted ? <Check className="w-3.5 h-3.5" /> : s.number}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[11px] sm:text-xs font-bold truncate leading-tight">{s.title}</p>
+                      <p className={`text-[10px] hidden sm:block truncate ${isActive ? 'text-amber-100' : 'text-gray-400'}`}>
+                        {s.subtitle}
+                      </p>
+                    </div>
+                  </button>
                 );
               })}
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-16">
-              
-              {/* === STEP 1: Style & Photos === */}
+            <form onSubmit={handleSubmit}>
+              {/* ════════════════════════════════════════════════════════════════
+                  STEP 1: ስታይል እና ፎቶ (Style & Photos)
+                 ════════════════════════════════════════════════════════════════ */}
               {step === 1 && (
-                <motion.div variants={slideVariants} initial="hidden" animate="visible" className="space-y-10">
-                  
-                  {/* Gender Selection */}
-                  <section>
-                    <h2 className="text-xl font-['Playfair_Display',serif] font-bold text-neutral-900 mb-5 border-b border-neutral-100 pb-2">Target Audience / Gender</h2>
-                    <div className="grid grid-cols-2 gap-4">
-                      {['Female', 'Male'].map((g) => (
-                        <div 
-                          key={g}
-                          onClick={() => { setGender(g); setItemType(g === 'Female' ? 'Dress' : 'Shirt'); }}
-                          className={`relative overflow-hidden cursor-pointer group rounded-2xl border-2 p-6 flex flex-col items-center justify-center gap-3 transition-all duration-300 ${
-                            gender === g 
-                              ? 'border-[#CFA66E] bg-[#CFA66E]/5 shadow-md shadow-[#CFA66E]/10 scale-[1.02]' 
-                              : 'border-neutral-200 hover:border-[#CFA66E]/50 bg-white'
+                <div className="space-y-4 animate-fadeIn">
+                  {/* Gender Selector */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                      1. ማንን የሚለብስ ነው? (Target Gender)
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { key: 'Female', label: 'የሴት (Female)' },
+                        { key: 'Male', label: 'የወንድ (Male)' }
+                      ].map((g) => (
+                        <button
+                          key={g.key}
+                          type="button"
+                          onClick={() => {
+                            setGender(g.key);
+                            setItemType(g.key === 'Female' ? 'Dress' : 'Shirt');
+                          }}
+                          className={`py-2 px-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+                            gender === g.key
+                              ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-sm'
+                              : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                           }`}
                         >
-                          <div className={`p-3 rounded-full transition-colors ${gender === g ? 'bg-[#CFA66E] text-white' : 'bg-neutral-100 text-neutral-400 group-hover:text-[#CFA66E]'}`}>
-                            <User className="w-6 h-6" />
-                          </div>
-                          <span className={`font-semibold ${gender === g ? 'text-[#4A3018]' : 'text-neutral-600'}`}>{g}</span>
-                          {gender === g && (
-                            <div className="absolute top-3 right-3 text-[#CFA66E]">
-                              <CheckCircle2 className="w-5 h-5" />
-                            </div>
-                          )}
-                        </div>
+                          <User className="w-4 h-4 text-amber-600" />
+                          <span>{g.label}</span>
+                          {gender === g.key && <CheckCircle2 className="w-4 h-4 text-amber-600 ml-auto" />}
+                        </button>
                       ))}
                     </div>
-                  </section>
+                  </div>
 
-                  {/* Category Selection */}
-                  <section>
-                    <h2 className="text-xl font-['Playfair_Display',serif] font-bold text-neutral-900 mb-5 border-b border-neutral-100 pb-2">Garment Type</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
-                      {(gender === 'Female' ? ['Dress', 'Shirt'] : ['Shirt', 'Trousers']).map((t) => (
-                        <div 
-                          key={t}
-                          onClick={() => setItemType(t)}
-                          className={`cursor-pointer rounded-xl border-2 p-4 flex flex-col items-center gap-2 transition-all duration-300 ${
-                            itemType === t 
-                              ? 'border-[#4A3018] bg-[#4A3018] text-white shadow-lg scale-105' 
-                              : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-300'
+                  {/* Garment Type */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                      2. የልብሱ አይነት (Garment Type)
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {(gender === 'Female' 
+                        ? [
+                            { key: 'Dress', am: 'የባህል ቀሚስ (Dress)' },
+                            { key: 'Shirt', am: 'ሸሚዝ / ቱታ (Shirt)' },
+                            { key: 'Scarf/Netela', am: 'ነጠላ / ሻሽ (Shawl)' },
+                            { key: 'Full Suit', am: 'ሙሉ ልብስ (Full Set)' }
+                          ]
+                        : [
+                            { key: 'Shirt', am: 'የባህል ሸሚዝ (Shirt)' },
+                            { key: 'Trousers', am: 'ሱሪ (Trousers)' },
+                            { key: 'Full Suit', am: 'ሙሉ ልብስ (Full Suit)' },
+                            { key: 'Vest', am: 'ካፖርት / ቬስት (Vest)' }
+                          ]
+                      ).map((item) => (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => setItemType(item.key)}
+                          className={`py-2 px-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all text-center ${
+                            itemType === item.key
+                              ? 'border-amber-600 bg-amber-600 text-white shadow-sm'
+                              : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
                           }`}
                         >
-                          <Shirt className="w-5 h-5 opacity-80" />
-                          <span className="font-medium text-sm">{t}</span>
-                        </div>
+                          <Shirt className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">{item.am}</span>
+                        </button>
                       ))}
                     </div>
-                  </section>
+                  </div>
 
                   {/* Reference Photos */}
-                  <section>
-                    <div className="flex justify-between items-end mb-5 border-b border-neutral-100 pb-2">
-                      <h2 className="text-xl font-['Playfair_Display',serif] font-bold text-neutral-900">Reference Photos</h2>
-                      <span className="text-xs font-semibold text-[#8B6B40] uppercase tracking-wider bg-[#CFA66E]/10 border border-[#CFA66E]/30 px-3 py-1 rounded-full">Optional but Recommended</span>
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-amber-600" />
+                        3. የማጣቀሻ ፎቶዎች (Reference Photos - አማራጭ)
+                      </label>
+                      <span className="text-[10px] text-gray-400">የፊት እና የኋላ ፎቶ</span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
-                      <div className="group relative">
-                        <label className="text-sm font-semibold text-neutral-600 mb-3 block">Front View Inspiration</label>
-                        <div 
-                          className={`h-48 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer ${
-                            previews.front ? 'border-solid border-[#CFA66E]' : 'border-neutral-300 hover:border-[#CFA66E] bg-neutral-50 hover:bg-[#CFA66E]/5'
+
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {/* Front Photo */}
+                      <div>
+                        <span className="block text-[11px] text-gray-500 font-medium mb-1">የፊት ገጽታ ፎቶ</span>
+                        <div
+                          onClick={() => document.getElementById('custom-front-photo').click()}
+                          className={`h-28 sm:h-32 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
+                            previews.front ? 'border-amber-500 bg-amber-50/30' : 'border-gray-200 bg-gray-50 hover:bg-amber-50/40 hover:border-amber-400'
                           }`}
-                          onClick={() => document.getElementById('front-photo-input').click()}
                         >
                           {previews.front ? (
-                            <>
+                            <div className="relative w-full h-full group">
                               <img src={previews.front} alt="Front view" className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="text-white font-medium text-sm flex items-center gap-2"><Camera className="w-4 h-4"/> Change Photo</span>
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                ፎቶ ቀይር
                               </div>
-                            </>
+                            </div>
                           ) : (
-                            <div className="text-center p-6">
-                              <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-3 text-neutral-400 group-hover:text-[#CFA66E] group-hover:scale-110 transition-all">
-                                <ImageIcon className="w-6 h-6" />
-                              </div>
-                              <span className="text-sm font-medium text-neutral-600">Click to upload front photo</span>
+                            <div className="text-center p-2">
+                              <ImageIcon className="w-6 h-6 mx-auto text-gray-400 mb-1" />
+                              <span className="text-[11px] text-gray-600 font-medium block">የፊት ፎቶ ጫን</span>
+                              <span className="text-[9px] text-gray-400">PNG / JPG</span>
                             </div>
                           )}
-                          <input id="front-photo-input" type="file" className="hidden" onChange={(e) => handlePhotoChange(e, 'front')} accept="image/*" />
+                          <input id="custom-front-photo" type="file" accept="image/*" className="hidden" onChange={(e) => handlePhotoChange(e, 'front')} />
                         </div>
                       </div>
 
-                      <div className="group relative">
-                        <label className="text-sm font-semibold text-neutral-600 mb-3 block">Back View Inspiration</label>
-                        <div 
-                          className={`h-48 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer ${
-                            previews.back ? 'border-solid border-[#CFA66E]' : 'border-neutral-300 hover:border-[#CFA66E] bg-neutral-50 hover:bg-[#CFA66E]/5'
+                      {/* Back Photo */}
+                      <div>
+                        <span className="block text-[11px] text-gray-500 font-medium mb-1">የኋላ ገጽታ ፎቶ</span>
+                        <div
+                          onClick={() => document.getElementById('custom-back-photo').click()}
+                          className={`h-28 sm:h-32 rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all overflow-hidden ${
+                            previews.back ? 'border-amber-500 bg-amber-50/30' : 'border-gray-200 bg-gray-50 hover:bg-amber-50/40 hover:border-amber-400'
                           }`}
-                          onClick={() => document.getElementById('back-photo-input').click()}
                         >
                           {previews.back ? (
-                            <>
+                            <div className="relative w-full h-full group">
                               <img src={previews.back} alt="Back view" className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <span className="text-white font-medium text-sm flex items-center gap-2"><Camera className="w-4 h-4"/> Change Photo</span>
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-[11px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                ፎቶ ቀይር
                               </div>
-                            </>
+                            </div>
                           ) : (
-                            <div className="text-center p-6">
-                              <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mx-auto mb-3 text-neutral-400 group-hover:text-[#CFA66E] group-hover:scale-110 transition-all">
-                                <ImageIcon className="w-6 h-6" />
-                              </div>
-                              <span className="text-sm font-medium text-neutral-600">Click to upload back photo</span>
+                            <div className="text-center p-2">
+                              <ImageIcon className="w-6 h-6 mx-auto text-gray-400 mb-1" />
+                              <span className="text-[11px] text-gray-600 font-medium block">የኋላ ፎቶ ጫን</span>
+                              <span className="text-[9px] text-gray-400">PNG / JPG</span>
                             </div>
                           )}
-                          <input id="back-photo-input" type="file" className="hidden" onChange={(e) => handlePhotoChange(e, 'back')} accept="image/*" />
+                          <input id="custom-back-photo" type="file" accept="image/*" className="hidden" onChange={(e) => handlePhotoChange(e, 'back')} />
                         </div>
                       </div>
                     </div>
-                  </section>
-
-                </motion.div>
+                  </div>
+                </div>
               )}
 
-              {/* === STEP 2: Measurements === */}
+              {/* ════════════════════════════════════════════════════════════════
+                  STEP 2: ልኬቶች (Body Measurements in CM)
+                 ════════════════════════════════════════════════════════════════ */}
               {step === 2 && (
-                <motion.div variants={slideVariants} initial="hidden" animate="visible" className="space-y-8">
-                  
-                  <div className="flex items-start gap-4 p-5 bg-[#CFA66E]/10 rounded-2xl border border-[#CFA66E]/20">
-                    <div className="p-2 bg-white rounded-full shrink-0 text-[#CFA66E]">
-                      <AlertCircle className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-[#4A3018] text-sm mb-1">Measurement Accuracy is Key</h3>
-                      <p className="text-sm text-[#4A3018]/80 leading-relaxed">
-                        For the perfect fit, please use a soft measuring tape and measure closely against the body. All measurements should be provided in <strong>centimeters (cm)</strong>.
-                      </p>
-                    </div>
+                <div className="space-y-3.5 animate-fadeIn">
+                  <div className="flex items-center gap-2 p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>ልኬቶችን በ<strong>ሴንቲሜትር (cm)</strong> ያስገቡ። ልኬቱን የማያውቁትን ባዶ መተው ይችላሉ፤ ባለሙያው በቀጥታ ያነጋግርዎታል።</span>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
-                    {/* General / Upper Body Section */}
-                    <div className="space-y-6">
-                      <h3 className="text-sm font-bold uppercase tracking-widest text-[#8B6B40] border-b border-neutral-200 pb-2">Upper Body Measurements</h3>
-                      <FloatingInput label="Total Length (ቁመት)" name="length" value={measurements.length} onChange={handleInputChange} suffix="cm" />
-                      <FloatingInput label="Shoulder Width (ትክሻ)" name="shoulder" value={measurements.shoulder} onChange={handleInputChange} suffix="cm" />
-                      
-                      {gender === 'Female' && (
-                        <>
-                          <FloatingInput label="Bust Circumference (ጡት)" name="bust" value={measurements.bust} onChange={handleInputChange} suffix="cm" />
-                          <FloatingInput label="Arm Length (እጅ እርዝመ)" name="armLength" value={measurements.armLength} onChange={handleInputChange} suffix="cm" />
-                        </>
-                      )}
-                      
-                      {gender === 'Male' && itemType === 'Shirt' && (
-                        <>
-                          <FloatingInput label="Chest Circumference (ደረት)" name="chest" value={measurements.chest} onChange={handleInputChange} suffix="cm" />
-                          <FloatingInput label="Arm Length (እጅ እርዝመ)" name="armLength" value={measurements.armLength} onChange={handleInputChange} suffix="cm" />
-                          <FloatingInput label="Shirt Length" name="shirtLength" value={measurements.shirtLength} onChange={handleInputChange} suffix="cm" />
-                        </>
-                      )}
-                    </div>
-
-                    {/* Lower Body Section */}
-                    <div className="space-y-6">
-                      <h3 className="text-sm font-bold uppercase tracking-widest text-[#8B6B40] border-b border-neutral-200 pb-2">Lower Body / Core Measurements</h3>
-                      {(gender === 'Female' || (gender === 'Male' && itemType === 'Trousers')) && (
-                        <FloatingInput label="Waist (ወገብ)" name="waist" value={measurements.waist} onChange={handleInputChange} suffix="cm" />
-                      )}
-                      
-                      {gender === 'Male' && itemType === 'Shirt' && (
-                        <FloatingInput label="Stomach / Core (ቦርጭ)" name="stomach" value={measurements.stomach} onChange={handleInputChange} suffix="cm" />
-                      )}
-
-                      {gender === 'Male' && itemType === 'Trousers' && (
-                        <>
-                          <FloatingInput label="Hip (ዳሌ)" name="hip" value={measurements.hip} onChange={handleInputChange} suffix="cm" />
-                          <FloatingInput label="Thigh Circumference (ጭን)" name="thigh" value={measurements.thigh} onChange={handleInputChange} suffix="cm" />
-                          <FloatingInput label="Ankle / Hem (ተረከዝ)" name="ankle" value={measurements.ankle} onChange={handleInputChange} suffix="cm" />
-                        </>
-                      )}
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                    <CompactInput label="ቁመት (Total Length)" name="length" value={measurements.length} onChange={handleInputChange} />
+                    <CompactInput label="ትክሻ (Shoulder)" name="shoulder" value={measurements.shoulder} onChange={handleInputChange} />
+                    
+                    {gender === 'Female' ? (
+                      <>
+                        <CompactInput label="ጡት (Bust)" name="bust" value={measurements.bust} onChange={handleInputChange} />
+                        <CompactInput label="ወገብ (Waist)" name="waist" value={measurements.waist} onChange={handleInputChange} />
+                        <CompactInput label="ዳሌ (Hip)" name="hip" value={measurements.hip} onChange={handleInputChange} />
+                        <CompactInput label="እጅ እርዝመት (Arm Length)" name="armLength" value={measurements.armLength} onChange={handleInputChange} />
+                      </>
+                    ) : (
+                      <>
+                        <CompactInput label="ደረት (Chest)" name="chest" value={measurements.chest} onChange={handleInputChange} />
+                        <CompactInput label="ወገብ (Waist)" name="waist" value={measurements.waist} onChange={handleInputChange} />
+                        <CompactInput label="ቦርጭ/ሆድ (Stomach)" name="stomach" value={measurements.stomach} onChange={handleInputChange} />
+                        <CompactInput label="እጅ እርዝመት (Arm Length)" name="armLength" value={measurements.armLength} onChange={handleInputChange} />
+                        <CompactInput label="የሸሚዝ ቁመት (Shirt Length)" name="shirtLength" value={measurements.shirtLength} onChange={handleInputChange} />
+                        <CompactInput label="የሱሪ ቁመት / ተረከዝ" name="ankle" value={measurements.ankle} onChange={handleInputChange} />
+                      </>
+                    )}
                   </div>
-                </motion.div>
+                </div>
               )}
 
-              {/* === STEP 3: Review & Submit === */}
+              {/* ════════════════════════════════════════════════════════════════
+                  STEP 3: ማረጋገጫ እና ልዩ ማስታወሻ (Review & Submit)
+                 ════════════════════════════════════════════════════════════════ */}
               {step === 3 && (
-                <motion.div variants={slideVariants} initial="hidden" animate="visible" className="space-y-8">
-                  
-                  <section>
-                    <h2 className="text-xl font-['Playfair_Display',serif] font-bold text-neutral-900 mb-5 border-b border-neutral-100 pb-2">Additional Specifications</h2>
-                    <p className="text-sm text-neutral-500 mb-4">Please describe any specific preferences regarding colors, preferred fabrics, embroidery patterns, beadwork, or loose/tight fit preferences.</p>
+                <div className="space-y-3.5 animate-fadeIn">
+                  {/* Summary Card */}
+                  <div className="bg-gray-50 rounded-xl p-3.5 border border-gray-200">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2.5">
+                      የትዕዛዙ ማጠቃለያ (Order Summary)
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-white p-2.5 rounded-lg border border-gray-100">
+                        <span className="text-[10px] text-gray-400 block font-bold">ባለሙያ</span>
+                        <span className="font-bold text-gray-800">{artisanName || 'ምርጥ ዝግጁ ባለሙያ'}</span>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-lg border border-gray-100">
+                        <span className="text-[10px] text-gray-400 block font-bold">አይነት</span>
+                        <span className="font-bold text-gray-800">{gender === 'Female' ? 'የሴት' : 'የወንድ'} {itemType}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Special Notes / Description */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      ተጨማሪ መመሪያ ወይም ምርጫ (ቀለም፣ ጥልፍ፣ የጥልፍ አይነት)
+                    </label>
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
-                      placeholder="e.g. 'I prefer a darker green traditional embroidery around the neckline, similar to the reference photo but with gold threads...'"
-                      className="w-full bg-white border border-neutral-200 rounded-2xl focus:ring-4 focus:ring-[#CFA66E]/20 focus:border-[#CFA66E] p-5 min-h-[160px] text-neutral-800 placeholder-neutral-400 transition-all outline-none resize-y"
+                      placeholder="ለምሳሌ፡ ጥልፉ አረንጓዴና ወርቃማ ክር እንዲሆን እፈልጋለሁ፤ ዙሪያው በወርቅ ጥልፍ የተሸለመ እንዲሆን..."
+                      className="w-full bg-white border border-gray-300 rounded-xl p-3 text-xs sm:text-sm text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none min-h-[90px] resize-y"
                     />
-                  </section>
-
-                  <section className="bg-[#4A3018]/5 rounded-2xl p-6 border border-[#4A3018]/10">
-                    <h3 className="text-lg font-bold text-[#4A3018] mb-4">Order Summary</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="bg-white p-4 rounded-xl border border-neutral-100 shadow-sm">
-                        <span className="text-[#8B6B40] block text-[10px] uppercase font-bold tracking-wider mb-1">Target Artisan</span>
-                        <span className="text-neutral-900 font-semibold">
-                        {targetArtisanId ? (artisanName || 'Selected Master Artisan') : 'Best Available Artisan'}
-                      </span>
-                      </div>
-                      <div className="bg-white p-4 rounded-xl border border-neutral-100 shadow-sm">
-                        <span className="text-[#8B6B40] block text-[10px] uppercase font-bold tracking-wider mb-1">Garment</span>
-                        <span className="text-neutral-900 font-semibold">{gender} • {itemType}</span>
-                      </div>
-                    </div>
-                  </section>
-
-                </motion.div>
+                  </div>
+                </div>
               )}
 
-              {/* Navigation Footer */}
-              <div className="mt-12 pt-6 border-t border-neutral-200 flex items-center justify-between">
+              {/* Bottom Actions Bar */}
+              <div className="mt-5 pt-3.5 border-t border-gray-100 flex items-center justify-between">
                 {step > 1 ? (
                   <button
                     type="button"
                     onClick={prevStep}
-                    className="px-6 py-3.5 border-2 border-neutral-200 text-neutral-600 rounded-xl font-bold hover:border-[#CFA66E] hover:text-[#CFA66E] hover:bg-[#CFA66E]/5 transition-all flex items-center gap-2 group"
+                    className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                   >
-                    <ChevronLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                    Back
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>ወደ ኋላ (Back)</span>
                   </button>
                 ) : (
-                  <div></div>
+                  <div />
                 )}
-                
+
                 {step < STEPS.length ? (
                   <button
                     type="button"
                     onClick={nextStep}
-                    className="px-8 py-3.5 bg-[#4A3018] text-[#F3E5D8] rounded-xl font-bold hover:bg-[#382210] hover:shadow-[0_4px_12px_rgba(74,48,24,0.3)] hover:-translate-y-0.5 transition-all flex items-center gap-2 group ml-auto ring-2 ring-transparent hover:ring-[#CFA66E] ring-offset-2"
+                    className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-all shadow-sm ml-auto"
                   >
-                    Continue
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-[#CFA66E]" />
+                    <span>ቀጥል (Continue)</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 ) : (
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-10 py-3.5 bg-gradient-to-r from-[#D4AF37] to-[#CFA66E] text-white rounded-xl font-black uppercase tracking-widest hover:shadow-[0_8px_20px_rgba(207,166,110,0.4)] hover:-translate-y-1 active:translate-y-0 transition-all flex items-center gap-3 shadow-md disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                    className="flex items-center gap-1.5 px-6 py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 rounded-xl transition-all shadow-md disabled:opacity-50 ml-auto"
                   >
                     {loading ? (
                       <>
-                        <span className="w-5 h-5 border-4 border-white/40 border-t-white rounded-full animate-spin" />
-                        Processing...
+                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        <span>በመላክ ላይ...</span>
                       </>
                     ) : (
                       <>
-                        <CheckCircle2 className="w-5 h-5" />
-                        Finalize & Submit Request
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>ትዕዛዙን ላክ (Submit Design Request)</span>
                       </>
                     )}
                   </button>
                 )}
               </div>
-
             </form>
           </div>
         </div>
@@ -470,29 +555,23 @@ const CustomOrderForm = () => {
   );
 };
 
-const FloatingInput = ({ label, name, value, onChange, placeholder, suffix }) => (
-  <div className="relative group">
-    <input
-      type="number"
-      name={name}
-      id={name}
-      value={value}
-      onChange={onChange}
-      required
-      placeholder=" "
-      className="block w-full px-5 pt-8 pb-3 text-neutral-900 bg-white border border-neutral-300 rounded-xl appearance-none focus:outline-none focus:ring-2 focus:ring-[#CFA66E]/20 focus:border-[#CFA66E] hover:border-[#CFA66E]/50 peer transition-all shadow-sm"
-    />
-    <label 
-      htmlFor={name}
-      className="absolute text-[13px] font-bold text-neutral-500 duration-300 transform -translate-y-3.5 scale-90 top-5 z-10 origin-[0] left-5 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-90 peer-focus:-translate-y-3.5 peer-focus:text-[#CFA66E] pointer-events-none uppercase tracking-wide"
-    >
+const CompactInput = ({ label, name, value, onChange }) => (
+  <div className="bg-white p-2 rounded-xl border border-gray-200 focus-within:border-amber-500 focus-within:ring-1 focus-within:ring-amber-500 transition-all">
+    <label htmlFor={name} className="block text-[10px] font-bold text-gray-500 uppercase tracking-tight truncate">
       {label}
     </label>
-    {suffix && (
-      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-neutral-400 font-bold text-[11px] uppercase tracking-widest pointer-events-none">
-        {suffix}
-      </span>
-    )}
+    <div className="flex items-center mt-0.5">
+      <input
+        type="number"
+        name={name}
+        id={name}
+        value={value}
+        onChange={onChange}
+        placeholder="0"
+        className="w-full text-xs sm:text-sm font-bold text-gray-800 outline-none bg-transparent"
+      />
+      <span className="text-[10px] text-gray-400 font-bold ml-1">cm</span>
+    </div>
   </div>
 );
 

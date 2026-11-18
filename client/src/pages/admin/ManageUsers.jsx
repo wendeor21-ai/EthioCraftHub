@@ -18,8 +18,11 @@ import {
   PowerIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { formatOrderDateTime } from '../../utils/dateUtils';
+import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
-const ManageUsers = () => {
+const ManageUsers = ({ insideDashboard, onSelectTab }) => {
+  const { t, currentLanguage } = useCustomTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -60,14 +63,32 @@ const ManageUsers = () => {
         limit
       };
 
+      console.log('📡 [ManageUsers] Requesting /api/admin/users with:', params);
       const res = await adminAPI.getUsers(params);
-      setUsers(res.data.users || []);
-      setTotalPages(res.data.pagination ? res.data.pagination.totalPages : 1);
+      console.log('✅ [ManageUsers] /api/admin/users response:', res.status, res.data);
+      const fetchedUsers = res.data?.users || [];
+      setUsers(fetchedUsers);
+      setTotalPages(res.data?.pagination ? res.data.pagination.totalPages : 1);
+
+      if (res.data?.stats) {
+        setStats(prev => ({
+          ...prev,
+          ...res.data.stats,
+          total: res.data.stats.total ?? (res.data.pagination?.totalUsers || fetchedUsers.length),
+        }));
+      } else if (fetchedUsers.length > 0) {
+        setStats({
+          total: fetchedUsers.length,
+          artisans: fetchedUsers.filter(u => u.role === 'artisan').length,
+          customers: fetchedUsers.filter(u => u.role === 'customer').length,
+          active: fetchedUsers.filter(u => u.isActive !== false).length,
+        });
+      }
       setError('');
     } catch (err) {
-      console.error('Error fetching users:', err);
+      console.error('❌ [ManageUsers] Error fetching users:', err.response?.status, err.response?.data || err.message);
       setError('Failed to load users');
-      setUsers(getMockUsers());
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -75,83 +96,31 @@ const ManageUsers = () => {
 
   const fetchStats = async () => {
     try {
+      console.log('📡 [ManageUsers] Requesting /api/admin/dashboard');
       const res = await adminAPI.getDashboard();
-      const userStats = res.data.users || [];
-      let total = 0, artisans = 0, customers = 0, active = 0;
-      userStats.forEach((g) => {
-        const role = g._id;
-        const count = g.count || 0;
-        const act = g.active || 0;
-        total += count;
-        active += act;
-        if (role === 'artisan') artisans = count;
-        if (role === 'customer') customers = count;
-      });
-      setStats({ total, artisans, customers, active });
-    } catch (err) {
-      console.error('Failed to fetch dashboard stats', err);
-    }
-  };
-
-  const getMockUsers = () => {
-    return [
-      {
-        _id: 'user001',
-        email: 'sarah.artisan@ethiocraft.com',
-        role: 'artisan',
-        profile: {
-          firstName: 'Sarah',
-          lastName: 'Bekele',
-          phone: '+251911234567'
-        },
-        verification: { status: 'approved' },
-        createdAt: '2026-01-15T10:30:00',
-        isActive: true,
-        productsCount: 12,
-        ordersCount: 45
-      },
-      {
-        _id: 'user002',
-        email: 'michael.customer@gmail.com',
-        role: 'customer',
-        profile: {
-          firstName: 'Michael',
-          lastName: 'Chen',
-          phone: '+1234567890'
-        },
-        createdAt: '2026-01-20T14:20:00',
-        isActive: true,
-        ordersCount: 8
-      },
-      {
-        _id: 'user003',
-        email: 'emma.artisan@ethiocraft.com',
-        role: 'artisan',
-        profile: {
-          firstName: 'Emma',
-          lastName: 'Tadesse',
-          phone: '+251922345678'
-        },
-        verification: { status: 'pending' },
-        createdAt: '2026-02-01T09:15:00',
-        isActive: true,
-        productsCount: 5,
-        ordersCount: 12
-      },
-      {
-        _id: 'user004',
-        email: 'john.customer@yahoo.com',
-        role: 'customer',
-        profile: {
-          firstName: 'John',
-          lastName: 'Smith',
-          phone: '+1987654321'
-        },
-        createdAt: '2026-01-25T16:45:00',
-        isActive: false,
-        ordersCount: 3
+      console.log('✅ [ManageUsers] /api/admin/dashboard response:', res.status, res.data);
+      const userStats = res.data?.users || [];
+      if (Array.isArray(userStats) && userStats.length > 0) {
+        let total = 0, artisans = 0, customers = 0, active = 0;
+        userStats.forEach((g) => {
+          const role = g._id;
+          const count = g.count || 0;
+          const act = g.active || 0;
+          total += count;
+          active += act;
+          if (role === 'artisan') artisans = count;
+          if (role === 'customer') customers = count;
+        });
+        setStats(prev => ({
+          total: total || prev.total,
+          artisans: artisans || prev.artisans,
+          customers: customers || prev.customers,
+          active: active || prev.active,
+        }));
       }
-    ];
+    } catch (err) {
+      console.warn('Dashboard stats fallback from /users', err);
+    }
   };
 
   const filteredUsers = users.filter(u => {
@@ -320,88 +289,90 @@ const ManageUsers = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={insideDashboard ? "py-12 flex items-center justify-center" : "min-h-screen flex items-center justify-center"}>
         <LoadingSpinner size="large" />
       </div>
     );
   }
 
   return (
-    <div className="manage-users-container">
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-8">
-        <div className="container mx-auto px-4 max-w-7xl">
+    <div className={`manage-users-container ${insideDashboard ? 'p-0' : ''}`}>
+      <div className={insideDashboard ? 'bg-transparent py-2' : 'min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-8'}>
+        <div className={insideDashboard ? 'w-full' : 'container mx-auto px-4 max-w-7xl'}>
         {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/admin/dashboard')}
-            className="text-ethiopian-gold hover:text-ethiopian-earth mb-4 flex items-center"
-          >
-            ← Back to Dashboard
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Users</h1>
-          <p className="text-gray-600 mt-2">View and manage all platform users</p>
+        <div className="mb-6">
+          {!insideDashboard && (
+            <button
+              onClick={() => navigate('/admin/dashboard')}
+              className="text-amber-600 hover:text-amber-700 mb-3 flex items-center text-xs font-semibold"
+            >
+              ← Back to Dashboard
+            </button>
+          )}
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Manage Users</h1>
+          <p className="text-xs text-gray-500 mt-1">View and manage all platform users</p>
         </div>
 
         {error && <ErrorMessage message={error} className="mb-6" />}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5 mb-3">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total || users.length}</p>
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Total Users</p>
+                <p className="text-base sm:text-xl font-bold text-gray-900 mt-0.5">{stats.total || users.length}</p>
               </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-1.5 sm:p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm font-medium text-gray-600">Artisans</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Artisans</p>
+                <p className="text-base sm:text-xl font-bold text-blue-600 mt-0.5">
                   {stats.artisans || users.filter(u => u.role === 'artisan').length}
                 </p>
               </div>
-              <div className="p-3 bg-purple-100 rounded-full">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-1.5 sm:p-2 bg-purple-50 text-purple-600 rounded-lg shrink-0">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm font-medium text-gray-600">Customers</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Customers</p>
+                <p className="text-base sm:text-xl font-bold text-green-600 mt-0.5">
                   {stats.customers || users.filter(u => u.role === 'customer').length}
                 </p>
               </div>
-              <div className="p-3 bg-green-100 rounded-full">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-1.5 sm:p-2 bg-green-50 text-green-600 rounded-lg shrink-0">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                 </svg>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm font-medium text-gray-600">Active</p>
-                <p className="text-2xl font-bold text-ethiopian-gold">
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Active</p>
+                <p className="text-base sm:text-xl font-bold text-amber-600 mt-0.5">
                   {stats.active || users.filter(u => u.isActive).length}
                 </p>
               </div>
-              <div className="p-3 bg-amber-100 rounded-full">
-                <svg className="w-6 h-6 text-ethiopian-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-1.5 sm:p-2 bg-amber-50 text-amber-600 rounded-lg shrink-0">
+                <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
@@ -410,22 +381,22 @@ const ManageUsers = () => {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <div className="flex space-x-2">
+        <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3 mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-1.5">
               {['all', 'artisan', 'customer'].map(role => (
                 <button
                   key={role}
                   onClick={() => setFilter(role)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     filter === role
-                      ? 'bg-ethiopian-gold text-white'
+                      ? 'bg-amber-600 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
                   {role.charAt(0).toUpperCase() + role.slice(1)}
                   {role !== 'all' && (
-                    <span className="ml-2 bg-white text-gray-900 px-2 py-0.5 rounded-full text-xs">
+                    <span className={`ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] ${filter === role ? 'bg-white/20 text-white' : 'bg-white text-gray-800'}`}>
                       {users.filter(u => u.role === role).length}
                     </span>
                   )}
@@ -433,118 +404,123 @@ const ManageUsers = () => {
               ))}
             </div>
 
-            <div className="relative">
+            <div className="relative w-full sm:w-64">
               <input
                 type="text"
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                className="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
               />
-              <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+        {/* Users Table - High Density Minimalist View */}
+        <div className="bg-white rounded-xl shadow-2xs overflow-hidden border border-gray-200">
           <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-            <table className="w-full relative text-sm">
-              <thead className="bg-gray-50 sticky top-0 z-10 shadow-sm border-b border-gray-200">
+            <table className="w-full relative text-[11px] font-sans">
+              <thead className="bg-gray-50/95 sticky top-0 z-10 shadow-2xs border-b border-gray-200 backdrop-blur-2xs">
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-50">
-                    User
+                  <th className="px-3 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50/90">
+                    USER (ተጠቃሚ)
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-50">
-                    Role
+                  <th className="px-3 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50/90">
+                    ROLE (ሚና)
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-50">
-                    Contact
+                  <th className="px-3 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50/90">
+                    CONTACT (መገኛ)
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-50">
-                    Stats
+                  <th className="px-3 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50/90">
+                    STATS (ስታትስቲክስ)
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-50">
-                    Joined
+                  <th className="px-3 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50/90">
+                    JOINED (የተመዘገበበት)
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-50">
-                    Status
+                  <th className="px-3 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50/90">
+                    STATUS (ሁኔታ)
                   </th>
-                  <th className="px-5 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider bg-gray-50">
-                    Actions
+                  <th className="px-3 py-1.5 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider bg-gray-50/90">
+                    ACTIONS (እርምጃዎች)
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-100">
                 {filteredUsers.map(u => (
-                  <tr key={u._id} className={(!u.isActive ? 'bg-gray-50' : '') + ' hover:bg-orange-50/40 transition-colors'}>
-                    <td className="px-5 py-2.5 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-ethiopian-gold rounded-full flex items-center justify-center text-white font-bold text-sm">
-                          {u.profile?.firstName?.charAt(0) || 'U'}
+                  <tr key={u._id} className={(!u.isActive ? 'bg-gray-50/70' : '') + ' hover:bg-amber-50/40 transition-colors'}>
+                    <td className="px-3 py-1.5 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-[10px] shrink-0 shadow-2xs">
+                          {u.profile?.firstName?.charAt(0) || u.email?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
-                        <div className="ml-3">
-                          <div className="font-semibold text-gray-900 leading-tight">
-                            {u.profile?.firstName} {u.profile?.lastName}
+                        <div className="min-w-0">
+                          <div className="font-bold text-gray-900 leading-tight text-[11px] truncate max-w-[170px]">
+                            {u.profile?.firstName || u.profile?.lastName ? `${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`.trim() : (u.email?.split('@')[0] || 'User')}
                             {u.isFlagged && (
                               <span title="Flagged" className="inline-block ml-1 align-middle">
-                                <svg className="w-3.5 h-3.5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                                <svg className="w-3 h-3 text-red-600 inline" viewBox="0 0 20 20" fill="currentColor">
                                   <path d="M6 3c.667 0 1 .333 1 .333V9l5-2V3c0-.667-.333-1-1-1H6v1z" />
                                   <path d="M4 5v11h1V5H4z" />
                                 </svg>
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-gray-500">{u.email}</div>
+                          <div className="text-[10px] text-gray-500 truncate max-w-[170px] font-mono leading-tight">{u.email}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-2.5 whitespace-nowrap">
-                      <span className={'px-2 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full border ' + getRoleBadge(u.role)}>
-                        {u.role}
-                      </span>
-                      {u.role === 'artisan' && u.verification && (
-                        <span className={'ml-1.5 px-2 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full border ' +
-                          (u.verification.status === 'approved' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200') }>
-                          {u.verification.status}
+                    <td className="px-3 py-1.5 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <span className={'px-1.5 py-0.2 inline-flex text-[9.5px] leading-tight font-bold rounded-full border ' + getRoleBadge(u.role)}>
+                          {u.role}
                         </span>
-                      )}
+                        {u.role === 'artisan' && u.verification && (
+                          <span className={'px-1.5 py-0.2 inline-flex text-[9px] leading-tight font-bold rounded-full border ' +
+                            (u.verification.status === 'approved' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200') }>
+                            {u.verification.status}
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-5 py-2.5 whitespace-nowrap text-sm text-gray-600">
+                    <td className="px-3 py-1.5 whitespace-nowrap text-[10px] text-gray-600 font-mono">
                       {u.profile?.phone || 'N/A'}
                     </td>
-                    <td className="px-5 py-2.5 whitespace-nowrap text-sm text-gray-600 leading-tight">
+                    <td className="px-3 py-1.5 whitespace-nowrap text-[10px] text-gray-600 leading-tight">
                       {u.role === 'artisan' && (
                         <div>
-                          <div className="font-medium text-gray-800">{u.productsCount || 0} prod</div>
-                          <div className="text-xs text-gray-500">{u.ordersCount || 0} ord</div>
+                          <span className="font-bold text-gray-800">{u.productsCount || 0} prod</span>
+                          <span className="text-[9px] text-gray-400 ml-1">({u.ordersCount || 0} ord)</span>
                         </div>
                       )}
                       {u.role === 'customer' && (
-                        <div>{u.ordersCount || 0} orders</div>
+                        <div><span className="font-semibold text-gray-800">{u.ordersCount || 0}</span> orders</div>
+                      )}
+                      {u.role === 'admin' && (
+                        <span className="text-gray-400 text-[9.5px]">Staff</span>
                       )}
                     </td>
-                    <td className="px-5 py-2.5 whitespace-nowrap text-sm text-gray-600 font-medium">
-                      {u.createdAt ? formatDate(u.createdAt) : '—'}
+                    <td className="px-3 py-1.5 whitespace-nowrap text-[10px] text-gray-600 font-mono">
+                      {u.createdAt ? formatOrderDateTime(u.createdAt, currentLanguage).date : '—'}
                     </td>
 
-                    <td className="px-5 py-2.5 whitespace-nowrap">
+                    <td className="px-3 py-1.5 whitespace-nowrap">
                       {u.isActive ? (
-                        <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-green-50 text-green-700 border border-green-200">Active</span>
+                        <span className="px-1.5 py-0.2 inline-flex text-[9px] leading-tight font-bold rounded-full bg-green-50 text-green-700 border border-green-200">Active</span>
                       ) : (
-                        <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-bold rounded-full bg-red-50 text-red-700 border border-red-200">Suspended</span>
+                        <span className="px-1.5 py-0.2 inline-flex text-[9px] leading-tight font-bold rounded-full bg-red-50 text-red-700 border border-red-200">Suspended</span>
                       )}
                     </td>
 
-                    <td className="px-5 py-2.5 whitespace-nowrap text-sm font-medium">
+                    <td className="px-3 py-1.5 whitespace-nowrap text-right text-[10px] font-medium">
                       {u.role === 'admin' ? (
-                        <span className="text-xs text-gray-400">Protected</span>
+                        <span className="text-[9.5px] text-gray-400">Protected</span>
                       ) : (
                         <button
                           onClick={() => openUser(u._id)}
-                          className="bg-gray-100 hover:bg-ethiopian-gold hover:text-white transition-colors text-gray-700 px-3 py-1 rounded shadow-sm text-xs font-semibold"
+                          className="bg-gray-100 hover:bg-amber-600 hover:text-white transition-colors text-gray-700 px-2 py-0.5 rounded shadow-2xs text-[10px] font-bold"
                         >
                           View
                         </button>
@@ -564,8 +540,8 @@ const ManageUsers = () => {
         </div>
         {/* User Detail Modal */}
         {modalOpen && selectedUser && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-[95%] sm:w-11/12 md:w-3/4 lg:w-1/2 p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">User Details</h2>
                 <button onClick={() => setModalOpen(false)} className="text-gray-500 hover:text-gray-800">Close</button>

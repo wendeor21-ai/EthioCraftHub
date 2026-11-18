@@ -1,14 +1,21 @@
 // Helper to build the correct file URL for uploaded documents/images.
-// Derives the server origin from REACT_APP_API_URL (stripping the /api
-// suffix) so that it always matches the axios baseURL used elsewhere.
-// Falls back to localhost:5000 — the default PORT in server.js.
 export function getFileUrl(filePath) {
-  if (!filePath) return null;
-  // Already an absolute URL — return as-is
-  if (/^https?:\/\//i.test(filePath)) return filePath;
+  if (!filePath) return '';
+  let path = String(filePath).trim();
 
-  const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
-  // Strip trailing /api (or /api/) to get the bare origin
-  const baseUrl = apiUrl.replace(/\/api\/?$/, "");
-  return `${baseUrl}${filePath.startsWith("/") ? filePath : `/${filePath}`}`;
+  // Strip localhost or 127.0.0.1
+  if (/^https?:\/\/localhost(:\d+)?/i.test(path)) {
+    path = path.replace(/^https?:\/\/localhost(:\d+)?/i, '');
+  }
+  if (/^https?:\/\/127\.0\.0\.1(:\d+)?/i.test(path)) {
+    path = path.replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/i, '');
+  }
+
+  // If it's already an external HTTPS/HTTP URL (e.g. Cloudinary, Unsplash, S3)
+  if (/^https?:\/\//i.test(path)) return path;
+
+  // Relative path (like /uploads/filename.png)
+  return path.startsWith('/') ? path : `/${path}`;
 }
+
+export default getFileUrl;

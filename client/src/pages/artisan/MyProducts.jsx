@@ -14,7 +14,7 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 import { getImageUrl } from '../../utils/imageUtils';
 import { Package, Edit, Trash2, Eye, PlusCircle, Search } from 'lucide-react';
 
-const MyProducts = () => {
+const MyProducts = ({ insideDashboard = false, onSelectTab }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -157,26 +157,28 @@ const MyProducts = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
+    <div className={insideDashboard ? "pb-8" : "min-h-screen bg-white py-8"}>
+      <div className={insideDashboard ? "w-full" : "container mx-auto px-4 max-w-7xl"}>
         {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/artisan/dashboard')}
-            className="text-ethiopian-gold hover:text-ethiopian-earth mb-4 flex items-center"
-          >
-            ← Back to Dashboard
-          </button>
-          <div className="flex justify-between items-center">
+        <div className="mb-6">
+          {!insideDashboard && (
+            <button
+              onClick={() => navigate('/artisan/dashboard')}
+              className="text-ethiopian-gold hover:text-ethiopian-earth mb-3 flex items-center text-sm font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+          )}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">My Products</h1>
-              <p className="text-gray-600 mt-2">Manage your product catalog</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">My Products</h1>
+              <p className="text-gray-500 text-xs sm:text-sm mt-0.5">Manage your product catalog</p>
             </div>
             <button
-              onClick={() => navigate('/artisan/add-product')}
-              className="bg-ethiopian-gold text-white px-6 py-3 rounded-lg hover:bg-ethiopian-earth transition-colors flex items-center space-x-2 shadow-lg"
+              onClick={() => (onSelectTab ? onSelectTab('add-product') : navigate('/artisan/add-product'))}
+              className="bg-ethiopian-gold text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl hover:bg-ethiopian-earth transition-colors flex items-center justify-center space-x-2 shadow-md text-sm font-semibold active:scale-95"
             >
-              <PlusCircle className="w-5 h-5" />
+              <PlusCircle className="w-4 h-4" />
               <span>Add New Product</span>
             </button>
           </div>

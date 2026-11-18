@@ -20,28 +20,47 @@ export const SoundProvider = ({ children }) => {
   const alertSound = useRef(null);
 
   useEffect(() => {
-    // Initialize audio objects
-    orderSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-    alertSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
-
-    // Preload
-    orderSound.current.load();
-    alertSound.current.load();
-
     localStorage.setItem('artisan_sound_muted', JSON.stringify(isMuted));
   }, [isMuted]);
 
+  // Lazy instantiate audio objects only when needed
+  const isArtisanOrAdminPage = () => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname || '';
+    return path.startsWith('/artisan') || path.startsWith('/admin');
+  };
+
+  const getOrderSound = () => {
+    if (!orderSound.current) {
+      orderSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+    }
+    return orderSound.current;
+  };
+
+  const getAlertSound = () => {
+    if (!alertSound.current) {
+      alertSound.current = new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3');
+    }
+    return alertSound.current;
+  };
+
   const playOrderSound = () => {
-    if (!isMuted && orderSound.current) {
-      orderSound.current.currentTime = 0;
-      orderSound.current.play().catch(err => console.log('Audio play blocked:', err));
+    if (!isMuted && isArtisanOrAdminPage()) {
+      try {
+        const audio = getOrderSound();
+        audio.currentTime = 0;
+        audio.play().catch(err => console.log('Audio play blocked:', err));
+      } catch (e) {}
     }
   };
 
   const playAlertSound = () => {
-    if (!isMuted && alertSound.current) {
-      alertSound.current.currentTime = 0;
-      alertSound.current.play().catch(err => console.log('Audio play blocked:', err));
+    if (!isMuted && isArtisanOrAdminPage()) {
+      try {
+        const audio = getAlertSound();
+        audio.currentTime = 0;
+        audio.play().catch(err => console.log('Audio play blocked:', err));
+      } catch (e) {}
     }
   };
 

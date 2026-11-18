@@ -11,25 +11,46 @@ import api from '../../utils/api';
 import {
   ShieldCheck, User, Briefcase, Image as ImageIcon, Video,
   CreditCard, CheckCircle, AlertCircle, Upload, ChevronRight,
-  ChevronLeft, Info, FileText, PlusCircle
+  ChevronLeft, Info, FileText, PlusCircle, Clock, RefreshCw,
+  Lock, ExternalLink
 } from 'lucide-react';
 
-const ArtisanVerification = () => {
-  const { user, refreshUser, loading: authLoading } = useAuth();
+const ArtisanVerification = ({ insideDashboard = false, onSelectTab }) => {
+  const { user, updateUser, refreshUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Guidelines gate — show modal until artisan has accepted
-  const [guidelinesAccepted, setGuidelinesAccepted] = useState(
-    () => user?.hasAcceptedGuidelines === true
-  );
+  // If an admin navigates here, redirect them to admin verification portal
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin/verifications', { replace: true });
+    }
+  }, [user?.role, navigate]);
+
+  // Guidelines gate — show modal until artisan has accepted (first time only)
+  const [guidelinesAccepted, setGuidelinesAccepted] = useState(() => {
+    if (user?.hasAcceptedGuidelines === true) return true;
+    if (user?.verification?.status === 'approved') return true;
+    const uid = user?.id || user?._id || user?.email;
+    if (uid && localStorage.getItem(`artisan_guidelines_accepted_${uid}`)) return true;
+    if (localStorage.getItem('artisan_guidelines_accepted')) return true;
+    return false;
+  });
 
   // Sync once user loads from auth context
   useEffect(() => {
-    if (user?.hasAcceptedGuidelines) setGuidelinesAccepted(true);
-  }, [user?.hasAcceptedGuidelines]);
+    const uid = user?.id || user?._id || user?.email;
+    if (
+      user?.hasAcceptedGuidelines === true ||
+      user?.verification?.status === 'approved' ||
+      (uid && localStorage.getItem(`artisan_guidelines_accepted_${uid}`)) ||
+      localStorage.getItem('artisan_guidelines_accepted')
+    ) {
+      setGuidelinesAccepted(true);
+    }
+  }, [user]);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -68,33 +89,89 @@ const ArtisanVerification = () => {
     workVideos: [],
   });
 
-  // Derive status — default to 'none' for brand-new artisans with no verification object
-  const currentStatus = (user?.verification?.status || 'none').toLowerCase().trim();
+  // Derive status cleanly and exhaustively
+  const currentStatus = (user?.verification?.status || 'not_submitted').toLowerCase().trim();
   const feedback = user?.verification?.feedback || '';
 
-  // Show the multi-step form for new artisans (none) or rejected ones
-  const showForm = currentStatus === 'none' || currentStatus === 'rejected' || currentStatus === 'not_submitted';
-  // Show status banner for submitted applications
-  const showPending = currentStatus === 'pending' || currentStatus === 'under_review';
-  // Show approved banner
-  const showApproved = currentStatus === 'approved';
+  // 1. Approved: status is approved/verified AND isVerified flag is true
+  const isApproved = (currentStatus === 'approved' || currentStatus === 'verified') && user?.isVerified === true;
+  // 2. Pending / Under review by admin
+  const showPending = !isApproved && (currentStatus === 'pending' || currentStatus === 'under_review');
+  // 3. Rejected by admin
+  const isRejected = !isApproved && !showPending && currentStatus === 'rejected';
+  // 4. Not submitted / new artisan: ANY artisan who is not approved, not pending, and not rejected
+  const isNotSubmitted = !isApproved && !showPending && !isRejected;
+
+  // The multi-step form is ALWAYS automatically visible for artisans who haven't submitted or who were rejected
+  const showForm = isNotSubmitted || isRejected;
+  const [refreshing, setRefreshing] = useState(false);
+
+  // 24-Hour countdown calculation for pending status (counting down from 24h to 0s)
+  const [timeLeft, setTimeLeft] = useState({ hours: 24, minutes: 0, seconds: 0, totalSeconds: 86400 });
+
+  useEffect(() => {
+    if (!showPending) return;
+
+    const updateCountdown = () => {
+      const submittedAt = user?.verification?.submittedAt
+        ? new Date(user.verification.submittedAt).getTime()
+        : Date.now();
+      const targetTime = submittedAt + (24 * 60 * 60 * 1000);
+      const diffMs = targetTime - Date.now();
+
+      if (diffMs <= 0) {
+        setTimeLeft({ hours: 0, minutes: 0, seconds: 0, totalSeconds: 0 });
+        return;
+      }
+
+      const totalSec = Math.floor(diffMs / 1000);
+      const hours = Math.floor(totalSec / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+
+      setTimeLeft({ hours, minutes, seconds, totalSeconds: totalSec });
+    };
+
+    updateCountdown();
+    const timerId = setInterval(updateCountdown, 1000);
+    return () => clearInterval(timerId);
+  }, [showPending, user?.verification?.submittedAt]);
+
+  const handleRefreshStatus = async () => {
+    setRefreshing(true);
+    try {
+      const refreshed = await refreshUser();
+      const st = refreshed?.verification?.status?.toLowerCase?.() || '';
+      if (st === 'approved' || refreshed?.isVerified) {
+        toast.success('እንኳን ደስ አለዎት! መለያዎ ጸድቋል (Verification Approved)');
+      } else if (st === 'rejected') {
+        toast.error('የማረጋገጫ ጥያቄዎ ውድቅ ተደርጓል (Verification Rejected)');
+      } else {
+        toast('አሁንም በግምገማ ላይ ነው (Still under review)', { icon: '⏳' });
+      }
+    } catch {
+      toast.error('ሁኔታውን ማደስ አልተሳካም');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Pre-fill form with existing user profile data
   useEffect(() => {
     if (user) {
-      setFormData({
-        firstName: user.profile?.firstName || '',
-        lastName: user.profile?.lastName || '',
-        phone: user.profile?.phone || '',
-        address: user.profile?.address?.street || '',
-        businessName: user.profile?.businessInfo?.businessName || '',
-        tinNumber: user.profile?.businessInfo?.tinNumber || '',
-        tradeLicenseNumber: user.profile?.businessInfo?.tradeLicenseNumber || '',
-        bankName: user.bankDetails?.bankName || '',
-        accountNumber: user.bankDetails?.accountNumber || '',
-        telebirrNumber: user.bankDetails?.telebirrNumber || '',
-        termsAccepted: false,
-      });
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.profile?.firstName || prev.firstName || '',
+        lastName: user.profile?.lastName || prev.lastName || '',
+        phone: user.profile?.phone || prev.phone || '',
+        address: (typeof user.profile?.address === 'string' ? user.profile.address : user.profile?.address?.street) || prev.address || '',
+        businessName: user.profile?.businessInfo?.businessName || prev.businessName || '',
+        tinNumber: user.profile?.businessInfo?.tinNumber || prev.tinNumber || '',
+        tradeLicenseNumber: user.profile?.businessInfo?.tradeLicenseNumber || prev.tradeLicenseNumber || '',
+        bankName: user.bankDetails?.bankName || prev.bankName || '',
+        accountNumber: user.bankDetails?.accountNumber || prev.accountNumber || '',
+        telebirrNumber: user.bankDetails?.telebirrNumber || prev.telebirrNumber || '',
+      }));
     }
   }, [user]);
 
@@ -180,6 +257,20 @@ const ArtisanVerification = () => {
 
     if (!formData.termsAccepted) { toast.error('Please accept the terms and conditions'); return; }
 
+    // Check file sizes before uploading to give immediate friendly feedback
+    const maxFileSize = 50 * 1024 * 1024; // 50MB
+    const allFiles = [
+      files.identity, files.tradeLicense, files.tinCertificate,
+      ...files.productPhotos, ...files.workVideos
+    ].filter(Boolean);
+
+    for (const f of allFiles) {
+      if (f.size > maxFileSize) {
+        toast.error(`ፋይሉ በጣም ትልቅ ነው (${f.name})። እባክዎ ከ50MB በታች የሆነ ቪዲዮ ወይም ፎቶ ያያይዙ።`);
+        return;
+      }
+    }
+
     setSubmitting(true);
     try {
       const data = new FormData();
@@ -189,11 +280,56 @@ const ArtisanVerification = () => {
       if (files.tinCertificate) data.append('tinCertificate', files.tinCertificate);
       files.productPhotos.forEach(file => data.append('productPhotos', file));
       files.workVideos.forEach(file => data.append('workVideos', file));
-      await api.post('/artisan/verify-submit', data, { headers: { 'Content-Type': 'multipart/form-data' } });
-      toast.success('Application submitted! Under review within 24-48 hours.');
-      await refreshUser();
+
+      // Submit verification documents
+      const response = await api.post('/artisan/verify-submit', data, {
+        headers: {
+          'Accept': 'application/json',
+        },
+        timeout: 180000, // 3 minutes for media uploads over mobile networks
+      });
+
+      const updatedVerification = response.data?.verification || {
+        status: 'pending',
+        submittedAt: new Date().toISOString()
+      };
+
+      const updatedUser = response.data?.user || {
+        ...user,
+        verification: updatedVerification,
+        profile: {
+          ...user?.profile,
+          businessInfo: {
+            ...user?.profile?.businessInfo,
+            businessName: formData.businessName,
+            tinNumber: formData.tinNumber,
+            tradeLicenseNumber: formData.tradeLicenseNumber,
+          }
+        },
+        bankDetails: {
+          ...user?.bankDetails,
+          bankName: formData.bankName,
+          accountNumber: formData.accountNumber,
+          telebirrNumber: formData.telebirrNumber,
+        }
+      };
+
+      if (updateUser) {
+        updateUser(updatedUser);
+      }
+      try {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      } catch (e) { }
+
+      toast.success('የማረጋገጫ ሰነዶችዎ ገብተዋል! የ24 ሰዓት የቆጠራ ግምገማ ተጀምሯል።');
+
+      try {
+        await refreshUser();
+      } catch (e) { }
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Submission failed. Please try again.');
+      console.error('❌ Verification submit error:', err);
+      const errMsg = err.response?.data?.message || err.message || 'Submission failed. Please try again.';
+      toast.error(errMsg);
     } finally {
       setSubmitting(false);
     }
@@ -204,10 +340,9 @@ const ArtisanVerification = () => {
     <div className="flex items-center justify-between mb-8 max-w-2xl mx-auto">
       {[1, 2, 3, 4].map(step => (
         <div key={step} className="flex flex-col items-center flex-1">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-            currentStep === step ? 'bg-ethiopian-gold text-white shadow-lg ring-4 ring-orange-100' :
-            currentStep > step ? 'bg-green-500 text-white' : 'bg-white text-gray-400 border-2 border-gray-200'
-          }`}>
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${currentStep === step ? 'bg-ethiopian-gold text-white shadow-lg ring-4 ring-orange-100' :
+              currentStep > step ? 'bg-green-500 text-white' : 'bg-white text-gray-400 border-2 border-gray-200'
+            }`}>
             {currentStep > step ? <CheckCircle className="w-6 h-6" /> : step}
           </div>
           <span className={`text-[10px] uppercase font-bold mt-2 ${currentStep === step ? 'text-ethiopian-gold' : 'text-gray-400'}`}>
@@ -235,83 +370,194 @@ const ArtisanVerification = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Guidelines gate — blocks the page until accepted */}
+    <div className={insideDashboard ? "w-full" : "flex min-h-screen bg-gray-50"}>
+      {/* Guidelines Modal — opens FIRST for new artisans until read and accepted */}
       {!guidelinesAccepted && (
         <GuidelinesModal
           onAccepted={async () => {
-            await refreshUser();
             setGuidelinesAccepted(true);
+            const uid = user?.id || user?._id || user?.email;
+            if (uid) localStorage.setItem(`artisan_guidelines_accepted_${uid}`, 'true');
+            localStorage.setItem('artisan_guidelines_accepted', 'true');
+            try {
+              await refreshUser();
+            } catch (e) { }
+            toast.success('መመሪያዎቹን ተቀብለዋል። አሁን የማረጋገጫ ሰነዶችዎን ማስገባት ይችላሉ!');
+          }}
+          onClose={() => {
+            setGuidelinesAccepted(true);
+            const uid = user?.id || user?._id || user?.email;
+            if (uid) localStorage.setItem(`artisan_guidelines_accepted_${uid}`, 'true');
+            localStorage.setItem('artisan_guidelines_accepted', 'true');
           }}
         />
       )}
-      <Sidebar onCollapsedChange={setIsSidebarCollapsed} />
-      <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
+
+      {!insideDashboard && <Sidebar onCollapsedChange={setIsSidebarCollapsed} />}
+      <main className={insideDashboard ? "w-full pb-8" : "flex-1 p-4 lg:p-8 overflow-x-hidden"}>
         <div className="max-w-4xl mx-auto">
 
           {/* ── Page Header ── */}
           <div className="mb-8 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-black text-gray-900 tracking-tight">Artisan Verification</h1>
-              <p className="text-gray-500 text-sm">Legalize your business to start selling on EthioCraft Global.</p>
+              <p className="text-gray-500 text-sm">የአርቲሳን ማረጋገጫ • Legalize your business to start selling on EthioCraft Global.</p>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-white rounded-full border border-gray-200 shadow-sm text-xs font-bold text-gray-500">
-              <ShieldCheck className="w-4 h-4 text-ethiopian-gold" />
+              <ShieldCheck className="w-4 h-4 text-amber-500" />
               SECURE GATEWAY
             </div>
           </div>
 
           {/* ── Approved Banner ── */}
-          {showApproved && (
-            <div className="mb-8 p-6 rounded-3xl border bg-green-50 border-green-200 flex items-start gap-5 shadow-sm">
-              <div className="p-3 rounded-2xl bg-green-100 text-green-600">
-                <ShieldCheck className="w-6 h-6" />
+          {isApproved && (
+            <div className="mb-8 p-6 sm:p-8 rounded-3xl border bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-md">
+              <div className="flex items-start gap-4 sm:gap-5">
+                <div className="p-3 sm:p-4 rounded-2xl bg-green-100 text-green-700 shrink-0 shadow-sm">
+                  <ShieldCheck className="w-8 h-8" />
+                </div>
+                <div className="flex-1">
+                  <span className="inline-block px-3 py-1 bg-green-200 text-green-900 rounded-full text-xs font-black uppercase tracking-wider mb-2">
+                    ✅ ማረጋገጫው ጸድቋል • Status: Approved
+                  </span>
+                  <h3 className="font-black text-gray-900 text-lg sm:text-xl mb-1">
+                    እንኳን ደስ አለዎት! መለያዎ ሙሉ በሙሉ ጸድቋል 🎉
+                  </h3>
+                  <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                    የአስተዳዳሪ ማረጋገጫ ተጠናቋል፤ የአርቲሳን መመሪያዎችንም ተቀብለዋል። አሁን ሙሉውን የአርቲሳን ዳሽቦርድ በመጠቀም ምርቶችዎን ማከል፣ ማስተዳደር እና መሸጥ ይችላሉ።
+                  </p>
+                  <button
+                    onClick={() => (onSelectTab ? onSelectTab('dashboard') : navigate('/artisan/dashboard'))}
+                    className="mt-5 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl font-black text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:scale-95 transition-all flex items-center gap-2"
+                  >
+                    <span>ወደ አርቲሳን ዳሽቦርድ ይሂዱ (Go to Dashboard)</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-black text-gray-900 uppercase tracking-tight text-base mb-1">Status: APPROVED</h3>
-                <p className="text-sm text-gray-700 font-medium">Your account is fully verified. You can now list and manage your products.</p>
-                <button onClick={() => navigate('/artisan/dashboard')} className="mt-4 px-6 py-2 bg-green-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-green-700 transition-all">
-                  Go to Dashboard
+            </div>
+          )}
+
+          {/* ── Pending / Under Review Banner with 24-Hour Countdown Timer ── */}
+          {showPending && (
+            <div className="mb-8 p-6 sm:p-8 rounded-3xl border bg-gradient-to-br from-amber-50 via-orange-50 to-amber-100/60 border-amber-300 shadow-lg">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-amber-200/80">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-2xl bg-amber-500 text-white shadow-md shrink-0">
+                    <Clock className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="inline-block px-3 py-0.5 bg-amber-200 text-amber-900 rounded-full text-[11px] font-black uppercase tracking-wider mb-1">
+                      በግምገማ ላይ • Pending Admin Approval
+                    </span>
+                    <h3 className="font-black text-gray-900 text-lg sm:text-xl">
+                      የማረጋገጫ ሰነዶችዎ በአስተዳዳሪው እየተገመገሙ ነው
+                    </h3>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleRefreshStatus}
+                  disabled={refreshing}
+                  className="self-start md:self-auto flex items-center gap-2 px-4 py-2 bg-white border border-amber-300 hover:bg-amber-100/70 text-amber-900 rounded-xl text-xs font-bold shadow-sm transition-all disabled:opacity-50"
+                  title="Check latest status"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                  <span>{refreshing ? 'በማደስ ላይ...' : 'ሁኔታውን አድስ (Refresh)'}</span>
                 </button>
               </div>
-            </div>
-          )}
 
-          {/* ── Pending / Under Review Banner ── */}
-          {showPending && (
-            <div className="mb-8 p-6 rounded-3xl border bg-[#FFFBEB] border-amber-200 flex items-start gap-5 shadow-sm">
-              <div className="p-3 rounded-2xl bg-amber-100 text-amber-600">
-                <Info className="w-6 h-6" />
+              {/* 24-Hour Countdown Clock */}
+              <div className="my-6">
+                <p className="text-center text-xs font-bold text-amber-800 uppercase tracking-widest mb-3">
+                  የቀረው ግምገማ ጊዜ (Countdown Timer — 24 Hour to 0s)
+                </p>
+                <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-sm mx-auto">
+                  <div className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 rounded-2xl p-3 sm:p-4 text-center shadow-md">
+                    <span className="block text-2xl sm:text-4xl font-black text-amber-900 font-mono">
+                      {String(timeLeft.hours).padStart(2, '0')}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 uppercase tracking-wider">ሰዓት / Hours</span>
+                  </div>
+                  <div className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 rounded-2xl p-3 sm:p-4 text-center shadow-md">
+                    <span className="block text-2xl sm:text-4xl font-black text-amber-900 font-mono">
+                      {String(timeLeft.minutes).padStart(2, '0')}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 uppercase tracking-wider">ደቂቃ / Mins</span>
+                  </div>
+                  <div className="bg-white/90 backdrop-blur-sm border-2 border-amber-300 rounded-2xl p-3 sm:p-4 text-center shadow-md">
+                    <span className="block text-2xl sm:text-4xl font-black text-amber-900 font-mono">
+                      {String(timeLeft.seconds).padStart(2, '0')}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 uppercase tracking-wider">ሰከንድ / Secs</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-black text-gray-900 uppercase tracking-tight text-base mb-1">
-                  Status: {currentStatus.replace('_', ' ').toUpperCase()}
-                </h3>
-                <p className="text-sm text-gray-700 font-medium leading-relaxed">
-                  Under Review: Our administration team is reviewing your documents. Please allow 24–48 business hours for a decision.
+
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-amber-200 text-xs text-amber-950 space-y-2">
+                <p className="font-semibold flex items-center gap-2">
+                  <Info className="w-4 h-4 text-amber-600 shrink-0" />
+                  የማረጋገጫ ሰነዶችዎ በተሳካ ሁኔታ ተልከዋል። የአስተዳዳሪ ቡድኑ ሰነዶችዎን ገምግሞ በ24 ሰዓት ውስጥ መለያዎን ያጸድቃል ወይም አስተያየት ይሰጥዎታል።
+                </p>
+                <p className="text-[11px] text-amber-800">
+                  ማስታወሻ፡ አስተዳዳሪው መለያዎን እስኪያጸድቅ ድረስ ሌሎች የዳሽቦርድ ገጾች ለደህንነት ሲባል ተቆልፈው ይቆያሉ።
                 </p>
               </div>
             </div>
           )}
 
-          {/* ── Rejected Banner (shown above the re-submit form) ── */}
-          {currentStatus === 'rejected' && (
-            <div className="mb-8 p-6 rounded-3xl border bg-red-50 border-red-200 flex items-start gap-5 shadow-sm">
-              <div className="p-3 rounded-2xl bg-red-100 text-red-600">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-black text-gray-900 uppercase tracking-tight text-base mb-1">Status: REJECTED — Action Required</h3>
-                <p className="text-sm text-gray-700 font-medium leading-relaxed">
-                  Your application was rejected. {feedback ? `Feedback: "${feedback}".` : ''} Please update your documents below and resubmit.
-                </p>
+          {/* ── Rejected Banner (Admin Reject with Comment) ── */}
+          {isRejected && (
+            <div className="mb-8 p-6 sm:p-8 rounded-3xl border bg-gradient-to-br from-red-50 to-rose-50 border-red-200 shadow-md">
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-2xl bg-red-100 text-red-600 shrink-0">
+                  <AlertCircle className="w-7 h-7" />
+                </div>
+                <div className="flex-1">
+                  <span className="inline-block px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-black uppercase tracking-wider mb-2">
+                    ❌ ማረጋገጫው ውድቅ ተደርጓል • Status: Rejected
+                  </span>
+                  <h3 className="font-black text-gray-900 text-lg mb-2">
+                    የማረጋገጫ ጥያቄዎ ውድቅ ተደርጓል — ማስተካከያ ያስፈልጋል
+                  </h3>
+
+                  {/* Admin feedback box */}
+                  <div className="p-4 bg-white rounded-2xl border border-red-200 mb-4 shadow-sm">
+                    <p className="text-[11px] font-black uppercase tracking-widest text-red-600 mb-1">
+                      የአስተዳዳሪ አስተያየት (Admin Feedback / Reason):
+                    </p>
+                    <p className="text-sm font-semibold text-gray-800 italic">
+                      "{feedback || 'የቀረቡት ሰነዶች አልተሟሉም ወይም ግልጽ አይደሉም። እባክዎ እንደገና በትክክል ሞልተው ያስገቡ።'}"
+                    </p>
+                  </div>
+
+                  <p className="text-xs text-red-700 font-bold">
+                    እባክዎ ከታች የቀረበውን ቅጽ በመጠቀም የተስተካከሉ ሰነዶችን እንደገና ሞልተው ያስገቡ።
+                  </p>
+                </div>
               </div>
             </div>
           )}
-          {/* -- Multi-Step Verification Form -- */}
+
+          {/* ── Multi-Step Verification Form (Opens Automatically for new or rejected artisans) ── */}
           {showForm && (
             <div className="bg-white/90 backdrop-blur-md rounded-[2rem] shadow-2xl shadow-gray-200/50 border border-white overflow-hidden">
-              <div className="p-10">
+              <div className="p-6 sm:p-10">
+                <div className="pb-6 mb-6 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-amber-100 rounded-xl text-amber-800">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-black text-gray-900">
+                        የማረጋገጫ ሰነዶች ማስገቢያ ቅጽ (Verification Application)
+                      </h2>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        እባክዎ ሁሉንም መረጃዎች በትክክል ይሙሉ እና ህጋዊ ሰነዶችን ያያይዙ
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 <StepIndicator />
                 <form onSubmit={handleSubmit} className="space-y-8">
 
@@ -550,31 +796,31 @@ const ArtisanVerification = () => {
                         </div>
                         <label className="flex items-start gap-4 cursor-pointer group bg-white p-5 rounded-2xl border border-gray-100 hover:border-ethiopian-gold transition-all">
                           <input type="checkbox" name="termsAccepted" checked={formData.termsAccepted} onChange={handleInputChange} className="mt-1 w-6 h-6 rounded-lg border-gray-200 text-ethiopian-gold focus:ring-ethiopian-gold transition-all" />
-                          <span className="text-xs font-bold text-gray-600 leading-relaxed">
-                            I legally certify that all provided documents are authentic. I agree to EthioCraft Global's Terms of Service and the 5% flat commission policy on all successful sales.
+                          <span className="text-xs font-bold text-gray-700 leading-relaxed">
+                            የቀረቡት ሰነዶች በሙሉ ትክክለኛና ህጋዊ መሆናቸውን አረጋግጣለሁ። የኢትዮ-ክራፍት ግሎባል የአጠቃቀም ደንቦችን እና የ5% የኮሚሽን ፖሊሲን ተቀብያለሁ። (I legally certify that all provided documents are authentic. I agree to EthioCraft Global's Terms of Service and 5% flat commission policy.)
                           </span>
                         </label>
                         <button
                           type="submit"
                           disabled={submitting || !files.tradeLicense || !files.identity}
-                          className="w-full mt-10 bg-gradient-to-r from-gray-900 to-gray-800 text-white py-5 rounded-[1.5rem] font-black uppercase tracking-[0.2em] shadow-xl hover:-translate-y-1 active:scale-[0.98] transition-all disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed"
+                          className="w-full mt-10 bg-gradient-to-r from-amber-600 via-amber-700 to-yellow-600 text-white py-5 rounded-[1.5rem] font-black uppercase tracking-[0.15em] shadow-xl hover:-translate-y-1 active:scale-[0.98] transition-all disabled:opacity-50 disabled:translate-y-0 disabled:cursor-not-allowed cursor-pointer border border-amber-500/50"
                         >
                           {submitting ? (
                             <div className="flex items-center justify-center gap-3">
-                              <LoadingSpinner size="small" light /> Processing...
+                              <LoadingSpinner size="small" light /> <span>በማስኬድ ላይ... (Processing...)</span>
                             </div>
                           ) : !files.identity ? (
-                            'Identity Document Required'
+                            'የመታወቂያ ሰነድ ያስፈልጋል (Identity Document Required)'
                           ) : !files.tradeLicense ? (
-                            'Trade License Required to Submit'
+                            'የንግድ ፈቃድ ያስፈልጋል (Trade License Required)'
                           ) : (
-                            'Submit Secure Application'
+                            'ማመልከቻውን በአስተማማኝ ሁኔታ አስገባ — SUBMIT APPLICATION'
                           )}
                         </button>
                         {(!files.identity || !files.tradeLicense) && (
-                          <p className="mt-3 text-[10px] text-red-500 font-bold text-center flex items-center justify-center gap-1">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            {!files.identity ? 'Upload your Identity Document (Step 1) to enable submission.' : 'Upload your Trade License (Step 3) to enable submission.'}
+                          <p className="mt-3 text-xs text-amber-700 font-bold text-center flex items-center justify-center gap-1 bg-amber-50 py-2 px-4 rounded-xl border border-amber-200">
+                            <AlertCircle className="w-4 h-4 text-amber-600" />
+                            {!files.identity ? 'ማመልከቻውን ለማስገባት እባክዎ መታወቂያዎን ያያይዙ (ደረጃ 1)።' : 'ማመልከቻውን ለማስገባት እባክዎ የንግድ ፈቃድዎን ያያይዙ (ደረጃ 3)።'}
                           </p>
                         )}
                       </div>

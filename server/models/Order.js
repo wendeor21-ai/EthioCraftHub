@@ -252,26 +252,24 @@ Order.getByArtisan = async function (artisanId, { page = 1, limit = 10, status }
 
   const { prisma } = require('../lib/prisma');
 
-  // Step 1: find order IDs where items JSON array contains { artisan: aid }
-  // Uses PostgreSQL JSONB containment operator @> for reliable matching
-  let byItemsIds = [];
+  // Step 1: find order IDs where this artisan is primary artisan or in items
+  let matchingOrderIds = [];
   try {
     const rawResults = await prisma.$queryRawUnsafe(
-      `SELECT id FROM orders WHERE JSON_CONTAINS(items, ?) OR JSON_CONTAINS(items, ?)`,
-      JSON.stringify({ artisan: aid }),
-      JSON.stringify({ artisan: { _id: aid } })
+      `SELECT id FROM orders WHERE artisanId = ? OR items LIKE ? OR items LIKE ? OR items LIKE ?`,
+      aid,
+      `%"artisan":"${aid}"%`,
+      `%"artisan":{"_id":"${aid}"%`,
+      `%"artisanId":"${aid}"%`
     );
-    byItemsIds = (rawResults || []).map(r => String(r.id));
+    matchingOrderIds = (rawResults || []).map(r => String(r.id));
   } catch (e) {
-    console.warn('[getByArtisan] Raw JSON containment query failed:', e.message);
+    console.warn('[getByArtisan] Raw lookup failed:', e.message);
   }
 
-  // Step 2: Build a unified OR clause: artisanId FK match OR items-json match
-  const orClauses = [{ artisanId: aid }];
-  if (byItemsIds.length > 0) {
-    orClauses.push({ id: { in: byItemsIds } });
-  }
-  const baseWhere = { OR: orClauses, ...statusFilterWhere };
+  const baseWhere = matchingOrderIds.length > 0
+    ? { id: { in: matchingOrderIds }, ...statusFilterWhere }
+    : { artisanId: aid, ...statusFilterWhere };
 
   // Step 3: Count total + fetch page in parallel
   const [total, page_results_raw] = await Promise.all([

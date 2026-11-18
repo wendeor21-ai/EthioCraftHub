@@ -20,6 +20,8 @@ const upload = multer({ storage });
 // Artisan routes
 router.get('/dashboard', authenticate, authorize('artisan'), earningsController.getDashboard);
 router.get('/transactions', authenticate, authorize('artisan'), earningsController.getTransactions);
+router.delete('/transactions/:id', authenticate, authorize('artisan'), earningsController.deleteTransaction);
+router.post('/transactions/delete-batch', authenticate, authorize('artisan'), earningsController.deleteTransactionsBatch);
 router.get('/withdrawals', authenticate, authorize('artisan'), earningsController.getWithdrawals);
 router.post('/withdraw', authenticate, authorize('artisan'), earningsController.createWithdrawal);
 router.get('/insights', authenticate, authorize('artisan'), earningsController.getInsights);

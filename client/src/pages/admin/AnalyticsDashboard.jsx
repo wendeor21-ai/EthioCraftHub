@@ -203,41 +203,41 @@ const AnalyticsDashboard = () => {
         </div>
 
         {/* Overview cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-            <p className="text-2xl font-bold text-gray-900">{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(data.overview?.totalRevenue||0)}</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5 mb-4">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3">
+            <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Total Revenue</p>
+            <p className="text-base sm:text-xl font-bold text-gray-900 mt-0.5">{new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(data.overview?.totalRevenue||0)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <p className="text-sm font-medium text-gray-600">Total Orders</p>
-            <p className="text-2xl font-bold text-gray-900">{data.overview?.totalOrders||0}</p>
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3">
+            <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Total Orders</p>
+            <p className="text-base sm:text-xl font-bold text-gray-900 mt-0.5">{data.overview?.totalOrders||0}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <p className="text-sm font-medium text-gray-600">Total Visits</p>
-            <p className="text-2xl font-bold text-gray-900">{data.traffic?.visits||0}</p>
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3">
+            <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Total Visits</p>
+            <p className="text-base sm:text-xl font-bold text-gray-900 mt-0.5">{data.traffic?.visits||0}</p>
           </div>
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
-            <p className="text-2xl font-bold text-gray-900">{(data.traffic?.conversionRate||0).toFixed(2)}%</p>
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-2.5 sm:p-3">
+            <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Conversion Rate</p>
+            <p className="text-base sm:text-xl font-bold text-gray-900 mt-0.5">{(data.traffic?.conversionRate||0).toFixed(2)}%</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Sales Trend</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-3 sm:p-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2">Sales Trend</h3>
             <Line data={salesChart} />
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">New Users</h3>
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-3 sm:p-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2">New Users</h3>
             <Bar data={usersChart} />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Top Products</h3>
-            <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-4">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-100 p-3 sm:p-4">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2">Top Products</h3>
+            <div className="space-y-2">
               {(data.topProducts||[]).map((p,idx)=> (
                 <div key={idx} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">

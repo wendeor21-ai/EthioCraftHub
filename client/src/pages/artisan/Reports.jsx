@@ -8,12 +8,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { 
-  FileText, 
-  Download, 
-  Calendar, 
-  TrendingUp, 
-  Package, 
+import {
+  FileText,
+  Download,
+  Calendar,
+  TrendingUp,
+  Package,
   DollarSign,
   Users,
   PieChart as PieChartIcon,
@@ -49,7 +49,7 @@ ChartJS.register(
   LineElement
 );
 
-const Reports = () => {
+const Reports = ({ insideDashboard = false, onSelectTab }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -174,28 +174,28 @@ const Reports = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    
+
     // Add logo/header
     doc.setFontSize(20);
     doc.setTextColor(217, 119, 6); // ethiopian-gold
     doc.text('EthioCraft Global', 14, 20);
-    
+
     doc.setFontSize(16);
     doc.setTextColor(0, 0, 0);
     doc.text('Sales & Performance Report', 14, 30);
-    
+
     // Report details
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
     doc.text(`Artisan: ${user?.profile?.firstName} ${user?.profile?.lastName}`, 14, 40);
     doc.text(`Period: ${new Date(dateRange.startDate).toLocaleDateString()} - ${new Date(dateRange.endDate).toLocaleDateString()}`, 14, 46);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 52);
-    
+
     // Summary section
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
     doc.text('Summary', 14, 65);
-    
+
     const summaryData = [
       ['Total Revenue', `${reportData.summary.totalRevenue.toFixed(2)} ETB`],
       ['Platform Fees (15%)', `${reportData.summary.platformFees.toFixed(2)} ETB`],
@@ -204,7 +204,7 @@ const Reports = () => {
       ['Products Sold', reportData.summary.totalProducts.toString()],
       ['Average Order Value', `${reportData.summary.averageOrderValue.toFixed(2)} ETB`]
     ];
-    
+
     doc.autoTable({
       startY: 70,
       head: [['Metric', 'Value']],
@@ -212,19 +212,19 @@ const Reports = () => {
       theme: 'grid',
       headStyles: { fillColor: [217, 119, 6] }
     });
-    
+
     // Product performance
     doc.addPage();
     doc.setFontSize(14);
     doc.text('Product Performance', 14, 20);
-    
+
     const productData = reportData.salesByProduct.map(p => [
       p.productName,
       p.quantity.toString(),
       `${p.revenue.toFixed(2)} ETB`,
       p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'
     ]);
-    
+
     doc.autoTable({
       startY: 25,
       head: [['Product Name', 'Units Sold', 'Revenue', 'Stock Status']],
@@ -232,19 +232,19 @@ const Reports = () => {
       theme: 'striped',
       headStyles: { fillColor: [217, 119, 6] }
     });
-    
+
     // Top customers
     if (reportData.topCustomers.length > 0) {
       doc.addPage();
       doc.setFontSize(14);
       doc.text('Top Customers', 14, 20);
-      
+
       const customerData = reportData.topCustomers.map(c => [
         c.name,
         c.orders.toString(),
         `${c.totalSpent.toFixed(2)} ETB`
       ]);
-      
+
       doc.autoTable({
         startY: 25,
         head: [['Customer Name', 'Total Orders', 'Total Spent']],
@@ -253,7 +253,7 @@ const Reports = () => {
         headStyles: { fillColor: [217, 119, 6] }
       });
     }
-    
+
     // Footer
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
@@ -267,21 +267,21 @@ const Reports = () => {
         { align: 'center' }
       );
     }
-    
+
     doc.save(`sales-report-${dateRange.startDate}-to-${dateRange.endDate}.pdf`);
     toast.success('PDF report generated successfully');
   };
 
   const generateCSV = () => {
     const csvRows = [];
-    
+
     // Header
     csvRows.push('EthioCraft Global - Sales Report');
     csvRows.push(`Artisan: ${user?.profile?.firstName} ${user?.profile?.lastName}`);
     csvRows.push(`Period: ${dateRange.startDate} to ${dateRange.endDate}`);
     csvRows.push(`Generated: ${new Date().toISOString()}`);
     csvRows.push('');
-    
+
     // Summary
     csvRows.push('SUMMARY');
     csvRows.push('Metric,Value');
@@ -292,7 +292,7 @@ const Reports = () => {
     csvRows.push(`Products Sold,${reportData.summary.totalProducts}`);
     csvRows.push(`Average Order Value,${reportData.summary.averageOrderValue.toFixed(2)}`);
     csvRows.push('');
-    
+
     // Product performance
     csvRows.push('PRODUCT PERFORMANCE');
     csvRows.push('Product Name,Units Sold,Revenue,Stock Status');
@@ -300,7 +300,7 @@ const Reports = () => {
       csvRows.push(`"${p.productName}",${p.quantity},${p.revenue.toFixed(2)},${p.stock > 0 ? p.stock + ' in stock' : 'Out of stock'}`);
     });
     csvRows.push('');
-    
+
     // Category breakdown
     csvRows.push('CATEGORY BREAKDOWN');
     csvRows.push('Category,Revenue');
@@ -308,7 +308,7 @@ const Reports = () => {
       csvRows.push(`"${category}",${revenue.toFixed(2)}`);
     });
     csvRows.push('');
-    
+
     // Top customers
     csvRows.push('TOP CUSTOMERS');
     csvRows.push('Customer Name,Total Orders,Total Spent');
@@ -363,36 +363,38 @@ const Reports = () => {
   } : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className={insideDashboard ? "pb-6" : "min-h-screen bg-gray-50 py-6"}>
+      <div className={insideDashboard ? "w-full" : "max-w-7xl mx-auto px-3 sm:px-6 lg:px-8"}>
         {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/artisan/dashboard')}
-            className="text-ethiopian-gold hover:text-ethiopian-earth mb-4"
-          >
-            ← Back to Dashboard
-          </button>
-          <div className="flex justify-between items-center">
+        <div className="mb-4">
+          {!insideDashboard && (
+            <button
+              onClick={() => navigate('/artisan/dashboard')}
+              className="text-ethiopian-gold hover:text-ethiopian-earth mb-2 text-xs font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+          )}
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2.5">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Sales & Performance Reports</h1>
-              <p className="text-gray-600 mt-2">Comprehensive analytics and insights</p>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900">Sales & Performance Reports</h1>
+              <p className="text-xs text-gray-500 mt-0.5">Comprehensive analytics and insights</p>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex space-x-2">
               <button
                 onClick={generatePDF}
                 disabled={!reportData || loading}
-                className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2 shadow-lg disabled:opacity-50"
+                className="bg-red-600 text-white px-3.5 py-1.5 text-xs font-semibold rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-1.5 shadow-sm disabled:opacity-50"
               >
-                <FileText className="w-5 h-5" />
+                <FileText className="w-3.5 h-3.5" />
                 <span>Export PDF</span>
               </button>
               <button
                 onClick={generateCSV}
                 disabled={!reportData || loading}
-                className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2 shadow-lg disabled:opacity-50"
+                className="bg-green-600 text-white px-3.5 py-1.5 text-xs font-semibold rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-1.5 shadow-sm disabled:opacity-50"
               >
-                <Download className="w-5 h-5" />
+                <Download className="w-3.5 h-3.5" />
                 <span>Export CSV</span>
               </button>
             </div>
@@ -400,39 +402,39 @@ const Reports = () => {
         </div>
 
         {/* Date Range Selector */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Report Configuration</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4 mb-4">
+          <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5">Report Configuration</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                 Start Date
               </label>
               <input
                 type="date"
                 value={dateRange.startDate}
                 onChange={(e) => setDateRange({ ...dateRange, startDate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                className="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                 End Date
               </label>
               <input
                 type="date"
                 value={dateRange.endDate}
                 onChange={(e) => setDateRange({ ...dateRange, endDate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                className="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                 Report Type
               </label>
               <select
                 value={reportType}
                 onChange={(e) => setReportType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                className="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
               >
                 <option value="sales">Sales Report</option>
                 <option value="inventory">Inventory Report</option>
@@ -443,93 +445,93 @@ const Reports = () => {
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <LoadingSpinner size="large" />
+          <div className="flex items-center justify-center py-10">
+            <LoadingSpinner size="medium" />
           </div>
         ) : reportData ? (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                    <p className="text-2xl font-bold text-green-600 mt-2">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 mb-4">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-3.5 hover:shadow transition-shadow">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[11px] sm:text-xs font-medium text-gray-500 truncate">Total Revenue</p>
+                    <p className="text-base sm:text-lg font-black text-green-600 mt-1 truncate">
                       {formatCurrency(reportData.summary.totalRevenue)}
                     </p>
                   </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <DollarSign className="w-6 h-6 text-green-600" />
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-green-50 rounded-lg flex items-center justify-center shrink-0">
+                    <DollarSign className="w-4 h-4 text-green-600" />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Net Income</p>
-                    <p className="text-2xl font-bold text-ethiopian-gold mt-2">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-3.5 hover:shadow transition-shadow">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[11px] sm:text-xs font-medium text-gray-500 truncate">Net Income</p>
+                    <p className="text-base sm:text-lg font-black text-ethiopian-gold mt-1 truncate">
                       {formatCurrency(reportData.summary.netIncome)}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">After 15% platform fee</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5 truncate">After 15% platform fee</p>
                   </div>
-                  <div className="p-3 bg-yellow-100 rounded-full">
-                    <TrendingUp className="w-6 h-6 text-ethiopian-gold" />
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-amber-50 rounded-lg flex items-center justify-center shrink-0">
+                    <TrendingUp className="w-4 h-4 text-ethiopian-gold" />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                    <p className="text-2xl font-bold text-blue-600 mt-2">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-3.5 hover:shadow transition-shadow">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[11px] sm:text-xs font-medium text-gray-500 truncate">Total Orders</p>
+                    <p className="text-base sm:text-lg font-black text-blue-600 mt-1">
                       {reportData.summary.totalOrders}
                     </p>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <Package className="w-6 h-6 text-blue-600" />
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Package className="w-4 h-4 text-blue-600" />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Avg Order Value</p>
-                    <p className="text-2xl font-bold text-purple-600 mt-2">
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 sm:p-3.5 hover:shadow transition-shadow">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[11px] sm:text-xs font-medium text-gray-500 truncate">Avg Order Value</p>
+                    <p className="text-base sm:text-lg font-black text-purple-600 mt-1 truncate">
                       {formatCurrency(reportData.summary.averageOrderValue)}
                     </p>
                   </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <Calendar className="w-6 h-6 text-purple-600" />
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-purple-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4 text-purple-600" />
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Fee vs Net Income Tracker */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-ethiopian-gold" />
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4 mb-4">
+              <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 flex items-center gap-1.5">
+                <DollarSign className="w-4 h-4 text-ethiopian-gold" />
                 Fee vs. Net Income Breakdown
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center p-4 bg-green-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">Gross Revenue</p>
-                  <p className="text-3xl font-bold text-green-600">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+                <div className="text-center p-2.5 sm:p-3 bg-green-50/70 border border-green-100 rounded-lg">
+                  <p className="text-[11px] sm:text-xs text-gray-600 mb-1 font-medium">Gross Revenue</p>
+                  <p className="text-base sm:text-lg font-black text-green-600">
                     {formatCurrency(reportData.summary.totalRevenue)}
                   </p>
                 </div>
-                <div className="text-center p-4 bg-red-50 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">Platform Fees (15%)</p>
-                  <p className="text-3xl font-bold text-red-600">
+                <div className="text-center p-2.5 sm:p-3 bg-red-50/70 border border-red-100 rounded-lg">
+                  <p className="text-[11px] sm:text-xs text-gray-600 mb-1 font-medium">Platform Fees (15%)</p>
+                  <p className="text-base sm:text-lg font-black text-red-600">
                     -{formatCurrency(reportData.summary.platformFees)}
                   </p>
                 </div>
-                <div className="text-center p-4 bg-ethiopian-gold bg-opacity-10 rounded-lg">
-                  <p className="text-sm text-gray-600 mb-2">Your Net Income</p>
-                  <p className="text-3xl font-bold text-ethiopian-gold">
+                <div className="text-center p-2.5 sm:p-3 bg-amber-50/70 border border-amber-100 rounded-lg">
+                  <p className="text-[11px] sm:text-xs text-gray-600 mb-1 font-medium">Your Net Income</p>
+                  <p className="text-base sm:text-lg font-black text-ethiopian-gold">
                     {formatCurrency(reportData.summary.netIncome)}
                   </p>
                 </div>
@@ -537,15 +539,15 @@ const Reports = () => {
             </div>
 
             {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-4">
               {/* Monthly Income Chart */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <BarChart3 className="w-5 h-5 text-ethiopian-gold" />
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4">
+                <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 flex items-center gap-1.5">
+                  <BarChart3 className="w-4 h-4 text-ethiopian-gold" />
                   Monthly Income Trend
                 </h3>
                 {monthlyChartData && (
-                  <Bar 
+                  <Bar
                     data={monthlyChartData}
                     options={{
                       responsive: true,
@@ -557,8 +559,12 @@ const Reports = () => {
                         y: {
                           beginAtZero: true,
                           ticks: {
-                            callback: (value) => `${value} ETB`
+                            callback: (value) => `${value} ETB`,
+                            font: { size: 10 }
                           }
+                        },
+                        x: {
+                          ticks: { font: { size: 10 } }
                         }
                       }
                     }}
@@ -567,64 +573,65 @@ const Reports = () => {
               </div>
 
               {/* Category Breakdown Chart */}
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <PieChartIcon className="w-5 h-5 text-ethiopian-gold" />
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4">
+                <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 flex items-center gap-1.5">
+                  <PieChartIcon className="w-4 h-4 text-ethiopian-gold" />
                   Category Sales Breakdown
                 </h3>
                 {categoryChartData && (
-                  <Pie 
+                  <Pie
                     data={categoryChartData}
                     options={{
                       responsive: true,
                       plugins: {
-                        legend: { position: 'bottom' }
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
                       }
                     }}
                   />
                 )}
               </div>
             </div>
+
             {/* Product Performance Table */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Performance</h3>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4 mb-4">
+              <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5">Product Performance</h3>
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-200">
+                  <thead className="bg-gray-50 border-b border-gray-100">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-3.5 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                         Product Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-3.5 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                         Units Sold
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-3.5 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                         Revenue
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-3.5 py-2 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                         Stock Status
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-100">
                     {reportData.salesByProduct.map((product, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      <tr key={index} className="hover:bg-gray-50/70 transition-colors">
+                        <td className="px-3.5 py-2.5 text-xs font-semibold text-gray-900">
                           {product.productName}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-3.5 py-2.5 text-xs text-gray-600">
                           {product.quantity}
                         </td>
-                        <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                        <td className="px-3.5 py-2.5 text-xs font-bold text-gray-900">
                           {formatCurrency(product.revenue)}
                         </td>
-                        <td className="px-6 py-4 text-sm">
+                        <td className="px-3.5 py-2.5 text-xs">
                           {product.stock > 0 ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                            <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-[10px] font-semibold">
                               {product.stock} in stock
                             </span>
                           ) : (
-                            <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
+                            <span className="px-2 py-0.5 bg-red-100 text-red-800 rounded-full text-[10px] font-semibold">
                               Out of stock
                             </span>
                           )}
@@ -638,28 +645,28 @@ const Reports = () => {
 
             {/* Top Customers */}
             {reportData.topCustomers.length > 0 && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-ethiopian-gold" />
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4">
+                <h3 className="text-xs sm:text-sm font-bold text-gray-900 mb-2.5 flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-ethiopian-gold" />
                   Top Customers
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-2.5">
                   {reportData.topCustomers.map((customer, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-ethiopian-gold text-white rounded-full flex items-center justify-center font-bold">
+                    <div key={index} className="flex items-center justify-between p-2.5 sm:p-3 bg-gray-50/70 border border-gray-100 rounded-lg hover:bg-gray-100/70 transition-colors">
+                      <div className="flex items-center space-x-2.5">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 bg-ethiopian-gold text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{customer.name}</p>
-                          <p className="text-sm text-gray-600">{customer.orders} orders</p>
+                          <p className="text-xs font-bold text-gray-900">{customer.name}</p>
+                          <p className="text-[11px] text-gray-500">{customer.orders} orders</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-gray-900">
+                        <p className="text-xs sm:text-sm font-bold text-gray-900">
                           {formatCurrency(customer.totalSpent)}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-[10px] text-gray-500">
                           Avg: {formatCurrency(customer.totalSpent / customer.orders)}
                         </p>
                       </div>
@@ -670,10 +677,10 @@ const Reports = () => {
             )}
           </>
         ) : (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Report Data</h3>
-            <p className="text-gray-600">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 text-center">
+            <FileText className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+            <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">No Report Data</h3>
+            <p className="text-xs text-gray-500">
               Select a date range to generate your sales report
             </p>
           </div>

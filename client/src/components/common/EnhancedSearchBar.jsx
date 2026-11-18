@@ -18,6 +18,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import axios from 'axios';
+import api from '../../utils/api';
 import { trackSearch } from '../../utils/trackingUtils';
 import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
@@ -29,7 +30,7 @@ const EnhancedSearchBar = ({
   autoFocus = false
 }) => {
   const { t } = useCustomTranslation();
-  const displayPlaceholder = placeholder || t('nav.search_placeholder', 'Search authentic Ethiopian crafts...');
+  const displayPlaceholder = placeholder || t('nav.search_placeholder', 'Search products, crafts...');
   const [searchQuery, setSearchQuery] = useState(value || '');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -99,9 +100,7 @@ const EnhancedSearchBar = ({
       }
 
       try {
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-        const origin = apiUrl.replace(/\/api\/?$/, "");
-        const response = await axios.get(`${origin}/api/search/suggestions?q=${encodeURIComponent(searchQuery)}`);
+        const response = await api.get(`/search/suggestions?q=${encodeURIComponent(searchQuery)}`);
         if (response.data.success) {
           setSuggestions(response.data.suggestions);
           setShowSuggestions(true);
@@ -220,9 +219,7 @@ const EnhancedSearchBar = ({
 
         try {
           // Send to backend for Gemini AI analysis
-          const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-          const origin = apiUrl.replace(/\/api\/?$/, "");
-          const response = await axios.post(`${origin}/api/search/image`, {
+          const response = await api.post('/search/image', {
             image: base64Image,
             mimeType: file.type
           });
@@ -291,10 +288,10 @@ const EnhancedSearchBar = ({
     <div className={`relative ${className}`} ref={searchRef}>
       <form onSubmit={handleSubmit} className="relative z-50">
         {/* Unified Search Bar */}
-        <div className="group relative flex items-center bg-gray-50/50 rounded-full border border-gray-200 focus-within:border-ethiopian-gold focus-within:ring-2 focus-within:ring-amber-50 transition-all duration-300">
+        <div className="group relative flex items-center h-8.5 sm:h-9 bg-[#F4F6F9] hover:bg-[#EEF1F5] rounded-full border border-gray-200/80 focus-within:border-amber-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-amber-100 transition-all duration-200 shadow-2xs">
           {/* Search Icon */}
-          <div className="pl-4 pr-2 pointer-events-none flex-shrink-0">
-            <MagnifyingGlassIcon className={`w-5 h-5 transition-colors ${searchQuery ? 'text-ethiopian-gold' : 'text-gray-400'}`} />
+          <div className="pl-3 pr-1.5 pointer-events-none flex-shrink-0">
+            <MagnifyingGlassIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors ${searchQuery ? 'text-amber-600' : 'text-gray-400'}`} />
           </div>
 
           {/* Input Field */}
@@ -306,39 +303,39 @@ const EnhancedSearchBar = ({
             placeholder={displayPlaceholder}
             autoFocus={autoFocus}
             disabled={isListening || isAnalyzing}
-            className="w-full py-2.5 bg-transparent text-gray-900 placeholder-gray-400 font-medium text-sm focus:outline-none"
+            className="w-full py-1 bg-transparent text-gray-900 placeholder:text-gray-400 text-[11px] sm:text-xs font-normal focus:outline-none min-w-0"
           />
 
           {/* Action Icons Wrapper */}
-          <div className="flex items-center pr-3 space-x-1">
+          <div className="flex items-center pr-2 sm:pr-2.5 space-x-0.5 shrink-0">
             {searchQuery && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors rounded-full"
+                className="p-0.5 text-gray-400 hover:text-gray-600 transition-colors rounded-full cursor-pointer"
               >
-                <XMarkIcon className="w-5 h-5" />
+                <XMarkIcon className="w-3.5 h-3.5" />
               </button>
             )}
 
-            <div className="h-6 w-[1px] bg-gray-200 mx-1"></div>
+            <div className="h-3.5 w-[1px] bg-gray-300 mx-1 shrink-0"></div>
 
             <button
               type="button"
               onClick={handleVoiceSearch}
-              className={`p-2 rounded-full transition-all ${isListening ? 'bg-red-50 text-red-500 border border-red-200' : 'text-gray-400 hover:text-ethiopian-gold hover:bg-amber-50'}`}
+              className={`p-1 rounded-full transition-all cursor-pointer ${isListening ? 'bg-red-50 text-red-500 border border-red-200 animate-pulse' : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'}`}
               title={t('nav.voice_search', 'Voice Search')}
             >
-              <MicrophoneIcon className="w-5 h-5" />
+              <MicrophoneIcon className="w-3.5 h-3.5" />
             </button>
 
             <button
               type="button"
               onClick={triggerImageUpload}
-              className={`p-2 rounded-full transition-all ${isAnalyzing ? 'bg-orange-50 text-orange-500 border border-orange-200' : 'text-gray-400 hover:text-ethiopian-gold hover:bg-amber-50'}`}
+              className={`p-1 rounded-full transition-all cursor-pointer ${isAnalyzing ? 'bg-orange-50 text-orange-500 border border-orange-200 animate-pulse' : 'text-gray-400 hover:text-amber-600 hover:bg-amber-50'}`}
               title={t('nav.visual_search', 'Visual Search')}
             >
-              <CameraIcon className="w-5 h-5" />
+              <CameraIcon className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

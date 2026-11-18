@@ -20,7 +20,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || 'https://ethiocrafthub.com/api/auth/google/callback',
       passReqToCallback: false,
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -30,20 +30,23 @@ passport.use(
           return done(new Error('No email returned from Google'), null);
         }
 
+        const cleanEmail = email.toLowerCase().trim();
+
         // 1. Try to find user by googleId (returning social user)
         let user = await User.findOne({ googleId: profile.id });
 
         // 2. Try to find by email (existing email/password user — link accounts)
         if (!user) {
-          user = await User.findOne({ email: email.toLowerCase() });
+          user = await User.findOne({ email: cleanEmail });
           if (user) {
-            // Link Google account to existing user
+            // Link Google account to existing registered user
             user.googleId = profile.id;
-            user.authProvider = 'google';
-            if (!user.profile.avatar && profile.photos?.[0]?.value) {
+            if (!user.authProvider) user.authProvider = 'google';
+            if (user.profile && !user.profile.avatar && profile.photos?.[0]?.value) {
               user.profile.avatar = profile.photos[0].value;
             }
             await user.save();
+            console.log(`🔗 Linked existing account (${cleanEmail}, role: ${user.role}) with Google ID`);
           }
         }
 
@@ -53,10 +56,10 @@ passport.use(
           const lastName = profile.name?.familyName || profile.displayName?.split(' ').slice(1).join(' ') || '';
 
           user = new User({
-            email: email.toLowerCase(),
+            email: cleanEmail,
             googleId: profile.id,
             authProvider: 'google',
-            // No password required for OAuth users
+            // Random password for OAuth-only users
             password: require('crypto').randomBytes(32).toString('hex'),
             role: 'customer',
             profile: {
@@ -67,7 +70,12 @@ passport.use(
             isActive: true,
           });
           await user.save();
-          console.log(`✅ New user created via Google OAuth: ${email}`);
+          console.log(`✅ New user created via Google OAuth: ${cleanEmail}`);
+        }
+
+        // Check if account is active
+        if (user.isActive === false) {
+          return done(new Error('Account is suspended. Please contact support.'), null);
         }
 
         // Update last login

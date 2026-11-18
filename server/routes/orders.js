@@ -213,16 +213,14 @@ router.post(
         throw createNotFoundError(`Product with ID ${item.product}`);
       }
 
-      if (product.status !== "active") {
-        return res.status(400).json({
-          error: "Product unavailable",
-          message: `Product "${product.name}" is not available for purchase`,
-          code: "PRODUCT_UNAVAILABLE",
-        });
+      let inv = product.inventory;
+      if (typeof inv === 'string') {
+        try { inv = JSON.parse(inv); } catch (_) { inv = {}; }
       }
+      const stockQty = Number(inv?.quantity !== undefined ? inv.quantity : (product.stock || 0));
 
       // Prevent purchasing when out of stock (<= 0)
-      if (product.inventory.quantity <= 0) {
+      if (stockQty <= 0) {
         return res.status(400).json({
           error: "Out of stock",
           message: `Product "${product.name}" is currently out of stock`,
@@ -230,11 +228,29 @@ router.post(
         });
       }
 
-      if (product.inventory.quantity < item.quantity) {
+      if (stockQty < item.quantity) {
         return res.status(400).json({
           error: "Insufficient inventory",
-          message: `Only ${product.inventory.quantity} units of "${product.name}" available`,
+          message: `Only ${stockQty} units of "${product.name}" available`,
           code: "INSUFFICIENT_INVENTORY",
+        });
+      }
+
+      // If product has positive stock, heal status to active if it was marked out_of_stock or sold
+      if (product.status === "out_of_stock" || product.status === "sold") {
+        product.status = "active";
+        try {
+          const { prisma } = require("../lib/prisma");
+          await prisma.product.update({
+            where: { id: String(product._id || product.id) },
+            data: { status: "active" }
+          });
+        } catch (_) {}
+      } else if (product.status !== "active") {
+        return res.status(400).json({
+          error: "Product unavailable",
+          message: `Product "${product.name}" is not available for purchase`,
+          code: "PRODUCT_UNAVAILABLE",
         });
       }
 
@@ -333,8 +349,14 @@ router.post(
 
     // Update product inventory and metrics
     for (let i = 0; i < items.length; i++) {
-      const product = await Product.findById(items[i].product);
-      await product.recordPurchase(items[i].quantity);
+      const pid = items[i].product ? (items[i].product._id || items[i].product.id || items[i].product) : null;
+      if (pid) {
+        try {
+          const { decrementProductStock } = require('../controllers/paymentController');
+          const itemQty = Math.max(1, parseInt(items[i].quantity, 10) || 1);
+          await decrementProductStock(pid, itemQty, items[i].variantId, items[i].size, items[i].color);
+        } catch (_) {}
+      }
     }
 
     // Update promotion analytics for all promotions used in this order
@@ -392,15 +414,21 @@ router.post(
         message: `🛍️ New order #${order.orderNumber} placed!`
       };
 
-      artisanIds.forEach(artisanId => {
-        io.to(String(artisanId)).emit('newOrder', payload);
-        io.to(`user_${artisanId}`).emit('newOrder', payload);
-        io.to(`artisan_${artisanId}`).emit('newOrder', payload);
-        console.log(`   👉 Emitted 'newOrder' to rooms: ${artisanId}, user_${artisanId}, artisan_${artisanId}`);
-      });
+      // Only emit immediate newOrder notification if NOT manual bank transfer!
+      // For Manual bank transfer, notification is sent when customer uploads payment receipt.
+      if (methodEnum !== 'Manual') {
+        artisanIds.forEach(artisanId => {
+          io.to(String(artisanId))
+            .to(`user_${artisanId}`)
+            .to(`artisan_${artisanId}`)
+            .emit('newOrder', payload);
+          console.log(`   👉 Emitted single 'newOrder' to rooms for artisan: ${artisanId}`);
+        });
 
-      io.to('role_admin').emit('newOrder', payload);
-      io.to('admin').emit('newOrder', payload);
+        io.to('role_admin').to('admin').emit('newOrder', payload);
+      } else {
+        console.log(`⏳ [Manual Order] Order #${order.orderNumber} created. Awaiting payment receipt upload.`);
+      }
     } else {
       console.warn("⚠️ Socket.io instance (io) not found in req.app");
     }
@@ -486,20 +514,21 @@ router.get(
     const aid = req.user._id ? String(req.user._id) : null;
     const { prisma } = require('../lib/prisma');
 
-    // For artisans we need the SAME query logic as getByArtisan:
-    // match by top-level artisanId FK OR items JSON containing { artisan: aid }
-    let artisanOrderIds = null; // null means "use customerId filter"
+    // For artisans we match by top-level artisanId FK OR items JSON containing aid
+    let artisanOrderIds = null;
     if (req.user.role === "artisan" && aid) {
       let byItemsIds = [];
       try {
         const rawResults = await prisma.$queryRawUnsafe(
-          `SELECT id FROM orders WHERE JSON_CONTAINS(items, ?) OR JSON_CONTAINS(items, ?)`,
-          JSON.stringify({ artisan: aid }),
-          JSON.stringify({ artisan: { _id: aid } })
+          `SELECT id FROM orders WHERE artisanId = ? OR items LIKE ? OR items LIKE ? OR items LIKE ?`,
+          aid,
+          `%"artisan":"${aid}"%`,
+          `%"artisan":{"_id":"${aid}"%`,
+          `%"artisanId":"${aid}"%`
         );
         byItemsIds = (rawResults || []).map(r => String(r.id));
       } catch (e) {
-        // Silently fall back to artisanId-only filter
+        console.warn('[GET /orders] Raw query error:', e.message);
       }
       artisanOrderIds = byItemsIds;
     }
@@ -508,11 +537,10 @@ router.get(
       if (req.user.role !== "artisan") {
         return { customerId: String(req.user._id), ...extra };
       }
-      const orClauses = [{ artisanId: aid }];
       if (artisanOrderIds && artisanOrderIds.length > 0) {
-        orClauses.push({ id: { in: artisanOrderIds } });
+        return { id: { in: artisanOrderIds }, ...extra };
       }
-      return { OR: orClauses, ...extra };
+      return { artisanId: aid, ...extra };
     };
 
     const counts = await prisma.order.groupBy({

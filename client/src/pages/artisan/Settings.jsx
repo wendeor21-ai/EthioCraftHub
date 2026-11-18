@@ -38,7 +38,7 @@ import {
   VALID_BANKS
 } from '../../utils/validation';
 
-const Settings = () => {
+const Settings = ({ insideDashboard = false, onSelectTab }) => {
   const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
@@ -366,18 +366,20 @@ const Settings = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className={insideDashboard ? "pb-8" : "min-h-screen bg-gray-50 py-8"}>
+      <div className={insideDashboard ? "w-full" : "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8"}>
         {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/artisan/dashboard')}
-            className="text-ethiopian-gold hover:text-ethiopian-earth mb-4"
-          >
-            ← Back to Dashboard
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-gray-600 mt-2">Manage your store profile, payments, and preferences</p>
+        <div className="mb-6">
+          {!insideDashboard && (
+            <button
+              onClick={() => navigate('/artisan/dashboard')}
+              className="text-ethiopian-gold hover:text-ethiopian-earth mb-3 text-sm font-medium"
+            >
+              ← Back to Dashboard
+            </button>
+          )}
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Settings</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">Manage your store profile, payments, and preferences</p>
         </div>
 
         {/* Tabs */}

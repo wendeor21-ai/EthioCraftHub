@@ -13,6 +13,7 @@ import {
 import CommissionHistoryModal from '../../../components/admin/CommissionHistoryModal';
 import CommissionPayoutModal from '../../../components/admin/CommissionPayoutModal';
 import { useCustomTranslation } from '../../../hooks/useCustomTranslation';
+import { formatOrderDateTime } from '../../../utils/dateUtils';
 
 // ─── Order Detail Modal ─────────────────────────────────────────────────────
 const OrderDetailModal = ({ order, onClose }) => {
@@ -207,7 +208,8 @@ const OrderDetailModal = ({ order, onClose }) => {
 
 // ─── Main TradeLedger Component ─────────────────────────────────────────────
 const TradeLedger = () => {
-  const { t } = useCustomTranslation();
+  const { t, currentLanguage } = useCustomTranslation();
+  const activeLang = currentLanguage || localStorage.getItem('language') || 'am';
   const [orders, setOrders] = useState([]);
   const [artisansWithDebt, setArtisansWithDebt] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -219,7 +221,7 @@ const TradeLedger = () => {
   const [deliveryStatusFilter, setDeliveryStatusFilter] = useState('All');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   const [modalOrder, setModalOrder] = useState(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -511,24 +513,24 @@ const TradeLedger = () => {
         </div>
       )}
 
-      <div className="p-6">
+      <div className="p-3 sm:p-4 font-['Times_New_Roman',serif]">
         {/* ── Page Header ── */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-4">
-            <nav className="flex bg-gray-100 p-1 rounded-xl">
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center gap-2">
+            <nav className="flex bg-gray-100 p-0.5 rounded-lg">
               <button
                 onClick={() => setActiveTab('ledger')}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'ledger' ? 'bg-white shadow text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`px-3 py-1 text-[11px] sm:text-xs font-bold rounded-md transition-all cursor-pointer ${activeTab === 'ledger' ? 'bg-white shadow-2xs text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
-                {t('admin_panel.trade_ledger')}
+                {t('admin_panel.trade_ledger', 'የአስተዳዳሪ ንግድ መዝገብ')}
               </button>
               <button
                 onClick={() => setActiveTab('commissions')}
-                className={`px-4 py-2 text-sm font-bold rounded-lg transition-all ${activeTab === 'commissions' ? 'bg-white shadow text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`px-3 py-1 text-[11px] sm:text-xs font-bold rounded-md transition-all cursor-pointer ${activeTab === 'commissions' ? 'bg-white shadow-2xs text-orange-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
-                {t('admin_panel.artisan_commissions')}
+                {t('admin_panel.artisan_commissions', 'የባለሙያ ኮሚሽኖች')}
                 {commissionSummary.pendingVerificationCount > 0 && (
-                  <span className="ml-2 bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">
+                  <span className="ml-1.5 bg-red-500 text-white text-[9.5px] font-black px-1.5 py-0.2 rounded-full">
                     {commissionSummary.pendingVerificationCount}
                   </span>
                 )}
@@ -537,31 +539,31 @@ const TradeLedger = () => {
 
             <button 
               onClick={fetchLedgerData}
-              className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
               title="Refresh Data"
             >
-              <RefreshCcw className="w-5 h-5" />
+              <RefreshCcw className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {activeTab === 'ledger' && (
-          <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col lg:flex-row gap-4 mb-6">
+          <div className="bg-white p-2.5 sm:p-3 rounded-xl shadow-2xs border border-gray-200 flex flex-col lg:flex-row gap-2 mb-3">
             <div className="flex-1 relative">
-              <Search className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
-                placeholder={t('admin_panel.search_artisan')}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t('admin_panel.search_artisan', 'የትዕዛዝ ቁጥር፣ ባለሙያ ወይም ደንበኛ ፈልግ... (Search order, artisan, customer...)')}
+                className="w-full pl-8 pr-3 py-1 text-[10.5px] sm:text-[11px] border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-amber-500"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <select
                 value={paymentStatusFilter}
                 onChange={(e) => { setPaymentStatusFilter(e.target.value); setCurrentPage(1); }}
-                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-md px-2 py-1 text-[10.5px] sm:text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
               >
                 <option value="All">All Payment Status</option>
                 <option value="Paid">Paid</option>
@@ -570,7 +572,7 @@ const TradeLedger = () => {
               <select
                 value={deliveryStatusFilter}
                 onChange={(e) => { setDeliveryStatusFilter(e.target.value); setCurrentPage(1); }}
-                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-md px-2 py-1 text-[10.5px] sm:text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
               >
                 <option value="All">All Delivery Status</option>
                 <option value="Processing">Processing</option>
@@ -581,13 +583,27 @@ const TradeLedger = () => {
               <select
                 value={paymentMethodFilter}
                 onChange={(e) => { setPaymentMethodFilter(e.target.value); setCurrentPage(1); }}
-                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="border border-gray-300 rounded-md px-2 py-1 text-[10.5px] sm:text-[11px] bg-white focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
               >
                 <option value="All">All Methods</option>
                 <option value="COD">COD</option>
                 <option value="MANUAL">MANUAL</option>
                 <option value="CHAPA">CHAPA</option>
               </select>
+              <div className="flex items-center gap-1 text-[10.5px] text-gray-600">
+                <span className="hidden sm:inline">አሳይ:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCurrentPage(1); }}
+                  className="border border-gray-300 rounded-md px-1.5 py-1 text-[10.5px] bg-white font-medium focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50 (ነባሪ/Default)</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+              </div>
               <button 
                 onClick={() => {
                   setSearchTerm('');
@@ -596,7 +612,7 @@ const TradeLedger = () => {
                   setPaymentMethodFilter('All');
                   setCurrentPage(1);
                 }}
-                className="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-900 border rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-2.5 py-1 text-[10.5px] sm:text-[11px] font-semibold text-gray-600 hover:text-gray-900 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 Reset
               </button>
@@ -604,39 +620,39 @@ const TradeLedger = () => {
           </div>
         )}
 
-        {/* ── Summary Cards ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        {/* ── Summary Cards (Minimized professional cards) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 mb-3">
           {[
             {
               icon: HandCoins,
-              color: 'orange',
-              label: t('artisan_panel.unpaid_debt'),
+              colorBg: 'bg-amber-50 text-amber-600 border-amber-200',
+              label: t('artisan_panel.unpaid_debt', 'ያልተከፈለ ኮሚሽን (Unpaid Debt)'),
               value: `${(commissionSummary.totalUnpaidDebt || 0).toFixed(2)} ETB`,
-              sub: t('artisan_panel.accumulated_debt')
+              sub: t('artisan_panel.accumulated_debt', 'የተጠራቀመ ዕዳ')
             },
             {
               icon: Landmark,
-              color: 'green',
-              label: t('artisan_panel.paid_commission'),
+              colorBg: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+              label: t('artisan_panel.paid_commission', 'የተከፈለ ኮሚሽን (Paid Commission)'),
               value: `${(commissionSummary.totalPaidCommission || 0).toFixed(2)} ETB`,
-              sub: 'Settled commission earnings'
+              sub: 'Settled commission earnings (የተከፈለ ገቢ)'
             },
             {
               icon: ClipboardList,
-              color: 'blue',
-              label: 'PENDING VERIFICATION',
+              colorBg: 'bg-blue-50 text-blue-600 border-blue-200',
+              label: 'PENDING VERIFICATION (በማረጋገጥ ላይ)',
               value: commissionSummary.pendingVerificationCount || 0,
-              sub: 'Artisan payment submissions'
+              sub: 'Artisan payment submissions (የክፍያ ማረጋገጫዎች)'
             },
-          ].map(({ icon: Icon, color, label, value, sub }) => (
-            <div key={label} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-full bg-${color}-50 flex items-center justify-center shrink-0`}>
-                <Icon className={`w-6 h-6 text-${color}-600`} />
-              </div>
+          ].map(({ icon: Icon, colorBg, label, value, sub }) => (
+            <div key={label} className="bg-white p-2.5 sm:p-3 rounded-xl shadow-2xs border border-gray-200 flex items-center justify-between min-h-[70px] sm:min-h-[76px] hover:border-amber-200 transition-colors">
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</p>
-                <p className="text-2xl font-black text-gray-900">{value}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{sub}</p>
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{label}</p>
+                <p className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mt-0.5">{value}</p>
+                <p className="text-[9.5px] sm:text-[10px] text-gray-400 mt-0.5">{sub}</p>
+              </div>
+              <div className={`w-8 h-8 rounded-lg ${colorBg} border flex items-center justify-center shrink-0`}>
+                <Icon className="w-4 h-4" />
               </div>
             </div>
           ))}
@@ -644,75 +660,83 @@ const TradeLedger = () => {
 
         {/* ── Content ── */}
         {activeTab === 'ledger' ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100">
                 <thead className="bg-gray-50">
                   <tr>
-                    {[t('common.order_id', 'Order'), t('common.customer', 'Parties'), t('checkout.total', 'Amount'), t('artisan_panel.paid_commission', 'Commission'), t('common.status'), t('common.action')].map(h => (
-                      <th key={h} className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    {[
+                      t('common.order_id', 'Order (የትዕዛዝ ቁጥር)'),
+                      t('common.customer', 'Parties (ደንበኛ / ባለሙያ)'),
+                      t('checkout.total', 'Amount (መጠን)'),
+                      t('artisan_panel.paid_commission', 'Commission (ኮሚሽን)'),
+                      t('common.status', 'Status (ሁኔታ)'),
+                      t('common.action', 'Action (እርምጃ)')
+                    ].map(h => (
+                      <th key={h} className="px-2.5 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                         {h}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 bg-white">
+                <tbody className="divide-y divide-gray-100 bg-white text-[10.5px] sm:text-[11px] text-gray-700">
                   {paginatedOrders.map((order) => (
                     <tr
                       key={order._id}
-                      className={`hover:bg-gray-50/60 transition-colors ${order.isDisputed ? 'bg-red-50/40' : ''}`}
+                      className={`hover:bg-amber-50/40 transition-colors ${order.isDisputed ? 'bg-red-50/40' : ''}`}
                     >
                       {/* Order # */}
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-bold text-gray-900">
+                      <td className="px-2.5 py-1.5 whitespace-nowrap">
+                        <div className="flex items-center gap-1">
+                          <span className="font-bold text-gray-900">
                             #{order.orderNumber || order._id.slice(-8)}
                           </span>
                           {order.isDisputed && (
-                            <span title="Disputed" className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-100 text-red-600 rounded text-[10px] font-bold">
+                            <span title="Disputed" className="inline-flex items-center gap-0.5 px-1 py-0.2 bg-red-100 text-red-600 rounded text-[9px] font-bold">
                               <Flag className="w-2.5 h-2.5" />DISPUTE
                             </span>
                           )}
                         </div>
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          {new Date(order.createdAt).toLocaleDateString()}
+                        <div className="text-[9.5px] text-gray-400 mt-0.5 flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5 text-gray-400" />
+                          <span>{formatOrderDateTime(order.createdAt, activeLang)?.full || ''}</span>
                         </div>
                       </td>
 
                       {/* Parties */}
-                      <td className="px-5 py-4">
-                        <div className="text-xs text-gray-400 font-semibold uppercase">Artisan</div>
-                        <div className="text-sm font-medium text-gray-900">{order.artisanName || 'Artisan Hub'}</div>
-                        <div className="text-xs text-gray-400 font-semibold uppercase mt-1">Customer</div>
-                        <div className="text-sm text-gray-700">
-                          {order.customer?.profile?.firstName || 'N/A'}
+                      <td className="px-2.5 py-1.5">
+                        <div className="text-[9px] text-gray-400 font-bold uppercase leading-none">ARTISAN</div>
+                        <div className="text-[10.5px] font-semibold text-gray-900 truncate max-w-[140px]">{order.artisanName || 'Artisan Hub'}</div>
+                        <div className="text-[9px] text-gray-400 font-bold uppercase leading-none mt-1">CUSTOMER</div>
+                        <div className="text-[10px] text-gray-600 truncate max-w-[140px]">
+                          {order.customer?.profile?.firstName || 'N/A'} {order.customer?.profile?.lastName || ''}
                         </div>
                       </td>
 
                       {/* Amount / Method */}
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-gray-900">{order.amount?.toFixed(2)} ETB</div>
-                        <span className={`mt-1 inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${methodColors[order.method] || 'bg-gray-100 text-gray-700'}`}>
+                      <td className="px-2.5 py-1.5 whitespace-nowrap">
+                        <div className="font-bold text-gray-900">{order.amount?.toFixed(2)} ETB</div>
+                        <span className={`mt-0.5 inline-flex px-1.5 py-0.2 rounded text-[9px] font-bold uppercase ${methodColors[order.method] || 'bg-gray-100 text-gray-700'}`}>
                           {order.method}
                         </span>
                       </td>
 
                       {/* Commission */}
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-amber-600 bg-amber-50 inline-block px-2 py-1 rounded-lg">
+                      <td className="px-2.5 py-1.5 whitespace-nowrap">
+                        <div className="font-bold text-amber-700 bg-amber-50 inline-block px-1.5 py-0.5 rounded border border-amber-200">
                           {(order.commission || 0).toFixed(2)} ETB
                         </div>
-                        <div className={`text-[10px] font-bold mt-1 ${order.commissionStatus === 'Paid' ? 'text-green-600' : 'text-gray-400'}`}>
+                        <div className={`text-[9.5px] font-bold mt-0.5 ${order.commissionStatus === 'Paid' ? 'text-green-600' : 'text-gray-400'}`}>
                           {order.commissionStatus || 'Pending'}
                         </div>
                       </td>
 
                       {/* Status */}
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="space-y-1 mt-1">
-                          <div className="text-xs flex items-center">
-                            <span className="text-gray-400 mr-1.5 flex items-center gap-1">
-                              <CreditCard className="w-3 h-3" /> Payment:
+                      <td className="px-2.5 py-1.5 whitespace-nowrap">
+                        <div className="space-y-0.5">
+                          <div className="flex items-center text-[10px]">
+                            <span className="text-gray-400 mr-1 flex items-center gap-0.5">
+                              <CreditCard className="w-2.5 h-2.5" /> Payment:
                             </span>
                             <span className={`font-bold ${['Paid', 'Completed', 'Delivered'].includes(order.status) ? 'text-green-600' : 'text-amber-600'}`}>
                               {['Manual', 'COD'].includes(order.method) && ['Paid', 'Completed', 'Delivered'].includes(order.status) 
@@ -720,41 +744,41 @@ const TradeLedger = () => {
                                 : order.status}
                             </span>
                           </div>
-                          <div className="text-[10px] flex items-center text-gray-500">
-                            <span className="text-gray-400 mr-1.5 flex items-center gap-1">
-                              <Truck className="w-3 h-3" /> Delivery:
+                          <div className="flex items-center text-[9.5px] text-gray-500">
+                            <span className="text-gray-400 mr-1 flex items-center gap-0.5">
+                              <Truck className="w-2.5 h-2.5" /> Delivery:
                             </span>
                             <span className="font-semibold uppercase">{order.deliveryStatus || 'Pending'}</span>
                           </div>
                           {order.deliveryEfficiencyDays && (
-                            <div className="text-[10px] flex items-center text-emerald-600 bg-emerald-50 max-w-fit px-1.5 py-0.5 rounded mt-0.5 font-bold shadow-sm">
-                              <Clock className="w-3 h-3 mr-1" />
-                              {order.deliveryEfficiencyDays} day{order.deliveryEfficiencyDays > 1 ? 's' : ''} avg
+                            <div className="text-[9px] flex items-center text-emerald-600 bg-emerald-50 max-w-fit px-1 py-0.2 rounded font-bold">
+                              <Clock className="w-2.5 h-2.5 mr-0.5" />
+                              {order.deliveryEfficiencyDays} day{order.deliveryEfficiencyDays > 1 ? 's' : ''}
                             </div>
                           )}
                         </div>
                       </td>
 
                       {/* Actions */}
-                      <td className="px-5 py-4">
-                        <div className="flex flex-wrap items-center gap-2">
+                      <td className="px-2.5 py-1.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1">
                           {/* View Details */}
                           <button
                             onClick={() => handleViewDetails(order.orderNumber || order._id)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                            className="p-1 rounded text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors cursor-pointer"
                             title="View Details"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3.5 h-3.5" />
                           </button>
 
                           {/* Approve Manual Payment */}
                           {order.method === 'Manual' && !['Paid', 'Completed'].includes(order.status) && (
                             <button
                               onClick={() => handleVerifyPayment(order)}
-                              className="flex items-center gap-1 bg-green-50 text-green-700 hover:bg-green-100 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                              className="flex items-center gap-0.5 bg-green-50 text-green-700 hover:bg-green-100 px-1.5 py-0.5 rounded text-[10px] font-bold border border-green-200 transition-colors cursor-pointer"
                               title="Approve Manual Payment"
                             >
-                              <CheckCircle className="w-3.5 h-3.5" /> Approve
+                              <CheckCircle className="w-3 h-3" /> Approve
                             </button>
                           )}
 
@@ -762,29 +786,29 @@ const TradeLedger = () => {
                           {(['Shipped', 'shipped'].includes(order.status)) && (
                             <button
                               onClick={() => handleMarkAsDelivered(order)}
-                              className="flex items-center gap-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                              className="flex items-center gap-0.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 px-1.5 py-0.5 rounded text-[10px] font-bold border border-emerald-200 transition-colors cursor-pointer"
                               title="Mark as Delivered"
                             >
-                              <Package className="w-3.5 h-3.5" /> Mark Delivered
+                              <Package className="w-3 h-3" /> Delivered
                             </button>
                           )}
 
                           {/* Flag / Dispute */}
                           <button
                             onClick={() => handleFlagOrder(order)}
-                            className={`p-1.5 rounded-lg transition-colors ${order.isDisputed ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
+                            className={`p-1 rounded transition-colors cursor-pointer ${order.isDisputed ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-400 hover:text-red-500 hover:bg-red-50'}`}
                             title={order.isDisputed ? 'Remove Dispute' : 'Flag as Disputed'}
                           >
-                            <ShieldAlert className="w-4 h-4" />
+                            <ShieldAlert className="w-3.5 h-3.5" />
                           </button>
 
                           {/* Download Invoice */}
                           <button
                             onClick={() => handleDownloadInvoice(order)}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                            className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
                             title={t('common.view_details')}
                           >
-                            <FileDown className="w-4 h-4" />
+                            <FileDown className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -795,28 +819,28 @@ const TradeLedger = () => {
             </div>
 
             {orders.length === 0 ? (
-              <div className="p-16 flex flex-col items-center text-gray-400">
-                <Filter className="w-10 h-10 opacity-30 mb-3" />
-                <p className="font-semibold text-gray-600">{t('errors.generic')}</p>
-                <p className="text-sm mt-1">{t('common.search')}</p>
+              <div className="p-8 flex flex-col items-center text-gray-400">
+                <Filter className="w-8 h-8 opacity-30 mb-2" />
+                <p className="font-semibold text-gray-600 text-xs">{t('errors.generic')}</p>
+                <p className="text-[10.5px] mt-0.5">{t('common.search')}</p>
               </div>
             ) : (
-              <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50">
-                <span className="text-sm text-gray-500">
+              <div className="px-3 py-1.5 border-t border-gray-200 flex items-center justify-between bg-gray-50 text-[10.5px] text-gray-500">
+                <span>
                   Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, orders.length)} of {orders.length} entries
                 </span>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <button 
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className="px-4 py-1.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                    className="px-2.5 py-0.5 text-[10px] font-semibold text-gray-600 border border-gray-300 rounded bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     Previous
                   </button>
                   <button 
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className="px-4 py-1.5 text-sm font-semibold text-gray-600 border border-gray-200 rounded-lg bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                    className="px-2.5 py-0.5 text-[10px] font-semibold text-gray-600 border border-gray-300 rounded bg-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors cursor-pointer"
                   >
                     Next
                   </button>
@@ -825,57 +849,59 @@ const TradeLedger = () => {
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <Landmark className="w-5 h-5 text-orange-500" />
-                {t('admin_panel.artisan_commissions')}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">{t('artisan_panel.accumulated_debt')}</p>
+          <div className="bg-white rounded-xl shadow-2xs border border-gray-200 overflow-hidden">
+            <div className="p-2.5 sm:p-3 border-b border-gray-200 flex items-center justify-between bg-gray-50">
+              <div className="flex items-center gap-1.5">
+                <Landmark className="w-4 h-4 text-orange-500" />
+                <h3 className="text-xs sm:text-sm font-bold text-gray-900">
+                  {t('admin_panel.artisan_commissions', 'የባለሙያ ኮሚሽኖች (Artisan Commissions)')}
+                </h3>
+              </div>
+              <p className="text-[10px] text-gray-500">{t('artisan_panel.accumulated_debt', 'የተጠራቀመ ዕዳ')}</p>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('artisan_panel.artisan_info', 'Artisan')}</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('artisan_panel.stock_status', 'Bank Details')}</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('artisan_panel.paid_commission')}</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">{t('artisan_panel.unpaid_debt')}</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">{t('common.action')}</th>
+                    <th className="px-2.5 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">{t('artisan_panel.artisan_info', 'Artisan (ባለሙያ)')}</th>
+                    <th className="px-2.5 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">{t('artisan_panel.stock_status', 'Bank Details (የባንክ ዝርዝር)')}</th>
+                    <th className="px-2.5 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">{t('artisan_panel.paid_commission', 'Paid (የተከፈለ ኮሚሽን)')}</th>
+                    <th className="px-2.5 py-1.5 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">{t('artisan_panel.unpaid_debt', 'Debt (ያልተከፈለ ዕዳ)')}</th>
+                    <th className="px-2.5 py-1.5 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">{t('common.action', 'Action (እርምጃ)')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50 bg-white">
+                <tbody className="divide-y divide-gray-100 bg-white text-[10.5px] sm:text-[11px] text-gray-700">
                   {artisansWithDebt.map((artisan) => (
-                    <tr key={artisan._id} className="hover:bg-gray-50/60 transition-colors">
-                      <td className="px-5 py-4">
+                    <tr key={artisan._id} className="hover:bg-amber-50/40 transition-colors">
+                      <td className="px-2.5 py-1.5">
                         <div className="font-bold text-gray-900">{artisan.profile?.firstName} {artisan.profile?.lastName}</div>
-                        <div className="text-xs text-gray-500">{artisan.email}</div>
+                        <div className="text-[9.5px] text-gray-500">{artisan.email}</div>
                       </td>
-                      <td className="px-5 py-4">
+                      <td className="px-2.5 py-1.5">
                         {artisan.bankDetails ? (
-                          <div className="text-xs">
+                          <div className="text-[10px]">
                             <div className="font-bold">{artisan.bankDetails.bankName}</div>
-                            <div>{artisan.bankDetails.accountNumber}</div>
+                            <div className="text-gray-500">{artisan.bankDetails.accountNumber}</div>
                           </div>
                         ) : '—'}
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="text-sm font-bold text-green-600">
+                      <td className="px-2.5 py-1.5 whitespace-nowrap">
+                        <div className="font-bold text-green-700">
                           {(artisan.paidCommission || 0).toFixed(2)} ETB
                         </div>
                       </td>
-                      <td className="px-5 py-4">
-                        <div className="text-lg font-black text-orange-600">
+                      <td className="px-2.5 py-1.5 whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-black text-orange-600">
                           {(artisan.unpaidCommission || 0).toFixed(2)} ETB
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-2.5 py-1.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => setHistoryModalArtisanId(artisan._id)}
-                            className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-semibold hover:bg-blue-100 transition-colors flex items-center gap-1.5 border border-blue-100"
+                            className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] font-bold hover:bg-blue-100 transition-colors flex items-center gap-1 border border-blue-200 cursor-pointer"
                           >
-                            <Eye className="w-4 h-4" /> View Details
+                            <Eye className="w-3 h-3" /> View Details
                           </button>
                           
                           {(() => {
@@ -884,17 +910,13 @@ const TradeLedger = () => {
                               return (
                                 <button
                                   onClick={() => setProofModalPayment(pendingPayment)}
-                                  className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-lg text-sm font-bold border border-orange-200 hover:bg-orange-200 transition-all flex items-center gap-1.5 animate-pulse"
+                                  className="px-2 py-0.5 bg-orange-100 text-orange-800 rounded text-[10px] font-bold border border-orange-200 hover:bg-orange-200 transition-all flex items-center gap-1 animate-pulse cursor-pointer"
                                 >
-                                  <ClipboardList className="w-4 h-4" /> View Proof
+                                  <ClipboardList className="w-3 h-3" /> View Proof
                                 </button>
                               );
                             }
-                            return (
-                              <span className="text-xs font-bold text-gray-400 italic px-3">
-                                {t('common.status')}
-                              </span>
-                            );
+                            return null;
                           })()}
                         </div>
                       </td>
@@ -902,10 +924,10 @@ const TradeLedger = () => {
                   ))}
                   {artisansWithDebt.length === 0 && (
                     <tr>
-                      <td colSpan="4" className="p-16 text-center text-gray-400">
-                        <ShieldCheck className="w-10 h-10 opacity-30 mb-3 mx-auto" />
-                        <p className="font-semibold text-gray-600">{t('success')}</p>
-                        <p className="text-sm mt-1">{t('artisan_panel.unpaid_debt')}</p>
+                      <td colSpan="5" className="p-8 text-center text-gray-400">
+                        <ShieldCheck className="w-8 h-8 opacity-30 mb-2 mx-auto" />
+                        <p className="font-semibold text-gray-600 text-xs">{t('success', 'ምንም ያልተከፈለ ዕዳ የለም')}</p>
+                        <p className="text-[10px] mt-0.5">{t('artisan_panel.unpaid_debt', 'ሁሉም ኮሚሽኖች ተከፍለዋል')}</p>
                       </td>
                     </tr>
                   )}

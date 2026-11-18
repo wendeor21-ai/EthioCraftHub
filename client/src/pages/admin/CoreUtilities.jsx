@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     CreditCard,
@@ -7,10 +7,21 @@ import {
     Settings,
     Bell,
     FileText,
-    ArrowLeft
+    ArrowLeft,
+    Activity
 } from 'lucide-react';
+import SystemHealthModal from '../../components/admin/SystemHealthModal';
 
 const coreModules = [
+    {
+        title: 'System Health & Diagnostics',
+        description: 'Live real-time monitoring of database, API server, and storage health.',
+        icon: Activity,
+        path: '#health',
+        isHealthAction: true,
+        color: 'text-emerald-600',
+        bg: 'bg-emerald-100'
+    },
     {
         title: 'Payments Management',
         description: 'Manage platform payments, gateways, and transactions.',
@@ -61,25 +72,28 @@ const coreModules = [
     }
 ];
 
-const CoreUtilities = () => {
+const CoreUtilities = ({ insideDashboard, onSelectTab }) => {
     const navigate = useNavigate();
+    const [showHealthModal, setShowHealthModal] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={insideDashboard ? "bg-transparent py-2 w-full font-['Times_New_Roman',serif]" : "min-h-screen bg-gray-50 py-8 font-['Times_New_Roman',serif]"}>
+            <div className={insideDashboard ? "w-full" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"}>
                 {/* Header */}
-                <div className="mb-8">
-                    <button
-                        onClick={() => navigate('/admin/dashboard')}
-                        className="flex items-center text-ethiopian-gold hover:text-ethiopian-earth transition-colors mb-4"
-                    >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back to Dashboard
-                    </button>
+                <div className="mb-6">
+                    {!insideDashboard && (
+                        <button
+                            onClick={() => navigate('/admin/dashboard')}
+                            className="flex items-center text-amber-600 hover:text-amber-700 transition-colors mb-3 text-xs font-semibold"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-1.5" />
+                            Back to Dashboard
+                        </button>
+                    )}
 
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Core Utilities</h1>
-                        <p className="mt-2 text-gray-600 max-w-2xl">
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Core Utilities</h1>
+                        <p className="mt-1 text-xs text-gray-500 max-w-2xl">
                             Access advanced system settings, logs, and platform management tools.
                         </p>
                     </div>
@@ -91,19 +105,25 @@ const CoreUtilities = () => {
                         const Icon = module.icon;
                         return (
                             <div
-                                key={module.path}
-                                onClick={() => navigate(module.path)}
-                                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 cursor-pointer hover:shadow-md hover:border-ethiopian-gold/30 transition-all duration-200 group"
+                                key={module.title}
+                                onClick={() => {
+                                    if (module.isHealthAction) {
+                                        setShowHealthModal(true);
+                                    } else {
+                                        navigate(module.path);
+                                    }
+                                }}
+                                className="bg-white rounded-xl shadow-xs border border-gray-100 p-5 cursor-pointer hover:shadow-md hover:border-ethiopian-gold/30 transition-all duration-200 group"
                             >
                                 <div className="flex items-start">
-                                    <div className={`p-3 rounded-lg ${module.bg} ${module.color} flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
+                                    <div className={`p-3 rounded-lg ${module.bg || 'bg-gray-100'} ${module.color || 'text-gray-600'} flex-shrink-0 group-hover:scale-110 transition-transform duration-200`}>
                                         <Icon className="w-6 h-6" />
                                     </div>
                                     <div className="ml-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 group-hover:text-ethiopian-gold transition-colors">
+                                        <h3 className="text-base font-semibold text-gray-900 group-hover:text-ethiopian-gold transition-colors">
                                             {module.title}
                                         </h3>
-                                        <p className="mt-1 text-sm text-gray-500 line-clamp-2">
+                                        <p className="mt-1 text-xs text-gray-500 line-clamp-2">
                                             {module.description}
                                         </p>
                                     </div>
@@ -113,6 +133,12 @@ const CoreUtilities = () => {
                     })}
                 </div>
             </div>
+
+            {/* System Health Diagnostics Modal */}
+            <SystemHealthModal
+                isOpen={showHealthModal}
+                onClose={() => setShowHealthModal(false)}
+            />
         </div>
     );
 };

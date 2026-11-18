@@ -22,23 +22,15 @@ function getModel(name) {
   return MODEL_REGISTRY[name];
 }
 
-function toMongoResult(modelDef, data) {
-  if (!data) return null;
-  if (data.__isMongoCompatDoc) return data;
-
-  // Strip any leftover method props if a plain object was previously wrapped
-  const cleanData = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (typeof value === 'function') continue;
-    if (key === '__isMongoCompatDoc') continue;
-    cleanData[key] = value;
-  }
-
-  const doc = new MongoDocument(modelDef, cleanData, false);
+function wrapInProxy(doc) {
+  if (!doc) return null;
+  if (doc.__isMongoCompatDoc) return doc;
+  if (doc._proxy) return doc._proxy;
 
   const proxy = new Proxy(doc, {
     get(target, prop, receiver) {
       if (prop === '__isMongoCompatDoc') return true;
+      if (prop === '__target') return target;
       if (prop === 'toObject') {
         return () => {
           const obj = { ...target._data };
@@ -77,8 +69,7 @@ function toMongoResult(modelDef, data) {
       return prop in target || Object.prototype.hasOwnProperty.call(target._data, prop);
     },
     ownKeys(target) {
-      // Only expose document data fields — never internals (_modelDef, etc.)
-      return Object.keys(target._data);
+      return Array.from(new Set([...Object.keys(target._data), ...Reflect.ownKeys(target)]));
     },
     getOwnPropertyDescriptor(target, prop) {
       if (Object.prototype.hasOwnProperty.call(target._data, prop)) {
@@ -89,11 +80,28 @@ function toMongoResult(modelDef, data) {
           value: target._data[prop],
         };
       }
-      return undefined;
+      return Reflect.getOwnPropertyDescriptor(target, prop);
     },
   });
 
+  doc._proxy = proxy;
   return proxy;
+}
+
+function toMongoResult(modelDef, data) {
+  if (!data) return null;
+  if (data.__isMongoCompatDoc) return data;
+
+  // Strip any leftover method props if a plain object was previously wrapped
+  const cleanData = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (typeof value === 'function') continue;
+    if (key === '__isMongoCompatDoc') continue;
+    cleanData[key] = value;
+  }
+
+  const doc = new MongoDocument(modelDef, cleanData, false);
+  return wrapInProxy(doc);
 }
 
 function sanitizeDocData(data = {}) {
@@ -125,6 +133,7 @@ class MongoDocument {
 
     this._applyVirtuals();
     this._bindMethods();
+    return wrapInProxy(this);
   }
 
   _bindMethods() {
@@ -184,7 +193,7 @@ class MongoDocument {
     );
     this._data = populated[0];
     this._applyVirtuals();
-    return this;
+    return this._proxy || this;
   }
 
   async save(options = {}) {
@@ -228,7 +237,7 @@ class MongoDocument {
 
     this._modified.clear();
     this._applyVirtuals();
-    return this;
+    return this._proxy || this;
   }
 
   async updateOne(updates) {

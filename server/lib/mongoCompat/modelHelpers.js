@@ -8,22 +8,27 @@ function toPrismaJsonPathFilter(value) {
     return { equals: value };
   }
 
-  if (value.$regex !== undefined) {
-    return null; // post-filter via ops
+  // Mongo operators like $exists, $gt, etc.
+  if (value['$exists'] !== undefined) {
+    return null;
+  }
+
+  if (
+    value['$gt'] !== undefined ||
+    value['$gte'] !== undefined ||
+    value['$lt'] !== undefined ||
+    value['$lte'] !== undefined
+  ) {
+    return null;
   }
 
   const filter = {};
-  if (value.$gt !== undefined) filter.gt = value.$gt;
-  if (value.$gte !== undefined) filter.gte = value.$gte;
-  if (value.$lt !== undefined) filter.lt = value.$lt;
-  if (value.$lte !== undefined) filter.lte = value.$lte;
-  if (value.$ne !== undefined) filter.not = value.$ne;
-  if (value.$equals !== undefined) filter.equals = value.$equals;
+  if (value['$ne'] !== undefined) filter.not = value['$ne'];
+  if (value['$eq'] !== undefined) filter.equals = value['$eq'];
   if (value.equals !== undefined) filter.equals = value.equals;
 
   if (Object.keys(filter).length === 0) {
-    // Plain object equality is not supported for nested JSON paths
-    return { equals: value };
+    return null;
   }
 
   return filter;

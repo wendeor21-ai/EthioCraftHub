@@ -1,51 +1,111 @@
-const SiteConfig = require('../models/SiteConfig');
+const fs = require('fs');
+const path = require('path');
+let SiteConfig;
+try {
+  SiteConfig = require('../models/SiteConfig');
+} catch (e) {
+  SiteConfig = null;
+}
+
+const dataDir = path.join(__dirname, '..', 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+const CONFIG_FILE = path.join(dataDir, 'homepage-config.json');
+
+const getDefaultConfig = () => ({
+  configType: 'homepage',
+  heroTitle: 'Authentic Ethiopian Artisan Crafts',
+  heroSubtitle: 'Handmade textiles, leather goods, pottery, and jewelry directly from verified artisans.',
+  heroSlides: [
+    {
+      title_en: 'Authentic Ethiopian Crafts',
+      title_am: 'ትክክለኛ የኢትዮጵያ የእጅ ጥበብ ውጤቶች',
+      description_en: 'Directly from verified master artisans across Ethiopia',
+      description_am: 'ከተረጋገጡ የኢትዮጵያ የእጅ ጥበብ ባለሙያዎች በቀጥታ',
+      badge_en: 'Featured',
+      badge_am: 'ተመራጭ',
+      cta_en: 'Explore Marketplace',
+      cta_am: 'ምርቶችን ይመልከቱ',
+      link: '/products',
+      image: '/images/hero/hero-bg.jpg'
+    }
+  ],
+  headerLogo: '/logo192.png',
+  footerLogo: '/logo192.png',
+  heritageTitle_en: 'Centuries of Living Heritage',
+  heritageTitle_am: 'የዘመናት ጥበባዊ ቅርስ',
+  heritageDescription_en: 'Every piece tells a story of generation-to-generation heritage.',
+  heritageDescription_am: 'እያንዳንዱ የእጅ ጥበብ ከትውልድ ወደ ትውልድ የተላለፈ የታሪክና የባህል አሻራ ነው።',
+  heritageImage: '/images/heritage.jpg',
+  commissionRate: 5
+});
+
+const readConfigFile = () => {
+  try {
+    if (fs.existsSync(CONFIG_FILE)) {
+      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+    }
+  } catch (err) {
+    console.warn('Could not read homepage-config.json:', err.message);
+  }
+  return getDefaultConfig();
+};
+
+const writeConfigFile = (data) => {
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (err) {
+    console.error('Could not write homepage-config.json:', err.message);
+    return false;
+  }
+};
 
 // @desc    Get homepage configuration
 // @route   GET /api/settings/homepage
 // @access  Public
 exports.getHomepageConfig = async (req, res) => {
   try {
-    let config = await SiteConfig.findOne({ configType: 'homepage' });
-    
-    // If it doesn't exist yet, create the default document
-    if (!config) {
-      config = await SiteConfig.create({ configType: 'homepage' });
+    let data = readConfigFile();
+
+    // If MongoDB is connected and has data, sync it
+    if (SiteConfig && typeof SiteConfig.findOne === 'function') {
+      try {
+        const mongoConfig = await SiteConfig.findOne({ configType: 'homepage' }).maxTimeMS(2000);
+        if (mongoConfig) {
+          data = { ...data, ...mongoConfig.toObject() };
+        }
+      } catch (dbErr) {
+        // silently fallback to file
+      }
     }
-    
+
+    const cleanUrl = (url) => {
+      if (!url || typeof url !== 'string') return url;
+      return url
+        .replace(/^https?:\/\/localhost(:\d+)?/i, '')
+        .replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/i, '')
+        .replace(/^https?:\/\/ethiocrafthub\.com/i, '');
+    };
+
+    data.headerLogo = cleanUrl(data.headerLogo);
+    data.footerLogo = cleanUrl(data.footerLogo);
+    data.heritageImage = cleanUrl(data.heritageImage);
+    if (Array.isArray(data.heroSlides)) {
+      data.heroSlides = data.heroSlides.map(s => ({ ...s, image: cleanUrl(s.image) }));
+    }
+
     res.status(200).json({
       success: true,
-      data: (() => {
-        const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5001}`;
-        const data = config.toObject();
-        const addPrefix = (url) => {
-          if (url && (url.startsWith('/uploads') || url.startsWith('uploads'))) {
-            const prefix = url.startsWith('/') ? '' : '/';
-            return `${backendUrl}${prefix}${url}`;
-          }
-          return url;
-        };
-
-        data.headerLogo = addPrefix(data.headerLogo);
-        data.footerLogo = addPrefix(data.footerLogo);
-        data.heritageImage = addPrefix(data.heritageImage);
-        if (data.heroSlides) {
-          data.heroSlides = data.heroSlides.map(s => ({ ...s, image: addPrefix(s.image) }));
-        }
-        return data;
-      })()
+      data
     });
   } catch (error) {
     console.error('Error fetching homepage config:', error.message);
-    // Return safe default homepage config so frontend never fails with 500 or 503
     return res.status(200).json({
       success: true,
-      data: {
-        heroTitle: "Authentic Ethiopian Artisan Crafts",
-        heroSubtitle: "Handmade textiles, leather goods, pottery, and jewelry directly from verified artisans.",
-        heroSlides: [],
-        headerLogo: "/logo192.png",
-        footerLogo: "/logo192.png",
-      }
+      data: getDefaultConfig()
     });
   }
 };
@@ -55,58 +115,58 @@ exports.getHomepageConfig = async (req, res) => {
 // @access  Private/Admin
 exports.updateHomepageConfig = async (req, res) => {
   try {
-    const { 
-      heroSlides, 
-      heritageImage,
-      headerLogo,
-      footerLogo,
-      commissionRate
-    } = req.body;
+    const existing = readConfigFile();
+    const stripUrl = (url) => {
+      if (!url || typeof url !== 'string') return url;
+      return url
+        .replace(/^https?:\/\/localhost(:\d+)?/i, '')
+        .replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/i, '')
+        .replace(/^https?:\/\/ethiocrafthub\.com/i, '');
+    };
 
-    let config = await SiteConfig.findOne({ configType: 'homepage' });
-    
-    if (!config) {
-      config = new SiteConfig({ configType: 'homepage' });
+    const updated = {
+      ...existing,
+      ...req.body
+    };
+
+    if (req.body.heroSlides && Array.isArray(req.body.heroSlides)) {
+      updated.heroSlides = req.body.heroSlides.map(s => ({ ...s, image: stripUrl(s.image) }));
     }
 
-    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5001}`;
-    const stripUrl = (url) => {
-      if (url && typeof url === 'string' && url.startsWith('http')) {
-        return url.replace(backendUrl, '').replace(process.env.BACKEND_URL, '');
+    if (req.body.headerLogo !== undefined) updated.headerLogo = stripUrl(req.body.headerLogo);
+    if (req.body.footerLogo !== undefined) updated.footerLogo = stripUrl(req.body.footerLogo);
+    if (req.body.heritageImage !== undefined) updated.heritageImage = stripUrl(req.body.heritageImage);
+
+    // Save to file storage
+    writeConfigFile(updated);
+
+    // Also attempt MongoDB if connected
+    if (SiteConfig && typeof SiteConfig.findOneAndUpdate === 'function') {
+      try {
+        await SiteConfig.findOneAndUpdate(
+          { configType: 'homepage' },
+          { $set: updated },
+          { upsert: true, new: true }
+        ).maxTimeMS(2000);
+      } catch (dbErr) {
+        // file write was already successful
       }
-      return url;
+    }
+
+    const cleanUrl = (url) => {
+      if (!url || typeof url !== 'string') return url;
+      return url
+        .replace(/^https?:\/\/localhost(:\d+)?/i, '')
+        .replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/i, '')
+        .replace(/^https?:\/\/ethiocrafthub\.com/i, '');
     };
 
-    if (heroSlides) config.heroSlides = heroSlides.map(s => ({ ...s, image: stripUrl(s.image) }));
-    
-    // Support localized heritage fields
-    ['en', 'am', 'or', 'ti'].forEach(lang => {
-      if (req.body[`heritageTitle_${lang}`] !== undefined) config[`heritageTitle_${lang}`] = req.body[`heritageTitle_${lang}`];
-      if (req.body[`heritageDescription_${lang}`] !== undefined) config[`heritageDescription_${lang}`] = req.body[`heritageDescription_${lang}`];
-    });
-
-    if (heritageImage) config.heritageImage = stripUrl(heritageImage);
-    if (headerLogo !== undefined) config.headerLogo = stripUrl(headerLogo);
-    if (footerLogo !== undefined) config.footerLogo = stripUrl(footerLogo);
-    if (commissionRate !== undefined) config.commissionRate = commissionRate;
-
-    await config.save();
-    
-    // For response, return full URLs using the same logic as getHomepageConfig
-    const responseData = config.toObject();
-    const addPrefix = (url) => {
-      if (url && typeof url === 'string' && (url.startsWith('/uploads') || url.startsWith('uploads'))) {
-        const prefix = url.startsWith('/') ? '' : '/';
-        return `${backendUrl}${prefix}${url}`;
-      }
-      return url;
-    };
-
-    responseData.headerLogo = addPrefix(responseData.headerLogo);
-    responseData.footerLogo = addPrefix(responseData.footerLogo);
-    responseData.heritageImage = addPrefix(responseData.heritageImage);
-    if (responseData.heroSlides) {
-      responseData.heroSlides = responseData.heroSlides.map(s => ({ ...s, image: addPrefix(s.image) }));
+    const responseData = { ...updated };
+    responseData.headerLogo = cleanUrl(responseData.headerLogo);
+    responseData.footerLogo = cleanUrl(responseData.footerLogo);
+    responseData.heritageImage = cleanUrl(responseData.heritageImage);
+    if (Array.isArray(responseData.heroSlides)) {
+      responseData.heroSlides = responseData.heroSlides.map(s => ({ ...s, image: cleanUrl(s.image) }));
     }
 
     res.status(200).json({
@@ -125,12 +185,11 @@ exports.updateHomepageConfig = async (req, res) => {
 // @access  Private/Admin
 exports.resetHomepageConfig = async (req, res) => {
   try {
-    await SiteConfig.deleteOne({ configType: 'homepage' });
-    const config = await SiteConfig.create({ configType: 'homepage' });
-    
+    const defaults = getDefaultConfig();
+    writeConfigFile(defaults);
     res.status(200).json({
       success: true,
-      data: config,
+      data: defaults,
       message: 'Configuration reset to localized defaults'
     });
   } catch (error) {
@@ -149,12 +208,10 @@ exports.uploadLogo = async (req, res) => {
     }
     
     const url = `/uploads/${req.file.filename}`;
-    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5001}`;
-    const fullUrl = `${backendUrl}${url}`;
 
     res.status(200).json({
       success: true,
-      url: fullUrl
+      url: url
     });
   } catch (error) {
     console.error('Error uploading site logo:', error);

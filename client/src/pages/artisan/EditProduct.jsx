@@ -150,9 +150,10 @@ const EditProduct = () => {
         customizable: formData.customizable,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         inventory: {
-          quantity: parseInt(formData.stock) || 0
+          quantity: Math.max(0, parseInt(formData.stock, 10) || 0)
         },
-        status: formData.status
+        stock: Math.max(0, parseInt(formData.stock, 10) || 0),
+        status: (parseInt(formData.stock, 10) || 0) > 0 ? 'active' : (formData.status || 'out_of_stock')
       };
 
       const response = await fetch(API_ENDPOINTS.PRODUCTS.BY_ID(id), {

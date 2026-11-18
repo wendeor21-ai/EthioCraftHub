@@ -199,9 +199,9 @@ function hasZemaAIPermission(user) {
  */
 function checkRateLimit(userId, rateLimitStore = {}) {
   // Increase default rate limit for testing to avoid blocking legitimate AI assist requests
-  const MAX_REQUESTS = process.env.RATE_LIMIT_MAX_REQUESTS
-    ? parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10)
-    : 500; // per hour
+  const MAX_REQUESTS = process.env.ZEMA_RATE_LIMIT_MAX
+    ? parseInt(process.env.ZEMA_RATE_LIMIT_MAX, 10)
+    : 1000; // per hour
   const WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
   const now = Date.now();

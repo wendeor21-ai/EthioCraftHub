@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SparklesIcon, CurrencyDollarIcon, TrendingUpIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../utils/api';
 
 const ZemaSummaryCard = () => {
   const { user } = useAuth();
@@ -33,18 +34,8 @@ const ZemaSummaryCard = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/orders', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-
-      const data = await response.json();
+      const res = await api.get('/orders');
+      const data = res.data;
       
       // Calculate totals
       const orders = data.orders || [];

@@ -1,7 +1,7 @@
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
 PassengerAppRoot "/home/ethiocaq/EthioCraftHub"
 PassengerBaseURI "/api"
-PassengerNodejs "/home/ethiocaq/nodevenv/EthioCraftHub/24/bin/node"
+PassengerNodejs "/home/ethiocaq/nodevenv/EthioCraftHub/20/bin/node"
 PassengerAppType node
 PassengerStartupFile server/server.js
 # DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
@@ -10,11 +10,20 @@ PassengerStartupFile server/server.js
   RewriteEngine On
   RewriteBase /
 
-  # Socket.io requests proxy to Node.js /api
-  RewriteRule ^socket\.io(.*)$ /api/socket.io$1 [PT,L,QSA]
+  # Pass Authorization header to Node.js / Passenger
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+  SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
+
+  # Handle socket.io gracefully without locking Passenger processes
+  RewriteRule ^socket\.io - [R=204,L]
+
+  # Proxy /uploads to Node.js /api/uploads if not found in public_html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^uploads/(.*)$ /api/uploads/$1 [PT,L,QSA]
 
   # 1. Do NOT rewrite API, uploads, or static backend paths to index.html
-  RewriteCond %{REQUEST_URI} ^/(api|uploads|images|health|socket\.io) [NC]
+  RewriteCond %{REQUEST_URI} ^/(api|uploads|images|health) [NC]
   RewriteRule ^ - [L]
 
   # 2. React Client Routing
@@ -25,17 +34,51 @@ PassengerStartupFile server/server.js
   RewriteRule . /index.html [L]
 </IfModule>
 
-# Cache static assets
+# Compression via mod_deflate for all text, code, json, svg and font assets
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/x-javascript text/javascript
+  AddOutputFilterByType DEFLATE application/json application/xml application/xhtml+xml
+  AddOutputFilterByType DEFLATE image/svg+xml
+  AddOutputFilterByType DEFLATE font/ttf font/otf font/woff font/woff2 application/font-woff2
+</IfModule>
+
+# Cache static assets & hashed chunks (1 year for hashed, no-cache for index.html)
 <IfModule mod_expires.c>
   ExpiresActive On
-  ExpiresByType image/jpg "access plus 1 month"
-  ExpiresByType image/jpeg "access plus 1 month"
-  ExpiresByType image/gif "access plus 1 month"
-  ExpiresByType image/png "access plus 1 month"
-  ExpiresByType image/webp "access plus 1 month"
-  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresDefault "access plus 1 month"
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
   ExpiresByType image/x-icon "access plus 1 year"
-  ExpiresByType text/css "access plus 1 month"
-  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/jpg "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  # Dynamic CORS handling for apex and www domains (prevents CORS policy blocks on errors)
+  SetEnvIfOrigin "^https?://(www\.)?ethiocrafthub\.com$" CORS_OK=$0
+  Header always set Access-Control-Allow-Origin "%{CORS_OK}e" env=CORS_OK
+  Header always set Access-Control-Allow-Credentials "true" env=CORS_OK
+  Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS" env=CORS_OK
+  Header always set Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, User-Agent, DNT, Cache-Control, X-Mx-ReqToken, Keep-Alive, X-Requested-With, If-Modified-Since, x-access-token, X-Access-Token" env=CORS_OK
+
+  # 1 year cache + immutable for hashed static CRA assets
+  <FilesMatch "\.(js|css|woff2|woff|ttf|png|jpe?g|webp|svg)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Prevent caching of index.html so users always get the latest React build
+  <Files "index.html">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </Files>
 </IfModule>
 

@@ -1,6 +1,6 @@
 /**
  * Checkout Page for EthioCraft Global
- * Professional AliExpress-style checkout with clear hierarchy and prominent CTA
+ * Mobile-First, Highly Responsive with Complete Amharic & English Localization
  */
 
 import { useState, useEffect } from 'react';
@@ -178,11 +178,11 @@ const Checkout = () => {
 
   const handlePayment = async () => {
     if (!selectedAddressId) {
-      setError('Please select or add a shipping address');
+      setError(t('checkout.select_address_error', 'እባክዎ የመላኪያ አድራሻ ይምረጡ ወይም ያስገቡ'));
       return;
     }
     if (!items.length) {
-      setError('Your cart is empty');
+      setError(t('checkout.cart_empty_error', 'የግዢ ቅርጫትዎ ባዶ ነው'));
       return;
     }
     setError('');
@@ -190,9 +190,9 @@ const Checkout = () => {
     try {
       const authToken = token || localStorage.getItem('authToken');
       const payloadItems = items.map(item => ({
-        productId: item.product?._id || item._id, // Will be undefined/null for mock custom products
-        quantity: item.quantity,
-        price: item.product?.price || cartSummary.total, // Fallback to provided total for custom designs
+        productId: item.product?._id || item._id,
+        quantity: Math.max(1, parseInt(item.quantity, 10) || 1),
+        price: item.product?.price || cartSummary.total,
         artisan: item.product?.artisan?._id || item.product?.artisan || (isCustomCheckout ? customOrder?.items[0]?.artisan : null),
         selectedOptions: item.selectedOptions || {},
         selectedColor: item.selectedColor || null,
@@ -240,11 +240,11 @@ const Checkout = () => {
           });
         }
       } else {
-        setError(data.message || 'Failed to initialize payment');
+        setError(data.message || t('checkout.payment_fail_error', 'ክፍያውን ማከናወን አልተቻለም'));
       }
     } catch (error) {
       console.error('Payment error:', error);
-      setError('Failed to initialize payment. Please try again.');
+      setError(t('checkout.payment_fail_error', 'ክፍያውን ማከናወን አልተቻለም። እባክዎ እንደገና ይሞክሩ።'));
     } finally {
       setProcessingPayment(false);
     }
@@ -252,28 +252,32 @@ const Checkout = () => {
 
   if (loading && shippingAddresses.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <LoadingSpinner size="large" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6 lg:py-10">
+    <div className="min-h-screen bg-gray-50/70 font-sans text-gray-800">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         
-        {/* Header with back button */}
-        <div className="mb-8">
+        {/* Header with back button - Compact mobile layout */}
+        <div className="mb-4 sm:mb-6">
           <button
             onClick={() => navigate('/cart')}
-            className="inline-flex items-center gap-2 text-gray-500 hover:text-ethiopian-gold transition-colors mb-4 text-sm"
+            className="inline-flex items-center gap-1.5 text-gray-500 hover:text-amber-600 transition-colors mb-2 text-xs sm:text-sm font-medium"
           >
-            <ArrowLeftIcon className="w-4 h-4" />
-            Back to Cart
+            <ArrowLeftIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            {t('checkout.back_to_cart', 'ወደ ቅርጫት ተመለስ')}
           </button>
           <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Checkout</h1>
-            <p className="text-gray-500 text-sm mt-1">Complete your order securely</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tight">
+              {t('checkout.title', 'ክፍያ')}
+            </h1>
+            <p className="text-gray-500 text-xs sm:text-sm mt-0.5">
+              {t('checkout.complete_order_desc', 'ትዕዛዝዎን ደህንነቱ በተጠበቀ ሁኔታ ያጠናቁ')}
+            </p>
           </div>
         </div>
 
@@ -284,54 +288,58 @@ const Checkout = () => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between"
+              className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 sm:p-4 flex items-center justify-between text-xs sm:text-sm"
             >
-              <p className="text-red-600 text-sm">{error}</p>
-              <button onClick={() => setError('')} className="text-red-400 hover:text-red-600">✕</button>
+              <p className="text-red-700 font-medium">{error}</p>
+              <button onClick={() => setError('')} className="text-red-400 hover:text-red-600 font-bold ml-2">✕</button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           
           {/* Left column: Address & Payment */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             
             {/* Shipping address card */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                <MapPinIcon className="w-5 h-5 text-ethiopian-gold" />
-                <h2 className="font-semibold text-gray-800">Shipping Address</h2>
+            <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
+                <MapPinIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                <h2 className="font-bold text-gray-900 text-sm sm:text-base">
+                  {t('checkout.shipping_address', 'የመላኪያ አድራሻ')}
+                </h2>
               </div>
-              <div className="p-5">
+              <div className="p-3.5 sm:p-5">
                 {shippingAddresses.length > 0 && !showAddressForm && (
-                  <div className="space-y-3 mb-4">
+                  <div className="space-y-2.5 mb-3">
                     {shippingAddresses.map((addr) => (
                       <div
                         key={addr._id}
                         onClick={() => setSelectedAddressId(addr._id)}
-                        className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        className={`p-3 sm:p-4 rounded-xl border-2 cursor-pointer transition-all ${
                           selectedAddressId === addr._id
-                            ? 'border-ethiopian-gold bg-amber-50/20'
-                            : 'border-gray-200 hover:border-ethiopian-gold/40'
+                            ? 'border-amber-500 bg-amber-50/30 shadow-sm'
+                            : 'border-gray-200 hover:border-amber-500/40 bg-white'
                         }`}
                       >
-                        <div className="flex justify-between">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium text-gray-900">
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="space-y-0.5 text-xs sm:text-sm min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-gray-900 truncate">
                                 {addr.firstName} {addr.lastName}
                               </span>
                               {addr.isDefault && (
-                                <span className="text-[10px] bg-ethiopian-gold text-white px-2 py-0.5 rounded-full">Default</span>
+                                <span className="text-[9px] bg-amber-500 text-white px-1.5 py-0.2 rounded-full font-bold">
+                                  {t('checkout.default_badge', 'መደበኛ')}
+                                </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600">{addr.street}, {addr.city}</p>
-                            <p className="text-sm text-gray-600">{addr.region}, {addr.country}</p>
-                            <p className="text-sm text-gray-600">{addr.phone}</p>
+                            <p className="text-gray-600 truncate">{addr.street}, {addr.city}</p>
+                            <p className="text-gray-500 text-[11px] sm:text-xs">{addr.region}, {addr.country}</p>
+                            <p className="text-gray-600 font-medium">{addr.phone}</p>
                           </div>
-                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                            selectedAddressId === addr._id ? 'border-ethiopian-gold bg-ethiopian-gold' : 'border-gray-300'
+                          <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            selectedAddressId === addr._id ? 'border-amber-500 bg-amber-500' : 'border-gray-300'
                           }`}>
                             {selectedAddressId === addr._id && <CheckCircleIcon className="w-3 h-3 text-white" />}
                           </div>
@@ -344,10 +352,10 @@ const Checkout = () => {
                 {!showAddressForm && (
                   <button
                     onClick={() => setShowAddressForm(true)}
-                    className="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-ethiopian-gold hover:text-ethiopian-gold transition flex items-center justify-center gap-2 text-sm"
+                    className="w-full py-2.5 sm:py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-amber-500 hover:text-amber-600 transition flex items-center justify-center gap-2 text-xs sm:text-sm font-semibold"
                   >
-                    <PlusIcon className="w-5 h-5" />
-                    Add New Address
+                    <PlusIcon className="w-4 h-4" />
+                    {t('checkout.add_new_address', 'አዲስ አድራሻ ጨምር')}
                   </button>
                 )}
 
@@ -358,28 +366,76 @@ const Checkout = () => {
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       onSubmit={handleSaveAddress}
-                      className="space-y-4 mt-4"
+                      className="space-y-3 mt-3 text-xs sm:text-sm"
                     >
-                      <div className="grid grid-cols-2 gap-4">
-                        <input type="text" name="firstName" value={addressForm.firstName} onChange={handleAddressFormChange} placeholder="First name *" required className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent" />
-                        <input type="text" name="lastName" value={addressForm.lastName} onChange={handleAddressFormChange} placeholder="Last name *" required className="p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-ethiopian-gold" />
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <input 
+                          type="text" 
+                          name="firstName" 
+                          value={addressForm.firstName} 
+                          onChange={handleAddressFormChange} 
+                          placeholder={t('checkout.first_name', 'ስም *')} 
+                          required 
+                          className="p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-xs sm:text-sm" 
+                        />
+                        <input 
+                          type="text" 
+                          name="lastName" 
+                          value={addressForm.lastName} 
+                          onChange={handleAddressFormChange} 
+                          placeholder={t('checkout.last_name', 'የአባት ስም *')} 
+                          required 
+                          className="p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-xs sm:text-sm" 
+                        />
                       </div>
-                      <input type="tel" name="phone" value={addressForm.phone} onChange={handleAddressFormChange} placeholder="Phone number *" required className="w-full p-3 border border-gray-200 rounded-lg" />
-                      <input type="text" name="street" value={addressForm.street} onChange={handleAddressFormChange} placeholder="Street address *" required className="w-full p-3 border border-gray-200 rounded-lg" />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input type="text" name="city" value={addressForm.city} onChange={handleAddressFormChange} placeholder="City *" required className="p-3 border border-gray-200 rounded-lg" />
-                        <input type="text" name="region" value={addressForm.region} onChange={handleAddressFormChange} placeholder="Region *" required className="p-3 border border-gray-200 rounded-lg" />
+                      <input 
+                        type="tel" 
+                        name="phone" 
+                        value={addressForm.phone} 
+                        onChange={handleAddressFormChange} 
+                        placeholder={t('checkout.phone', 'ስልክ ቁጥር *')} 
+                        required 
+                        className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-xs sm:text-sm" 
+                      />
+                      <input 
+                        type="text" 
+                        name="street" 
+                        value={addressForm.street} 
+                        onChange={handleAddressFormChange} 
+                        placeholder={t('checkout.street_address', 'የጎዳና አድራሻ / የቤት ቁጥር *')} 
+                        required 
+                        className="w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-xs sm:text-sm" 
+                      />
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <input 
+                          type="text" 
+                          name="city" 
+                          value={addressForm.city} 
+                          onChange={handleAddressFormChange} 
+                          placeholder={t('checkout.city', 'ከተማ *')} 
+                          required 
+                          className="p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-xs sm:text-sm" 
+                        />
+                        <input 
+                          type="text" 
+                          name="region" 
+                          value={addressForm.region} 
+                          onChange={handleAddressFormChange} 
+                          placeholder={t('checkout.region', 'ክልል *')} 
+                          required 
+                          className="p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none text-xs sm:text-sm" 
+                        />
                       </div>
-                      <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" name="isDefault" checked={addressForm.isDefault} onChange={handleAddressFormChange} className="w-4 h-4" />
-                        Set as default address
+                      <label className="flex items-center gap-2 text-xs text-gray-700 cursor-pointer pt-1">
+                        <input type="checkbox" name="isDefault" checked={addressForm.isDefault} onChange={handleAddressFormChange} className="w-3.5 h-3.5 text-amber-600 rounded" />
+                        {t('checkout.set_default_address', 'መደበኛ አድራሻ አድርግ')}
                       </label>
-                      <div className="flex gap-3">
-                        <button type="submit" disabled={loading} className="flex-1 py-2.5 bg-ethiopian-gold text-white rounded-lg font-medium hover:bg-amber-600 transition">
-                          {loading ? 'Saving...' : 'Save Address'}
+                      <div className="flex gap-2.5 pt-1">
+                        <button type="submit" disabled={loading} className="flex-1 py-2.5 bg-amber-500 text-white rounded-lg font-bold hover:bg-amber-600 transition text-xs sm:text-sm">
+                          {loading ? t('checkout.saving', 'በማስቀመጥ ላይ...') : t('checkout.save_address', 'አድራሻ መዝግብ')}
                         </button>
-                        <button type="button" onClick={() => setShowAddressForm(false)} className="flex-1 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                          Cancel
+                        <button type="button" onClick={() => setShowAddressForm(false)} className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition text-xs sm:text-sm">
+                          {t('common.cancel', 'ሰርዝ')}
                         </button>
                       </div>
                     </motion.form>
@@ -389,38 +445,60 @@ const Checkout = () => {
             </div>
 
             {/* Payment method card */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100 bg-gray-50 flex items-center gap-2">
-                <CreditCardIcon className="w-5 h-5 text-ethiopian-gold" />
-                <h2 className="font-semibold text-gray-800">Payment Method</h2>
+            <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden">
+              <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-gray-100 bg-gray-50/70 flex items-center gap-2">
+                <CreditCardIcon className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                <h2 className="font-bold text-gray-900 text-sm sm:text-base">
+                  {t('checkout.payment_method', 'የክፍያ ዘዴ')}
+                </h2>
               </div>
-              <div className="p-5 space-y-3">
+              <div className="p-3.5 sm:p-5 space-y-2.5">
                 {[
-                  { id: 'CHAPA', icon: CreditCardIcon, title: 'Online Payment', desc: 'Chapa (Cards, Telebirr, CBE)', disabled: true },
-                  { id: 'COD', icon: BanknotesIcon, title: 'Cash on Delivery', desc: 'Pay when you receive', disabled: false },
-                  { id: 'MANUAL', icon: BuildingOfficeIcon, title: 'Manual Payment', desc: 'Bank Transfer / Telebirr', disabled: false }
+                  { 
+                    id: 'CHAPA', 
+                    icon: CreditCardIcon, 
+                    title: t('checkout.payment_method_online', 'ኦንላይን ክፍያ (Online Payment)'), 
+                    desc: t('checkout.online_payment_sub', 'Chapa (ካርድ፣ ቴሌብር፣ CBE)'), 
+                    disabled: true 
+                  },
+                  { 
+                    id: 'COD', 
+                    icon: BanknotesIcon, 
+                    title: t('checkout.payment_method_cod', 'በእጅ ሲረከቡ ክፍያ (Cash on Delivery)'), 
+                    desc: t('checkout.cod_sub', 'እቃውን ሲረከቡ የሚከፈል (Pay when you receive)'), 
+                    disabled: false 
+                  },
+                  { 
+                    id: 'MANUAL', 
+                    icon: BuildingOfficeIcon, 
+                    title: t('checkout.payment_method_manual', 'ቀጥታ የባንክ ሂሳብ ክፍያ (Manual Payment)'), 
+                    desc: t('checkout.manual_payment_sub', 'የባንክ ዝውውር / ቴሌብር (Bank Transfer / Telebirr)'), 
+                    disabled: false 
+                  }
                 ].map((method) => (
                   <div
                     key={method.id}
                     onClick={() => !method.disabled && setSelectedPaymentMethod(method.id)}
-                    className={`p-4 rounded-lg border-2 transition-all ${
+                    className={`p-3 sm:p-3.5 rounded-xl border-2 transition-all ${
                       method.disabled
-                        ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
+                        ? 'border-gray-100 bg-gray-50/50 opacity-60 cursor-not-allowed'
                         : selectedPaymentMethod === method.id
-                          ? 'border-ethiopian-gold bg-amber-50/20 cursor-pointer'
-                          : 'border-gray-200 cursor-pointer'
+                          ? 'border-amber-500 bg-amber-50/30 shadow-sm cursor-pointer'
+                          : 'border-gray-200 hover:border-amber-500/40 bg-white cursor-pointer'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <method.icon className="w-6 h-6 text-ethiopian-gold" />
-                        <div>
-                          <p className="font-medium text-gray-900">{method.title}</p>
-                          <p className="text-xs text-gray-500">{method.desc}</p>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                        <div className={`p-1.5 rounded-lg shrink-0 ${selectedPaymentMethod === method.id ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
+                          <method.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-900 text-xs sm:text-sm truncate">{method.title}</p>
+                          <p className="text-[11px] sm:text-xs text-gray-500 truncate">{method.desc}</p>
                         </div>
                       </div>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                        !method.disabled && selectedPaymentMethod === method.id ? 'border-ethiopian-gold bg-ethiopian-gold' : 'border-gray-300'
+                      <div className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        !method.disabled && selectedPaymentMethod === method.id ? 'border-amber-500 bg-amber-500' : 'border-gray-300'
                       }`}>
                         {!method.disabled && selectedPaymentMethod === method.id && <CheckCircleIcon className="w-3 h-3 text-white" />}
                       </div>
@@ -429,30 +507,40 @@ const Checkout = () => {
                 ))}
 
                 {selectedPaymentMethod === 'MANUAL' && artisanDetails && (
-                  <div className="mt-4 p-4 bg-amber-50 rounded-lg text-sm">
-                    <p className="font-semibold text-amber-800 mb-2">Artisan Bank Details</p>
-                    <div className="space-y-1 text-amber-700">
-                      <p>Bank: {artisanDetails.bankName || 'N/A'}</p>
-                      <p>Account: {artisanDetails.accountHolderName}</p>
-                      <p>Number: {artisanDetails.accountNumber}</p>
-                      {artisanDetails.merchantId && <p>Telebirr ID: {artisanDetails.merchantId}</p>}
+                  <div className="mt-3 p-3.5 bg-amber-50/80 rounded-xl border border-amber-200 text-xs sm:text-sm animate-fadeIn">
+                    <p className="font-bold text-amber-900 mb-1.5 text-xs sm:text-sm">
+                      {t('checkout.artisan_payment_details', 'የባለሙያ የባንክ ዝርዝሮች (Artisan Bank Details)')}
+                    </p>
+                    <div className="space-y-1 text-amber-800 text-xs">
+                      <p><span className="font-semibold">{t('checkout.bank_name', 'ባንክ')}:</span> {artisanDetails.bankName || 'CBE'}</p>
+                      <p><span className="font-semibold">{t('checkout.account_holder', 'የአካውንት ስም')}:</span> {artisanDetails.accountHolderName}</p>
+                      <p><span className="font-semibold">{t('checkout.account_number', 'የአካውንት ቁጥር')}:</span> <span className="font-mono font-bold">{artisanDetails.accountNumber}</span></p>
+                      {artisanDetails.merchantId && (
+                        <p><span className="font-semibold">{t('checkout.telebirr_merchant', 'የቴሌብር ቁጥር')}:</span> {artisanDetails.merchantId}</p>
+                      )}
                     </div>
-                    <p className="text-xs text-amber-600 mt-2">* You'll upload receipt after placing order</p>
+                    <p className="text-[11px] text-amber-700 mt-2 font-medium">
+                      {t('checkout.manual_payment_note', '* ትዕዛዝ ከፈጸሙ በኋላ የክፍያ ደረሰኝ ምስል ያስገባሉ (* You will upload receipt after placing order)')}
+                    </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Trust & authenticity */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-100">
-              <div className="flex gap-4">
-                <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center shadow-sm">
-                  <SparklesIcon className="w-5 h-5 text-white" />
+            {/* Trust & authenticity - Compact mobile banner */}
+            <div className="bg-gradient-to-r from-purple-50 via-pink-50 to-amber-50 rounded-2xl p-3.5 sm:p-4 border border-purple-100 shadow-sm">
+              <div className="flex gap-3 items-start">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-purple-600 rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                  <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800">Zema AI Authenticity Verified</h3>
-                  <p className="text-xs text-gray-500">Blockchain Certified</p>
-                  <p className="text-sm text-gray-600 mt-1">All products are verified authentic and ethically sourced. Your purchase directly supports Ethiopian artisans.</p>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-gray-900 text-xs sm:text-sm leading-snug">
+                    {t('checkout.zema_verified', 'ዜማ AI ትክክለኛነት ማረጋገጫ (Zema AI Authenticity)')}
+                  </h3>
+                  <p className="text-[10px] text-purple-700 font-semibold">{t('checkout.blockchain_certified', 'በብሎክቼይን የተረጋገጠ (Blockchain Certified)')}</p>
+                  <p className="text-[11px] sm:text-xs text-gray-600 mt-1 leading-relaxed">
+                    {t('checkout.zema_desc', 'ሁሉም ምርቶች ትክክለኛነታቸው የተረጋገጠ እና ከኢትዮጵያዊያን የእጅ ጥበብ ባለሙያዎች በቀጥታ የተዘጋጁ ናቸው። ግዢዎ የሀገር ውስጥ ባለሙያዎችን በቀጥታ ይደግፋል።')}
+                  </p>
                 </div>
               </div>
             </div>
@@ -460,62 +548,66 @@ const Checkout = () => {
 
           {/* Right column: Order Summary */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-gray-100 bg-gray-50">
-                  <h2 className="font-semibold text-gray-800">Order Summary</h2>
+            <div className="sticky top-20">
+              <div className="bg-white rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden">
+                <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-gray-100 bg-gray-50/70">
+                  <h2 className="font-bold text-gray-900 text-sm sm:text-base">
+                    {t('checkout.order_summary', 'የትዕዛዝ ማጠቃለያ')}
+                  </h2>
                 </div>
-                <div className="p-5 space-y-4">
+                <div className="p-3.5 sm:p-5 space-y-3">
                   {/* Item count */}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Items ({cartSummary.itemCount})</span>
-                    <span className="font-medium">{formatCurrency(cartSummary.subtotal)}</span>
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-gray-600">{t('checkout.items', 'ምርቶች')} ({cartSummary.itemCount})</span>
+                    <span className="font-semibold text-gray-900">{formatCurrency(cartSummary.subtotal)}</span>
                   </div>
                   {/* Shipping */}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600 flex items-center gap-1"><TruckIcon className="w-4 h-4" /> Shipping</span>
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-gray-600 flex items-center gap-1"><TruckIcon className="w-3.5 h-3.5 text-gray-400" /> {t('orders.shipping', 'ማጓጓዣ')}</span>
                     {cartSummary.shipping === 0 ? (
-                      <span className="text-green-600 font-semibold">Free</span>
+                      <span className="text-green-600 font-bold">{t('cart.free', 'ነፃ')}</span>
                     ) : (
-                      <span>{formatCurrency(cartSummary.shipping)}</span>
+                      <span className="font-semibold text-gray-900">{formatCurrency(cartSummary.shipping)}</span>
                     )}
                   </div>
                   {/* Tax */}
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">VAT (15%)</span>
-                    <span>{formatCurrency(cartSummary.tax)}</span>
+                  <div className="flex justify-between text-xs sm:text-sm">
+                    <span className="text-gray-600">{t('orders.vat', 'ተ.እ.ታ (15%)')}</span>
+                    <span className="font-semibold text-gray-900">{formatCurrency(cartSummary.tax)}</span>
                   </div>
-                  <div className="border-t pt-3">
+                  <div className="border-t border-gray-100 pt-2.5">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-gray-900">Total</span>
-                      <span className="text-xl font-bold text-ethiopian-gold">{formatCurrency(cartSummary.total)}</span>
+                      <span className="font-black text-gray-900 text-sm sm:text-base">{t('orders.grand_total', 'ጠቅላላ ድምር')}</span>
+                      <span className="text-lg sm:text-xl font-black text-amber-600">{formatCurrency(cartSummary.total)}</span>
                     </div>
-                    <p className="text-xs text-gray-400 text-right">Including VAT</p>
+                    <p className="text-[10px] text-gray-400 text-right">{t('cart.inc_vat', 'ተ.እ.ታን ጨምሮ')}</p>
                   </div>
 
                   {/* Free shipping progress */}
                   {cartSummary.subtotal < 5000 && cartSummary.shipping > 0 && (
-                    <div className="bg-amber-50 rounded-lg p-3">
-                      <p className="text-xs text-amber-700 mb-1">Add {formatCurrency(5000 - cartSummary.subtotal)} more for free shipping</p>
-                      <div className="w-full bg-amber-200 rounded-full h-1.5">
-                        <div className="bg-ethiopian-gold h-1.5 rounded-full" style={{ width: `${(cartSummary.subtotal / 5000) * 100}%` }}></div>
+                    <div className="bg-amber-50 rounded-xl p-2.5 border border-amber-200/50">
+                      <p className="text-[11px] text-amber-800 mb-1 font-medium">
+                        {t('checkout.free_shipping_needed', 'ለነፃ ማጓጓዣ {{amount}} ይጨምሩ', { amount: formatCurrency(5000 - cartSummary.subtotal) })}
+                      </p>
+                      <div className="w-full bg-amber-200/70 rounded-full h-1.5">
+                        <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: `${(cartSummary.subtotal / 5000) * 100}%` }}></div>
                       </div>
                     </div>
                   )}
 
                   {cartSummary.subtotal >= 5000 && (
-                    <div className="bg-green-50 rounded-lg p-3 flex items-center gap-2">
-                      <TruckIcon className="w-4 h-4 text-green-600" />
-                      <p className="text-xs text-green-700 font-semibold">You qualify for free shipping! 🎉</p>
+                    <div className="bg-green-50 rounded-xl p-2.5 flex items-center gap-2 border border-green-200/50">
+                      <TruckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                      <p className="text-xs text-green-800 font-bold">{t('checkout.free_shipping_qualify', 'ነፃ ማጓጓዣ አግኝተዋል! 🎉')}</p>
                     </div>
                   )}
 
                   {/* Delivery estimate */}
-                  <div className="flex items-center gap-3 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
-                    <ClockIcon className="w-5 h-5 text-gray-500" />
+                  <div className="flex items-center gap-2.5 text-xs text-gray-600 bg-gray-50/70 p-2.5 rounded-xl border border-gray-100">
+                    <ClockIcon className="w-4 h-4 text-amber-600 shrink-0" />
                     <div>
-                      <p className="font-medium">Estimated Delivery</p>
-                      <p className="text-xs">3-5 business days after shipping</p>
+                      <p className="font-bold text-gray-800">{t('checkout.estimated_delivery', 'ግምታዊ የማድረሻ ጊዜ')}</p>
+                      <p className="text-[11px] text-gray-500">{t('checkout.estimated_delivery_sub', 'ከተላከ ከ 3 - 5 የስራ ቀናት ውስጥ')}</p>
                     </div>
                   </div>
 
@@ -523,30 +615,30 @@ const Checkout = () => {
                   <button
                     onClick={handlePayment}
                     disabled={processingPayment || !selectedAddressId}
-                    className="w-full py-3.5 bg-ethiopian-gold text-white font-semibold rounded-lg hover:bg-amber-600 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                    className="w-full py-3 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 active:scale-[0.99] transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                   >
                     {processingPayment ? (
                       <>
                         <LoadingSpinner size="small" />
-                        Processing...
+                        <span>{t('checkout.processing', 'በሂደት ላይ...')}</span>
                       </>
                     ) : (
                       <>
-                        Place Order
-                        <ChevronRightIcon className="w-5 h-5" />
+                        <span>{t('checkout.place_order', 'ትዕዛዙን አረጋግጥ')}</span>
+                        <ChevronRightIcon className="w-4 h-4" />
                       </>
                     )}
                   </button>
 
                   {/* Security badge */}
-                  <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                    <ShieldCheckIcon className="w-4 h-4 text-green-600" />
-                    Secure payment
+                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-500 pt-1">
+                    <ShieldCheckIcon className="w-3.5 h-3.5 text-green-600" />
+                    <span>{t('checkout.secure_checkout_msg', 'ደህንነቱ የተጠበቀ ክፍያ')}</span>
                   </div>
 
                   {/* Payment methods footer */}
-                  <div className="text-center pt-2 text-xs text-gray-400">
-                    Secure payment powered by Chapa, Telebirr, CBE
+                  <div className="text-center text-[10px] text-gray-400">
+                    {t('checkout.secure_payment_by', 'ክፍያው በ Chapa፣ Telebirr እና CBE ደህንነቱ የተጠበቀ ነው')}
                   </div>
                 </div>
               </div>

@@ -14,6 +14,7 @@ import { SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import ProductCard from './ProductCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../utils/api';
 
 const RecommendedProducts = ({ limit = 8 }) => {
   const navigate = useNavigate();
@@ -35,32 +36,13 @@ const RecommendedProducts = ({ limit = 8 }) => {
   const fetchRecommendations = async () => {
     try {
       setLoading(true);
-      const authToken = token || localStorage.getItem('authToken');
-
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const origin = apiUrl.replace(/\/api\/?$/, "");
-      const response = await fetch(`${origin}/api/recommendations/recommendations?limit=${limit}`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Recommendations API not available');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        setProducts(data.data);
+      const res = await api.get(`/recommendations/recommendations?limit=${limit}`);
+      if (res.data?.success && res.data?.data) {
+        setProducts(res.data.data);
       } else {
-        console.log('Recommendations not available, falling back to popular products');
-        // Fallback to popular products
         fetchPopularProducts();
       }
     } catch (error) {
-      console.log('Recommendations API not available, showing popular products instead');
-      // Fallback to popular products
       fetchPopularProducts();
     } finally {
       setLoading(false);
@@ -70,13 +52,8 @@ const RecommendedProducts = ({ limit = 8 }) => {
   const fetchPopularProducts = async () => {
     try {
       setLoading(true);
-      // Phase 3: Prioritize High Sales Count (purchases) explicitly
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const origin = apiUrl.replace(/\/api\/?$/, "");
-      const response = await fetch(`${origin}/api/products?limit=${limit}&sortBy=salesCount&sortOrder=desc`);
-      const data = await response.json();
-
-      if (data.products) {
+      const res = await api.get(`/products?limit=${limit}&sortBy=salesCount&sortOrder=desc`);
+      if (res.data?.products) {
         // Double check sorting on frontend to ensure 'Best Sellers' are prioritized
         const sortedProducts = [...data.products].sort((a, b) => {
           // 1. Sales Count (purchases) priority

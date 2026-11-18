@@ -1,17 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
 import React from 'react';
 import { useSound } from '../contexts/SoundContext';
-import { playNotificationSound } from '../utils/soundUtils';
+import { playNotificationSound, shouldNotifyForOrder } from '../utils/soundUtils';
 import io from 'socket.io-client';
 import { API_BASE_URL } from '../config/api';
+import api from '../utils/api';
 
 /**
  * Hook to handle dynamic inventory alerts, pending order counts, and real-time socket events.
  * Polls the server every 30 seconds and listens to Socket.io for immediate updates without refresh.
  */
 const useInventoryAlerts = () => {
+    const navigate = useNavigate();
     const { user, token, isAuthenticated } = useAuth();
     const { playOrderSound, playAlertSound } = useSound();
     const [inventoryCount, setInventoryCount] = useState(0);
@@ -25,19 +28,18 @@ const useInventoryAlerts = () => {
     const isFirstRun = useRef(true);
 
     const fetchAlerts = useCallback(async () => {
-        if (!token || !isAuthenticated) return;
+        // Only active, verified artisans who have accepted guidelines should poll stats
+        const isVerified = (user?.isVerified === true || user?.verification?.status === 'approved') && user?.hasAcceptedGuidelines;
+        if (!token || !isAuthenticated || user?.role !== 'artisan' || !isVerified) {
+            setInventoryCount(0);
+            setPendingOrdersCount(0);
+            return;
+        }
 
         try {
             setLoading(true);
-            const response = await fetch('/api/users/artisan/dashboard-stats', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (!response.ok) throw new Error('Failed to fetch dashboard stats');
-
-            const body = await response.json();
+            const response = await api.get('/users/artisan/dashboard-stats');
+            const body = response.data || {};
             const stats = body.data || body.stats || {};
 
             // Extract new pending orders for the notification badge
@@ -65,7 +67,7 @@ const useInventoryAlerts = () => {
                                         <button 
                                             onClick={() => {
                                                 toast.dismiss(t.id);
-                                                window.location.href = `/artisan/orders`;
+                                                navigate('/artisan/orders');
                                             }}
                                             className="mt-2 text-[10px] font-bold text-[#CFA66E] hover:underline text-left uppercase tracking-tight"
                                         >
@@ -108,7 +110,7 @@ const useInventoryAlerts = () => {
                                 <button 
                                     onClick={() => {
                                         toast.dismiss(t.id);
-                                        window.location.href = `/artisan/inventory-alerts`;
+                                        navigate('/artisan/inventory-alerts');
                                     }}
                                     className="mt-1 text-xs font-bold text-[#CFA66E] hover:underline text-left"
                                 >
@@ -135,11 +137,11 @@ const useInventoryAlerts = () => {
             isFirstRun.current = false;
 
         } catch (error) {
-            console.error('Error in useInventoryAlerts:', error);
+            // Silently swallow background poll errors so console is not spammed
         } finally {
             setLoading(false);
         }
-    }, [token, isAuthenticated, playAlertSound, playOrderSound]);
+    }, [token, isAuthenticated, user, playAlertSound, playOrderSound]);
 
     // Periodic polling to stay in sync
     useEffect(() => {
@@ -154,13 +156,17 @@ const useInventoryAlerts = () => {
     useEffect(() => {
         const userId = user?._id || user?.id;
         if (!userId || !isAuthenticated) return;
+        if (typeof window === 'undefined') return;
+        const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        // In production on cPanel Passenger, polling interval (every 30s above) handles updates reliably without locking workers
+        if (!isLocal) return;
 
         const socketUrl = API_BASE_URL.replace(/\/api\/?$/, '');
         const socket = io(socketUrl, {
             withCredentials: true,
-            transports: ['polling', 'websocket'],
-            reconnectionAttempts: 10,
-            reconnectionDelay: 1000
+            transports: ['websocket'],
+            reconnectionAttempts: 2,
+            timeout: 5000
         });
 
         socket.on('connect', () => {
@@ -170,28 +176,46 @@ const useInventoryAlerts = () => {
         });
 
         socket.on('newOrder', (data) => {
-            // 1. Play sound immediately
-            playNotificationSound();
-            try { playOrderSound(); } catch (e) {}
+            const orderNum = data?.orderNumber || data?.orderId || 'New';
+            const orderKey = data?.orderId || data?.id || data?._id || orderNum;
 
-            // 2. Increment badge immediately without waiting for HTTP
+            // Increment badge count
             setPendingOrdersCount(prev => prev + 1);
 
-            // 3. Mark as seen to avoid duplicate toast
-            const orderNum = data?.orderNumber || data?.orderId || 'New';
+            // Deduplicate sound & toast notification across all components and instances
+            const isFresh = shouldNotifyForOrder(orderKey, 10000);
+
+            // Always broadcast event so ManageOrders and Navbar update immediately
+            window.dispatchEvent(new CustomEvent('artisanNewOrder', { detail: data }));
+
+            // If already notified in the last 10 seconds, do not repeat audio or toasts
+            if (!isFresh) {
+                return;
+            }
+
+            // 1. Play single warm harmonic chime
+            playNotificationSound();
+
+            // 2. Mark as seen
             if (data?.orderId) seenOrders.current.add(data.orderId);
             if (data?.orderNumber) seenOrders.current.add(data.orderNumber);
 
-            // 4. Show toast notification
+            // If user is already on the ManageOrders page, let ManageOrders display its order-focused UI
+            if (typeof window !== 'undefined' && window.location.pathname.includes('/artisan/orders')) {
+                fetchAlerts();
+                return;
+            }
+
+            // 3. Show toast notification if on another page
             toast.success(
                 (t) => (
                     <div className="flex flex-col">
-                        <span className="font-bold text-[#1C1C1C]">🛍️ New Order Received!</span>
+                        <span className="font-bold text-[#1C1C1C]">🛍️ አዲስ ትዕዛዝ ደርሷል (New Order)!</span>
                         <span className="text-xs text-gray-600">Order #{orderNum}</span>
                         <button 
                             onClick={() => {
                                 toast.dismiss(t.id);
-                                window.location.href = `/artisan/orders`;
+                                navigate('/artisan/orders');
                             }}
                             className="mt-2 text-[10px] font-bold text-[#CFA66E] hover:underline text-left uppercase tracking-tight"
                         >
@@ -213,17 +237,14 @@ const useInventoryAlerts = () => {
                 }
             );
 
-            // 5. Browser notification if permitted
+            // 4. Browser notification if permitted
             if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                new Notification('New Order on EthioCraft Global', {
+                new Notification('🛍️ New Order on EthioCraft Global', {
                     body: `A new order has been received! Order #${orderNum}`,
                 });
             }
 
-            // 6. Broadcast event so Navbar and other components update immediately
-            window.dispatchEvent(new CustomEvent('artisanNewOrder', { detail: data }));
-
-            // 7. Re-sync full stats
+            // 5. Re-sync full stats
             fetchAlerts();
         });
 

@@ -107,19 +107,92 @@ function notifyArtisansOfNewOrder(req, order) {
     };
 
     idList.forEach(artisanId => {
-      io.to(String(artisanId)).emit('newOrder', payload);
-      io.to(`user_${artisanId}`).emit('newOrder', payload);
-      io.to(`artisan_${artisanId}`).emit('newOrder', payload);
-      console.log(`   👉 Emitted 'newOrder' to rooms: ${artisanId}, user_${artisanId}, artisan_${artisanId}`);
+      // Chain room targeting so Socket.io sends to each client socket EXACTLY ONCE
+      io.to(String(artisanId))
+        .to(`user_${artisanId}`)
+        .to(`artisan_${artisanId}`)
+        .emit('newOrder', payload);
+      console.log(`   👉 Emitted single 'newOrder' to artisan: ${artisanId}`);
     });
 
-    // Also broadcast to admin rooms
-    io.to('role_admin').emit('newOrder', payload);
-    io.to('admin').emit('newOrder', payload);
+    // Also broadcast to admin rooms chained (no duplicate messages)
+    io.to('role_admin').to('admin').emit('newOrder', payload);
   } catch (err) {
     console.error("❌ Error notifying artisans via Socket.io:", err.message);
   }
 }
+
+/**
+ * Decrement product stock in MySQL / Prisma reliably
+ */
+async function decrementProductStock(productId, quantity, variantId = null, selectedSize = null, selectedColor = null) {
+  if (!productId) return;
+  const qtyToDeduct = Math.max(1, parseInt(quantity, 10) || 1);
+  try {
+    const { prisma } = require('../lib/prisma');
+    const pid = String(productId._id || productId.id || productId);
+    if (!pid || pid === 'undefined' || pid === 'null') return;
+
+    const existing = await prisma.product.findUnique({
+      where: { id: pid },
+      select: { id: true, inventory: true, status: true, metrics: true, variations: true }
+    });
+    if (!existing) return;
+
+    const inv = (existing.inventory && typeof existing.inventory === 'object') ? existing.inventory : {};
+    const oldQty = Number(inv.quantity) || 0;
+    const newQty = Math.max(0, oldQty - qtyToDeduct);
+    const met = (existing.metrics && typeof existing.metrics === 'object') ? existing.metrics : {};
+    const purchases = (Number(met.purchases) || 0) + qtyToDeduct;
+
+    // Deduct from variations array if variations exist on product
+    let updatedVariations = existing.variations;
+    if (updatedVariations && typeof updatedVariations === 'string') {
+      try { updatedVariations = JSON.parse(updatedVariations); } catch (_) {}
+    }
+    if (Array.isArray(updatedVariations) && updatedVariations.length > 0) {
+      let remaining = qtyToDeduct;
+      const matchIdx = updatedVariations.findIndex(v =>
+        (variantId && (String(v._id || v.id) === String(variantId))) ||
+        (selectedSize && v.size && String(v.size).toLowerCase() === String(selectedSize).toLowerCase()) ||
+        (selectedColor && v.color && String(v.color).toLowerCase() === String(selectedColor).toLowerCase())
+      );
+      if (matchIdx !== -1) {
+        const vQty = Number(updatedVariations[matchIdx].quantity) || 0;
+        const deduct = Math.min(vQty, remaining);
+        updatedVariations[matchIdx] = { ...updatedVariations[matchIdx], quantity: Math.max(0, vQty - deduct) };
+        remaining -= deduct;
+      }
+      if (remaining > 0) {
+        for (let i = 0; i < updatedVariations.length; i++) {
+          if (remaining <= 0) break;
+          const vQty = Number(updatedVariations[i].quantity) || 0;
+          if (vQty > 0) {
+            const deduct = Math.min(vQty, remaining);
+            updatedVariations[i] = { ...updatedVariations[i], quantity: Math.max(0, vQty - deduct) };
+            remaining -= deduct;
+          }
+        }
+      }
+    }
+
+    await prisma.product.update({
+      where: { id: pid },
+      data: {
+        inventory: { ...inv, quantity: newQty },
+        metrics: { ...met, purchases },
+        ...(Array.isArray(updatedVariations) ? { variations: updatedVariations } : {}),
+        ...(newQty === 0 ? { status: 'out_of_stock' } : {})
+      }
+    });
+    console.log(`📉 [Stock Decrement] Product ${pid}: ${oldQty} - ${qtyToDeduct} = ${newQty} units (Total sales: ${purchases})`);
+  } catch (e) {
+    console.error(`❌ [Stock Decrement] Error for product ${productId}:`, e.message);
+  }
+}
+
+exports.notifyArtisansOfNewOrder = notifyArtisansOfNewOrder;
+exports.decrementProductStock = decrementProductStock;
 
 exports.initializePayment = async (req, res) => {
   try {
@@ -191,10 +264,10 @@ exports.initializePayment = async (req, res) => {
     // FIX 1: Extract product IDs safely from items
     const productIds = items
       .map((item) => {
-        // Handle different possible structures - frontend sends { productId, quantity, price }
-        if (item.productId) return item.productId;
-        if (item._id) return item._id;
-        if (item.product && item.product._id) return item.product._id;
+        if (item.productId) return String(item.productId);
+        if (item._id) return String(item._id);
+        if (item.product && (item.product._id || item.product.id)) return String(item.product._id || item.product.id);
+        if (item.product && typeof item.product === 'string') return item.product;
         return null;
       })
       .filter((id) => id !== null); // Remove any null values
@@ -277,27 +350,41 @@ exports.initializePayment = async (req, res) => {
       console.log("📦 Product inventory:", product.inventory);
       console.log("🔢 Requested quantity:", item.quantity);
 
-      if (product.status !== "active") {
-        console.log(
-          "❌ Product status check failed:",
-          product.status,
-          "!== active",
-        );
-        unavailableProducts.push(`${product.name} is no longer available`);
+      const inv = (product.inventory && typeof product.inventory === 'object') ? product.inventory : {};
+      const stockQty = Number(inv.quantity !== undefined ? inv.quantity : (product.stock || 0));
+
+      if (stockQty <= 0) {
+        console.log("❌ Product out of stock:", product.name);
+        unavailableProducts.push(`${product.name} is out of stock`);
         continue;
       }
 
-      if (product.inventory.quantity < item.quantity) {
-        console.log(
-          "❌ Inventory check failed:",
-          product.inventory.quantity,
-          "<",
-          item.quantity,
-        );
-        unavailableProducts.push(
-          `${product.name} (only ${product.inventory.quantity} available)`,
-        );
+      if (stockQty < item.quantity) {
+        console.log("❌ Inventory check failed:", stockQty, "<", item.quantity);
+        unavailableProducts.push(`${product.name} (only ${stockQty} available)`);
         continue;
+      }
+
+      if (product.status !== "active") {
+        if (product.status === "out_of_stock" || product.status === "sold") {
+          // Auto-heal status because product has positive stock
+          product.status = "active";
+          try {
+            const { prisma } = require('../lib/prisma');
+            await prisma.product.update({
+              where: { id: String(product._id || product.id) },
+              data: { status: "active" }
+            });
+          } catch (_) {}
+        } else {
+          console.log(
+            "❌ Product status check failed:",
+            product.status,
+            "!== active",
+          );
+          unavailableProducts.push(`${product.name} is no longer available`);
+          continue;
+        }
       }
 
       console.log("✅ All validations passed for:", product.name);
@@ -478,31 +565,33 @@ exports.initializePayment = async (req, res) => {
     }
 
     if (!order) {
-      // Extract artisanId from first item for top-level FK (used by artisan order queries)
-      const firstItem = items[0];
-      let firstPid = firstItem?.productId || firstItem?._id || (firstItem?.product && firstItem.product._id);
-      if (firstPid && typeof firstPid !== 'string') firstPid = firstPid.toString();
-      const firstProduct = firstPid ? productMap[firstPid] : null;
-      const orderArtisanId = firstItem?.artisan
-        ? String(firstItem.artisan._id || firstItem.artisan)
-        : firstProduct?.artisan
-          ? String(firstProduct.artisan._id || firstProduct.artisan)
-          : null;
+      // Extract artisanId from items or products for top-level FK
+      let orderArtisanId = null;
+      for (const itm of items) {
+        let pid = itm.productId || itm._id || (itm.product && (itm.product._id || itm.product.id)) || (typeof itm.product === 'string' ? itm.product : null);
+        if (pid && typeof pid !== 'string') pid = pid.toString();
+        const prod = pid ? productMap[pid] : null;
+        const art = itm.artisan || prod?.artisan;
+        if (art) {
+          orderArtisanId = String(art._id || art.id || art);
+          break;
+        }
+      }
 
       order = await Order.create({
         customer: userId,
         artisan: orderArtisanId,
         cartId,
         items: items.map((item) => {
-          let pid = item.productId || item._id || (item.product && item.product._id);
+          let pid = item.productId || item._id || (item.product && (item.product._id || item.product.id)) || (typeof item.product === 'string' ? item.product : null);
           if (pid && typeof pid !== "string") pid = pid.toString();
           const product = productMap[pid];
-          const artisanVal = item.artisan || product?.artisan || null;
+          const artisanVal = item.artisan || product?.artisan || orderArtisanId || null;
           return {
             product: pid,
-            artisan: artisanVal ? String(artisanVal._id || artisanVal) : null,
+            artisan: artisanVal ? String(artisanVal._id || artisanVal.id || artisanVal) : null,
             quantity: item.quantity,
-            price: product ? product.price : 0,
+            price: product ? product.price : (item.price || 0),
             status: "pending",
             selectedOptions: item.selectedOptions ? Object.entries(item.selectedOptions).map(([k, v]) => ({ name: k, value: v })) : [],
             color: item.selectedColor || null,
@@ -542,16 +631,23 @@ exports.initializePayment = async (req, res) => {
 
     // If it's NOT CHAPA, we are done - return success so frontend can redirect to success page
     if (paymentMethod !== 'CHAPA') {
-      // Update product inventory immediately for non-online payments
+      // Update product inventory immediately in database using Prisma
       for (const item of items) {
-        let pid = item.productId || item._id || (item.product && item.product._id);
-        await Product.findByIdAndUpdate(pid, {
-          $inc: { "inventory.quantity": -item.quantity }
-        });
+        let pid = item.productId || item._id || (item.product && (item.product._id || item.product.id)) || item.product;
+        if (pid) {
+          const itemQty = Math.max(1, parseInt(item.quantity, 10) || 1);
+          await decrementProductStock(pid, itemQty, item.variantId, item.selectedSize || item.size, item.selectedColor || item.color);
+        }
       }
 
-      // 🔔 Real-time notification to artisan dashboard without refresh
-      notifyArtisansOfNewOrder(req, pendingOrder);
+      // CRITICAL FIX: For MANUAL payments (direct bank transfer / CBE / Telebirr receipt upload),
+      // DO NOT notify artisans upon "Place Order" - artisan must only be notified AFTER receipt is uploaded!
+      if (paymentMethod !== 'MANUAL' && paymentMethod !== 'bank_transfer') {
+        // 🔔 Real-time notification to artisan dashboard for COD / instant payments
+        notifyArtisansOfNewOrder(req, pendingOrder);
+      } else {
+        console.log(`⏳ [Manual Payment] Order #${pendingOrder.orderNumber} placed. Waiting for customer receipt upload before notifying artisan.`);
+      }
 
       return res.status(200).json({
         success: true,
@@ -560,7 +656,9 @@ exports.initializePayment = async (req, res) => {
           order: pendingOrder,
           orderNumber: pendingOrder.orderNumber,
           orderId: pendingOrder._id ? pendingOrder._id.toString() : null,
-          redirect: '/order-success'
+          redirect: (paymentMethod === 'MANUAL' || paymentMethod === 'bank_transfer')
+            ? `/upload-receipt/${pendingOrder._id}`
+            : '/order-success'
         }
       });
     }
@@ -939,16 +1037,14 @@ exports.verifyPayment = async (req, res) => {
       console.log("📊 Order Status:", order.status);
       console.log("💳 Payment Status:", order.payment.status);
 
-      // Update product inventory and metrics
+      // Update product inventory and metrics using Prisma
       console.log("📦 Updating product inventory...");
       for (const item of orderItems) {
-        await Product.findByIdAndUpdate(item.product, {
-          $inc: {
-            "inventory.quantity": -item.quantity,
-            "metrics.purchases": item.quantity,
-          },
-        });
-        console.log(`  ✅ Updated inventory for product ${item.product}`);
+        const pid = item.product ? (item.product._id || item.product.id || item.product) : null;
+        if (pid) {
+          await decrementProductStock(pid, Math.max(1, parseInt(item.quantity, 10) || 1), item.variantId, item.selectedSize || item.size, item.selectedColor || item.color);
+        }
+        console.log(`  ✅ Updated inventory for product ${pid}`);
       }
 
       // 🔔 Real-time notification to artisan dashboard

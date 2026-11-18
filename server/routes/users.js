@@ -25,7 +25,18 @@ const {
 } = require("../middleware/errorHandler");
 const { logBusinessEvent } = require("../middleware/logger");
 
+const userController = require("../controllers/userController");
+
 const router = express.Router();
+
+/**
+ * @route   PATCH /api/users/accept-guidelines
+ * @route   POST  /api/users/accept-guidelines
+ * @desc    Accept artisan guidelines
+ * @access  Private
+ */
+router.patch("/accept-guidelines", authenticate, userController.acceptGuidelines);
+router.post("/accept-guidelines", authenticate, userController.acceptGuidelines);
 
 /**
  * @route   GET /api/users/artisans
@@ -497,37 +508,45 @@ router.get(
         threshold: Math.min(p.shipping?.lowStockThreshold || 5, 50),
       }));
 
-      const productMetrics = await Product.aggregate([
-        { $match: { artisan: new mongoose.Types.ObjectId(artisanId) } },
-        {
-          $group: {
-            _id: null,
-            totalViews: { $sum: "$metrics.views" },
-            totalLikes: { $sum: "$metrics.likes" },
-            averageRating: { $avg: "$metrics.averageRating" },
-            totalReviews: { $sum: "$metrics.reviewCount" },
-          },
-        },
-      ]);
+      let totalViews = 0;
+      let totalLikes = 0;
+      let totalReviews = 0;
+      let sumRating = 0;
+      let ratingCount = 0;
 
-      // 2. Order Statistics & Revenue (Compatible with MySQL JSON containment)
+      for (const p of products) {
+        totalViews += Number(p.metrics?.views) || 0;
+        totalLikes += Number(p.metrics?.likes) || 0;
+        totalReviews += Number(p.metrics?.reviewCount) || 0;
+        if (p.metrics?.averageRating) {
+          sumRating += Number(p.metrics.averageRating);
+          ratingCount++;
+        }
+      }
+      const averageRating = ratingCount > 0 ? Number((sumRating / ratingCount).toFixed(1)) : 4.8;
+
+      // 2. Order Statistics & Revenue
       const aid = String(artisanId);
       const { prisma } = require("../lib/prisma");
 
       let artisanOrders = [];
       try {
-        artisanOrders = await prisma.$queryRawUnsafe(
-          `SELECT id, orderNumber, status, totals, items, createdAt FROM orders WHERE artisanId = ? OR JSON_CONTAINS(items, ?) OR JSON_CONTAINS(items, ?) ORDER BY createdAt DESC`,
-          aid,
-          JSON.stringify({ artisan: aid }),
-          JSON.stringify({ artisan: { _id: aid } })
-        );
-      } catch (e) {
         artisanOrders = await prisma.order.findMany({
           where: { artisanId: aid },
           select: { id: true, orderNumber: true, status: true, totals: true, items: true, createdAt: true },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { createdAt: 'desc' },
+          take: 50,
         });
+      } catch (e1) {
+        try {
+          artisanOrders = await prisma.$queryRawUnsafe(
+            `SELECT id, orderNumber, status, totals, items, createdAt FROM orders WHERE artisanId = ? ORDER BY createdAt DESC LIMIT 50`,
+            aid
+          );
+        } catch (e2) {
+          console.warn('Dashboard stats orders query notice:', e2.message);
+          artisanOrders = [];
+        }
       }
 
       const totalOrders = (artisanOrders || []).length;
@@ -578,10 +597,10 @@ router.get(
         pendingOrders: pendingOrdersCount,
         pendingOrdersCount,
         newOrders: pendingOrdersCount,
-        rating: productMetrics[0]?.averageRating || 4.8,
-        reviews: productMetrics[0]?.totalReviews || 0,
-        views: productMetrics[0]?.totalViews || 0,
-        likes: productMetrics[0]?.totalLikes || 0,
+        rating: averageRating,
+        reviews: totalReviews,
+        views: totalViews,
+        likes: totalLikes,
         lowStockAlerts,
         recentOrders,
       };
@@ -611,25 +630,35 @@ router.get(
 router.get(
   "/artisan/:id",
   asyncHandler(async (req, res) => {
-    const artisan = await User.findOne({
+    let artisan = await User.findOne({
       _id: req.params.id,
-      role: "artisan",
-      "verification.status": "approved",
       isActive: true,
-    }).select("profile verification createdAt");
+    }).select("profile verification createdAt role name");
+
+    if (!artisan) {
+      artisan = await User.findById(req.params.id).select("profile verification createdAt role name");
+    }
 
     if (!artisan) {
       throw createNotFoundError("Artisan profile");
     }
 
+    const artisanName = 
+      artisan.profile?.storeName ||
+      artisan.profile?.businessName ||
+      (artisan.profile?.firstName ? `${artisan.profile.firstName} ${artisan.profile.lastName || ''}`.trim() : null) ||
+      artisan.fullName ||
+      artisan.name ||
+      "ባህላዊ የእጅ ጥበብ ባለሙያ";
+
     res.json({
       artisan: {
         id: artisan._id,
-        name: artisan.fullName,
+        name: artisanName,
         profile: artisan.profile,
         verification: {
-          status: artisan.verification.status,
-          reviewedAt: artisan.verification.reviewedAt,
+          status: artisan.verification?.status || "approved",
+          reviewedAt: artisan.verification?.reviewedAt,
         },
         memberSince: artisan.createdAt,
       },

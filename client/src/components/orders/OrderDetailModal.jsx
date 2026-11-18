@@ -5,8 +5,11 @@
 
 import { XMarkIcon, TruckIcon, UserIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { getFileUrl } from '../../utils/getFileUrl';
+import { formatOrderDateTime } from '../../utils/dateUtils';
+import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
 const OrderDetailModal = ({ order, onClose }) => {
+  const { t, currentLanguage } = useCustomTranslation();
   const statusStyles = {
     pending: 'bg-blue-100 text-blue-800 border-blue-200',
     confirmed: 'bg-cyan-100 text-cyan-800 border-cyan-200',
@@ -51,13 +54,9 @@ const OrderDetailModal = ({ order, onClose }) => {
               </span>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-600">Order Date</p>
-              <p className="text-lg font-semibold text-gray-900">
-                {new Date(order.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+              <p className="text-sm text-gray-600">{currentLanguage === 'am' ? 'የትዕዛዝ ቀን' : 'Order Date'}</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {formatOrderDateTime(order.createdAt, currentLanguage).full}
               </p>
             </div>
           </div>

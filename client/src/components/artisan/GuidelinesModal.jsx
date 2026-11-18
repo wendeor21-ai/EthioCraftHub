@@ -213,56 +213,73 @@ const GuidelinesModal = ({ onAccepted, onClose }) => {
   };
 
   const handleAccept = async () => {
-    if (!hasScrolled) { toast.error('እባክዎ ወደ ታች ሸብልለው ሙሉ መመሪያውን ያንብቡ።'); return; }
     setAccepting(true);
+
+    // 1. Immediately trigger modal close and unblock user interface
     try {
-      await api.patch('/users/accept-guidelines');
-      toast.success('መመሪያዎቹ ተቀብለዋል። ወደ ኢትዮ-ክራፍት ግሎባል እንኳን ደህና መጡ!');
-      if (onAccepted) onAccepted();
-      navigate('/artisan/verification');
-    } catch {
-      toast.error('ምዝገባ አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
+      const cached = JSON.parse(localStorage.getItem('user') || '{}');
+      cached.hasAcceptedGuidelines = true;
+      localStorage.setItem('user', JSON.stringify(cached));
+      const uid = cached.id || cached._id || cached.email;
+      if (uid) {
+        localStorage.setItem(`artisan_guidelines_accepted_${uid}`, 'true');
+      }
+      localStorage.setItem('artisan_guidelines_accepted', 'true');
+    } catch (e) {}
+
+    if (onAccepted) {
+      onAccepted();
+    } else if (onClose) {
+      onClose();
+    }
+
+    // 2. Persist to backend in background
+    try {
+      await api.patch('/users/accept-guidelines').catch(() => api.post('/artisan/accept-guidelines'));
+    } catch (err) {
+      console.warn('Guidelines accept background error:', err);
     } finally {
       setAccepting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-start justify-center bg-black/70 backdrop-blur-sm px-4 pt-[70px] pb-4">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden relative" style={{ maxHeight: 'calc(100vh - 82px)' }}>
+    <div className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md overflow-y-auto">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden relative border border-amber-300/60 max-h-[92vh] my-auto">
         
-        {/* Close button at the top right */}
-        <button 
-          onClick={onClose || onAccepted}
-          className="absolute top-4 right-5 z-[210] p-2 bg-white/90 backdrop-blur-md rounded-full shadow-xl hover:bg-red-50 transition-all text-gray-400 hover:text-red-500 border border-gray-100"
-          title="Dismiss"
-        >
-          <XCircle className="w-6 h-6" />
-        </button>
+        {/* ── Top Header Bar ── */}
+        <div className="shrink-0 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-900 text-white px-5 sm:px-6 py-4 sm:py-5 relative shadow-md">
+          {/* Close button at top right */}
+          <button 
+            onClick={onClose || onAccepted}
+            className="absolute top-3.5 right-4 z-20 p-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full shadow transition-all text-white hover:text-red-200 border border-white/20"
+            title="Dismiss / ዝጋ"
+          >
+            <XCircle className="w-5 h-5" />
+          </button>
 
-        {/* ── Header ── */}
-        <div className="shrink-0 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100 px-6 py-4">
-          {/* Row 1: icon + title */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 bg-amber-100 rounded-xl shrink-0">
-              <ShieldCheck className="w-6 h-6 text-yellow-600" />
+          {/* Title Row */}
+          <div className="flex items-center gap-3.5 pr-8 mb-3">
+            <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-2xl shrink-0 shadow-inner border border-white/20">
+              <ShieldCheck className="w-6 h-6 text-yellow-300" />
             </div>
             <div className="min-w-0">
-              <h2 className="text-sm font-black text-gray-900 leading-snug">
-                ኢትዮ-ክራፍት ግሎባል &mdash; የአርቲሳን ኦፊሴላዊ መመሪያ
+              <h2 className="text-sm sm:text-base font-extrabold text-white leading-tight">
+                ለኢትዮ-ክራፍት ግሎባል አርቲሳኖች የተዘጋጀ ኦፊሴላዊ መመሪያ
               </h2>
-              <p className="text-[10px] text-gray-500 mt-0.5 font-medium">
-                ከመቀጠልዎ በፊት ሙሉ ሰነዱን ያንብቡ &bull; Please read the full document before proceeding
+              <p className="text-[11px] text-amber-100 mt-0.5 font-medium">
+                Official Artisan Guidelines &bull; እባክዎ ከመቀጠልዎ በፊት ሙሉ ሰነዱን ያንብቡ
               </p>
             </div>
           </div>
-          {/* Row 2: download button full-width */}
+
+          {/* Download PDF CTA */}
           <button
             onClick={handleDownload}
             disabled={downloading}
-            className="w-full flex items-center justify-center gap-2 py-2 bg-gray-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gray-700 transition-all shadow-md disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-white/10 hover:bg-white/20 active:bg-white/30 text-white border border-white/30 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-sm disabled:opacity-50"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-4 h-4 text-yellow-300" />
             {downloading ? 'በማውረድ ላይ...' : 'PDF አውርድ — Download PDF (አማርኛ)'}
           </button>
         </div>
@@ -378,31 +395,14 @@ const GuidelinesModal = ({ onAccepted, onClose }) => {
             </div>
           </section>
 
-          {/* Scroll prompt */}
-          {!hasScrolled && (
-            <div className="flex flex-col items-center gap-2 py-3 text-gray-400 animate-bounce">
-              <ChevronDown className="w-5 h-5" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">ወደ ታች ሸብልለው ያንብቡ • Scroll to enable acceptance</span>
-            </div>
-          )}
         </div>
 
         {/* ── Footer / Accept ── */}
         <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/60 shrink-0">
-          {!hasScrolled && (
-            <p className="text-[10px] text-amber-600 font-bold text-center mb-3 flex items-center justify-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5" />
-              ወደ ታች ሸብልለው ሙሉ መመሪያውን ካነበቡ በኋላ ቁልፉ ይነቃል።
-            </p>
-          )}
           <button
             onClick={handleAccept}
-            disabled={!hasScrolled || accepting}
-            className={`w-full py-4 rounded-2xl font-black uppercase tracking-[0.1em] text-sm transition-all flex items-center justify-center gap-3 ${
-              hasScrolled
-                ? 'bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-white hover:-translate-y-0.5 shadow-xl active:scale-[0.98] border border-amber-400'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
+            disabled={accepting}
+            className="w-full py-4 rounded-2xl font-black uppercase tracking-[0.1em] text-sm transition-all flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 text-white hover:-translate-y-0.5 shadow-xl active:scale-[0.98] border border-amber-400 cursor-pointer"
           >
             {accepting ? (
               <span className="flex items-center gap-2">

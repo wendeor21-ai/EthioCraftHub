@@ -28,7 +28,8 @@ import {
   CurrencyDollarIcon,
   ClockIcon,
   ShoppingBagIcon,
-  CubeIcon
+  CubeIcon,
+  UserIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import TrackingModal from '../../components/orders/TrackingModal';
@@ -37,10 +38,15 @@ import DeleteConfirmModal from '../../components/orders/DeleteConfirmModal';
 import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 import CustomOrderDetailModal from '../../components/orders/CustomOrderDetailModal';
 import { SparklesIcon, Scissors } from 'lucide-react';
-import { playNotificationSound } from '../../utils/soundUtils';
+import { playNotificationSound, shouldNotifyForOrder } from '../../utils/soundUtils';
 import { getFileUrl } from '../../utils/getFileUrl';
+import { formatOrderDateTime } from '../../utils/dateUtils';
 
-const ManageOrders = () => {
+const formatEthiopianDateTime = (dateStr, lang = null) => {
+  return formatOrderDateTime(dateStr, lang);
+};
+
+const ManageOrders = ({ insideDashboard = false, onSelectTab }) => {
   const { t } = useCustomTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -61,7 +67,7 @@ const ManageOrders = () => {
   const [bulkDeleteMode, setBulkDeleteMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -100,13 +106,13 @@ const ManageOrders = () => {
   const tabs = [
     { key: 'all', label: t('nav.all_orders', 'All Orders'), icon: ShoppingBagIcon },
     { key: 'pending', label: t('common.status_pending', 'Pending'), icon: ClockIcon },
+    { key: 'custom', label: t('nav.custom_orders', '✨ Custom Orders (ብጁ ዲዛይኖች)'), icon: SparklesIcon },
     { key: 'processing', label: t('common.status_processing', 'Processing'), icon: CubeIcon },
     { key: 'shipped', label: t('common.status_shipped', 'Shipped'), icon: TruckIcon },
     { key: 'completed', label: t('common.status_completed', 'Completed'), icon: CheckCircleIcon },
-    { key: 'custom', label: 'Custom Orders', icon: SparklesIcon },
   ];
 
-    // Keep refs for live callbacks inside socket listener
+  // Keep refs for live callbacks inside socket listener
   const filterRef = useRef(filter);
   const fetchOrdersRef = useRef(null);
   const fetchCustomOrdersRef = useRef(null);
@@ -140,13 +146,12 @@ const ManageOrders = () => {
     const handleIncomingOrder = (data) => {
       if (!data) return;
       console.log('🔔 [ManageOrders] Incoming real-time order received:', data);
-      
-      // 1. Play loud clear notification sound immediately
-      playNotificationSound();
 
-      // 2. Format incoming order object and place it at the VERY TOP of the list
       const orderId = data.orderId || data.id || data._id;
       const orderNumber = data.orderNumber || (orderId ? `EC-${String(orderId).slice(-6)}` : `EC-${Date.now()}`);
+      const orderKey = orderId || orderNumber;
+
+      // 1. Format incoming order object and place it at the VERY TOP of the list
       const newOrderDoc = {
         _id: orderId,
         id: orderId,
@@ -170,6 +175,12 @@ const ManageOrders = () => {
         return [newOrderDoc, ...withoutCurrent];
       });
 
+      // Switch to 'all' filter if current tab hides pending orders
+      setFilter(curr => {
+        if (curr !== 'all' && curr !== 'pending') return 'all';
+        return curr;
+      });
+
       // Increment pending badge counts in summary
       setSummary(prev => ({
         ...prev,
@@ -177,37 +188,46 @@ const ManageOrders = () => {
         pending: (prev.pending || 0) + 1
       }));
 
-      // 3. Display prominent toast notification
-      const totalAmount = data.total ? ` (${data.total} ETB)` : '';
-      toast.success(`🛍️ አዲስ ትዕዛዝ #${orderNumber}${totalAmount}! New customer order received.`, {
-        duration: 12000,
-        icon: '🔔',
-        style: {
-          background: '#111827',
-          color: '#f9fafb',
-          border: '2px solid #f59e0b',
-          borderRadius: '12px',
-          padding: '16px',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+      // Deduplicate so audio and toasts fire strictly ONCE across the entire app
+      const isFresh = shouldNotifyForOrder(orderKey, 8000);
+      if (isFresh) {
+        // 2. Play warm harmonic chime
+        playNotificationSound();
+
+        // 3. Display prominent toast notification
+        const totalAmount = data.total ? ` (${data.total} ETB)` : '';
+        toast.success(`🛍️ አዲስ ትዕዛዝ #${orderNumber}${totalAmount}! New customer order received.`, {
+          duration: 10000,
+          icon: '🔔',
+          style: {
+            background: '#111827',
+            color: '#f9fafb',
+            border: '2px solid #f59e0b',
+            borderRadius: '12px',
+            padding: '14px',
+            fontWeight: 'bold',
+            fontSize: '13px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+          }
+        });
+
+        // 4. Browser system notification
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          try {
+            new Notification('🛍️ New Order on EthioCraft Global', {
+              body: `Order #${orderNumber} has arrived! Check your orders.`,
+              icon: '/favicon.ico'
+            });
+          } catch (_) { }
         }
-      });
-      
-      // 4. Browser system notification
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-        try {
-          new Notification('🛍️ New Order on EthioCraft Global', {
-            body: `Order #${orderNumber} has arrived! Check your orders.`,
-            icon: '/favicon.ico'
-          });
-        } catch (_) {}
       }
 
-      // 5. Update full orders list from backend
-      if (fetchOrdersRef.current) {
-        fetchOrdersRef.current(1);
-      }
+      // 5. Update full orders list from backend with a safe delay to avoid DB commit race
+      setTimeout(() => {
+        if (fetchOrdersRef.current) {
+          fetchOrdersRef.current(1);
+        }
+      }, 1500);
     };
 
     newSocket.on('newOrder', handleIncomingOrder);
@@ -218,31 +238,25 @@ const ManageOrders = () => {
 
     newSocket.on('newCustomOrder', (data) => {
       playNotificationSound();
-      toast.success(`✨ NEW CUSTOM DESIGN: ${data.customerName || 'Customer'} requested a ${data.itemType || 'design'}!`, { 
-        duration: 10000,
+      toast.success(`✨ አዲስ የብጁ ዲዛይን ጥያቄ መጥቷል! New custom design requested: ${data?.customerName || 'Customer'} (${data?.itemType || 'Design'})`, {
+        duration: 12000,
         icon: '🎨',
         style: { border: '2px solid #b87b2e', padding: '16px', fontWeight: 'bold' }
       });
-      if (filterRef.current === 'custom' && fetchCustomOrdersRef.current) {
-        fetchCustomOrdersRef.current();
-      } else if (fetchOrdersRef.current) {
-        fetchOrdersRef.current(1);
-      }
+      if (fetchCustomOrdersRef.current) fetchCustomOrdersRef.current();
+      if (fetchOrdersRef.current) fetchOrdersRef.current(1);
     });
 
     newSocket.on('customOrderPaid', (data) => {
       playNotificationSound();
-      toast.success(`✨ Custom order paid! Check your custom orders.`);
-      if (filterRef.current === 'custom' && fetchCustomOrdersRef.current) {
-        fetchCustomOrdersRef.current();
-      } else if (fetchOrdersRef.current) {
-        fetchOrdersRef.current(1);
-      }
+      toast.success(`✨ ብጁ ዲዛይን ተከፍሏል! Custom design paid.`);
+      if (fetchCustomOrdersRef.current) fetchCustomOrdersRef.current();
+      if (fetchOrdersRef.current) fetchOrdersRef.current(1);
     });
 
     // Request browser notification permissions if not set
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
+      Notification.requestPermission().catch(() => { });
     }
 
     return () => {
@@ -336,50 +350,106 @@ const ManageOrders = () => {
   fetchOrdersRef.current = fetchOrders;
   fetchCustomOrdersRef.current = fetchCustomOrders;
 
+  // Always fetch custom orders on mount so counts and merged lists are available immediately
+  useEffect(() => {
+    fetchCustomOrders();
+  }, []);
+
   useEffect(() => {
     if (filter === 'custom') {
       fetchCustomOrders();
     } else {
       fetchOrders(currentPage);
+      fetchCustomOrders();
     }
   }, [currentPage, filter]);
 
+  // Formatted custom orders to match the list structure
+  const formattedCustomOrders = useMemo(() => {
+    return (customOrders || []).map(co => ({
+      ...co,
+      orderNumber: `CUST-${(co._id || '').slice(-6).toUpperCase()}`,
+      isCustomOrder: true,
+      totals: {
+        total: co.price || 0,
+        subtotal: co.price || 0,
+        artisanEarning: co.artisanEarning || co.price || 0
+      },
+      payment: {
+        method: 'ብጁ ዲዛይን (Custom)',
+        status: co.status === 'paid' ? 'Paid' : co.status === 'price_quoted' ? 'Price Quoted' : 'Pending'
+      },
+      items: [{
+        product: co.product || {
+          name: `ብጁ ዲዛይን (${co.gender === 'Female' ? 'የሴት' : 'የወንድ'} ${co.itemType})`,
+          images: [co.photos?.front || co.photos?.back || '/placeholder-craft.jpg']
+        },
+        quantity: 1,
+        price: co.price || 0,
+        customOrderId: co._id
+      }]
+    }));
+  }, [customOrders]);
+
   const filtered = useMemo(() => {
+    if (filter === 'custom') {
+      let list = [...(customOrders || [])];
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        list = list.filter(o =>
+          (o._id || '').toLowerCase().includes(q) ||
+          (`${o.customer?.profile?.firstName || ''} ${o.customer?.profile?.lastName || ''}`).toLowerCase().includes(q) ||
+          (o.itemType || '').toLowerCase().includes(q)
+        );
+      }
+      return list;
+    }
+
     let list = [...orders];
+
+    if (filter === 'all') {
+      list = [...orders, ...formattedCustomOrders];
+    } else if (filter === 'pending') {
+      const pendingCustom = formattedCustomOrders.filter(co => ['pending', 'price_quoted'].includes(co.status));
+      list = [...orders.filter(o => ['pending', 'pending verification'].includes(o.status)), ...pendingCustom];
+    } else if (filter === 'processing') {
+      const processingCustom = formattedCustomOrders.filter(co => ['accepted', 'paid', 'processing'].includes(co.status));
+      list = [...orders.filter(o => ['confirmed', 'processing'].includes(o.status)), ...processingCustom];
+    } else if (filter === 'shipped') {
+      list = list.filter(o => o.status === 'shipped');
+    } else if (filter === 'completed') {
+      const completedCustom = formattedCustomOrders.filter(co => ['completed', 'delivered'].includes(co.status));
+      list = [...orders.filter(o => ['completed', 'delivered'].includes(o.status)), ...completedCustom];
+    } else {
+      list = list.filter(o => o.status === filter);
+    }
+
     // Always sort descending: newest order at the very top!
     list.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
-    if (filter !== 'all') {
-      if (filter === 'pending') {
-        list = list.filter(o => ['pending', 'pending verification'].includes(o.status));
-      } else if (filter === 'processing') {
-        list = list.filter(o => ['confirmed', 'processing'].includes(o.status));
-      } else if (filter === 'shipped') {
-        list = list.filter(o => o.status === 'shipped');
-      } else if (filter === 'completed') {
-        list = list.filter(o => ['completed', 'delivered'].includes(o.status));
-      } else {
-        list = list.filter(o => o.status === filter);
-      }
-    }
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       list = list.filter(o =>
         (o.orderNumber || '').toLowerCase().includes(q) ||
         (o._id || '').toLowerCase().includes(q) ||
-        (`${o.customer?.profile?.firstName || ''} ${o.customer?.profile?.lastName || ''}`).toLowerCase().includes(q)
+        (`${o.customer?.profile?.firstName || ''} ${o.customer?.profile?.lastName || ''}`).toLowerCase().includes(q) ||
+        (o.items?.[0]?.product?.name || '').toLowerCase().includes(q)
       );
     }
     return list;
-  }, [orders, filter, searchTerm]);
+  }, [orders, formattedCustomOrders, customOrders, filter, searchTerm]);
+
+  const pendingCustomCount = useMemo(() => {
+    return (customOrders || []).filter(co => ['pending', 'price_quoted'].includes(co.status)).length;
+  }, [customOrders]);
 
   const stats = useMemo(() => ({
     totalEarnings: summary.totalEarnings,
-    pending: summary.pending,
+    pending: (summary.pending || 0) + pendingCustomCount,
     processing: summary.processing,
     shippedCount: summary.shipped,
     completed: summary.completed
-  }), [summary]);
+  }), [summary, pendingCustomCount]);
 
   // Order Actions (all original)
   const handleArtisanApprove = async (id) => {
@@ -563,8 +633,14 @@ const ManageOrders = () => {
   };
 
   const viewDetails = (order) => {
-    setSelectedOrder(order);
-    setShowDetailModal(true);
+    if (order.isCustomOrder || order.measurements || order.itemType) {
+      const match = (customOrders || []).find(co => String(co._id || co.id) === String(order._id || order.id)) || order;
+      setSelectedCustomOrder(match);
+      setShowCustomDetailModal(true);
+    } else {
+      setSelectedOrder(order);
+      setShowDetailModal(true);
+    }
   };
 
   const contactCustomer = (order) => {
@@ -641,88 +717,95 @@ const ManageOrders = () => {
     else confirmDelete();
   };
 
-  // Render action buttons (original logic, only visual classes updated)
+  // Render action buttons (compact, minimal, and unified single-color style)
   const renderActions = (order) => {
     const isLoading = actionLoading === order._id;
 
-    const ActionButton = ({ onClick, color, icon: Icon, label, disabled = false }) => (
+    const ActionButton = ({ onClick, icon: Icon, label, disabled = false }) => (
       <button
         onClick={onClick}
         disabled={disabled || isLoading}
-        className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-medium transition-all duration-200 
-          ${color === 'gold' ? 'bg-ethiopian-gold text-white hover:bg-ethiopian-gold/90 shadow-sm' :
-            color === 'red' ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' :
-            color === 'gray' ? 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200' :
-            color === 'blue' ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200' :
-            color === 'green' ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200' :
-            'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+        style={{ fontSize: '10px', lineHeight: '14px' }}
+        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 !text-[10px] font-medium transition-colors shadow-2xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        <Icon className="w-3.5 h-3.5" />
-        <span>{label}</span>
+        <Icon className="w-2.5 h-2.5 text-gray-500 flex-shrink-0" />
+        <span style={{ fontSize: '10px', lineHeight: '14px' }}>{label}</span>
       </button>
     );
+
+    if (order.isCustomOrder || order.measurements || order.itemType) {
+      return (
+        <div className="flex items-center gap-1">
+          <ActionButton
+            onClick={() => viewDetails(order)}
+            icon={EyeIcon}
+            label={order.status === 'pending' ? 'ዋጋ ቆርጥ' : 'ዲዛይን እይ'}
+          />
+        </div>
+      );
+    }
 
     switch (order.status) {
       case 'pending':
       case 'pending verification':
         return (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-1">
             {order.payment?.receipt && (
               <a
                 href={order.payment.receipt.startsWith('http') ? order.payment.receipt : `${API_BASE_URL.replace(/\/api$/, '')}${order.payment.receipt}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium border border-blue-200 hover:bg-blue-100"
+                style={{ fontSize: '10px', lineHeight: '14px' }}
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 !text-[10px] font-medium transition-colors shadow-2xs whitespace-nowrap"
               >
-                <EyeIcon className="w-3.5 h-3.5" />
-                Receipt
+                <EyeIcon className="w-2.5 h-2.5 text-gray-500 flex-shrink-0" />
+                <span style={{ fontSize: '10px', lineHeight: '14px' }}>Receipt</span>
               </a>
             )}
-            <ActionButton onClick={() => acceptOrder(order._id)} color="gold" icon={CheckCircleIcon} label="Accept" />
-            <ActionButton onClick={() => rejectOrder(order._id)} color="red" icon={XCircleIcon} label="Reject" />
-            <ActionButton onClick={() => viewDetails(order)} color="gray" icon={EyeIcon} label="View" />
-            <ActionButton onClick={() => contactCustomer(order)} color="gray" icon={ChatBubbleLeftIcon} label="Contact" />
+            <ActionButton onClick={() => acceptOrder(order._id)} icon={CheckCircleIcon} label="Accept" />
+            <ActionButton onClick={() => rejectOrder(order._id)} icon={XCircleIcon} label="Reject" />
+            <ActionButton onClick={() => viewDetails(order)} icon={EyeIcon} label="View" />
+            <ActionButton onClick={() => contactCustomer(order)} icon={ChatBubbleLeftIcon} label="Chat" />
           </div>
         );
       case 'confirmed':
       case 'processing':
         return (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-1">
             {order.status === 'confirmed' && (
-              <ActionButton onClick={() => markAsProcessing(order._id)} color="gold" icon={CubeIcon} label="Start Processing" />
+              <ActionButton onClick={() => markAsProcessing(order._id)} icon={CubeIcon} label="Process" />
             )}
-            <ActionButton onClick={() => markAsShipped(order)} color="gold" icon={TruckIcon} label="Ship" />
-            <ActionButton onClick={() => printInvoice(order)} color="gray" icon={PrinterIcon} label="Print" />
-            <ActionButton onClick={() => cancelOrder(order._id)} color="red" icon={XCircleIcon} label="Cancel" />
+            <ActionButton onClick={() => markAsShipped(order)} icon={TruckIcon} label="Ship" />
+            <ActionButton onClick={() => printInvoice(order)} icon={PrinterIcon} label="Print" />
+            <ActionButton onClick={() => cancelOrder(order._id)} icon={XCircleIcon} label="Cancel" />
           </div>
         );
       case 'shipped':
         return (
-          <div className="flex flex-wrap gap-2">
-            <ActionButton onClick={() => markAsDelivered(order._id)} color="green" icon={CheckCircleIcon} label="Deliver" />
-            <ActionButton onClick={() => updateTracking(order)} color="blue" icon={TruckIcon} label="Update Tracking" />
-            <ActionButton onClick={() => printInvoice(order)} color="gray" icon={PrinterIcon} label="Print" />
+          <div className="flex items-center gap-1">
+            <ActionButton onClick={() => markAsDelivered(order._id)} icon={CheckCircleIcon} label="Deliver" />
+            <ActionButton onClick={() => updateTracking(order)} icon={TruckIcon} label="Track" />
+            <ActionButton onClick={() => printInvoice(order)} icon={PrinterIcon} label="Print" />
           </div>
         );
       case 'delivered':
       case 'completed':
         return (
-          <div className="flex flex-wrap gap-2">
-            <ActionButton onClick={() => viewDetails(order)} color="gray" icon={DocumentTextIcon} label="Receipt" />
-            <ActionButton onClick={() => printInvoice(order)} color="gray" icon={PrinterIcon} label="Invoice" />
+          <div className="flex items-center gap-1">
+            <ActionButton onClick={() => viewDetails(order)} icon={DocumentTextIcon} label="Receipt" />
+            <ActionButton onClick={() => printInvoice(order)} icon={PrinterIcon} label="Invoice" />
           </div>
         );
       case 'rejected':
       case 'cancelled':
         return (
-          <div className="flex flex-wrap gap-2">
-            <ActionButton onClick={() => viewDetails(order)} color="gray" icon={EyeIcon} label="Details" />
-            <ActionButton onClick={() => deleteOrder(order)} color="red" icon={TrashIcon} label="Delete" />
+          <div className="flex items-center gap-1">
+            <ActionButton onClick={() => viewDetails(order)} icon={EyeIcon} label="Details" />
+            <ActionButton onClick={() => deleteOrder(order)} icon={TrashIcon} label="Delete" />
           </div>
         );
       default:
-        return <ActionButton onClick={() => viewDetails(order)} color="gray" icon={EyeIcon} label="View" />;
+        return <ActionButton onClick={() => viewDetails(order)} icon={EyeIcon} label="View" />;
     }
   };
 
@@ -735,17 +818,19 @@ const ManageOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+    <div className={`font-['Times_New_Roman',_Times,_serif,_'Noto_Sans_Ethiopic'] text-xs text-gray-800 ${insideDashboard ? "pb-8" : "min-h-screen bg-gray-50 py-8"}`}>
+      <div className={insideDashboard ? "w-full" : "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"}>
+
         {/* Header */}
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/artisan/dashboard')}
-            className="inline-flex items-center gap-1 text-ethiopian-gold hover:text-ethiopian-gold/80 text-sm font-medium mb-4 transition-colors"
-          >
-            ← Back to Dashboard
-          </button>
+        <div className="mb-6">
+          {!insideDashboard && (
+            <button
+              onClick={() => navigate('/artisan/dashboard')}
+              className="inline-flex items-center gap-1 text-ethiopian-gold hover:text-ethiopian-gold/80 text-sm font-medium mb-3 transition-colors"
+            >
+              ← Back to Dashboard
+            </button>
+          )}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{t('artisan_panel.my_products', 'Manage Orders')}</h1>
@@ -865,35 +950,33 @@ const ManageOrders = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex w-max px-2 py-1 gap-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const count = tab.key === 'all' ? summary.all :
-                           tab.key === 'pending' ? summary.pending :
-                           tab.key === 'processing' ? summary.processing :
-                           tab.key === 'shipped' ? stats.shippedCount :
-                           tab.key === 'custom' ? customOrders.length :
-                           summary.completed;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => setFilter(tab.key)}
-                  className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
-                    filter === tab.key
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const count = tab.key === 'all' ? (summary.all || 0) + (customOrders?.length || 0) :
+                  tab.key === 'pending' ? (summary.pending || 0) + pendingCustomCount :
+                    tab.key === 'processing' ? summary.processing :
+                      tab.key === 'shipped' ? stats.shippedCount :
+                        tab.key === 'custom' ? (customOrders?.length || 0) :
+                          summary.completed;
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => setFilter(tab.key)}
+                    className={`flex items-center gap-1.5 sm:gap-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${filter === tab.key
                       ? 'bg-ethiopian-gold/10 text-ethiopian-gold'
                       : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                  <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${
-                    filter === tab.key ? 'bg-ethiopian-gold/20' : 'bg-gray-100'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                      }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span>{tab.label}</span>
+                    <span className={`ml-1 px-2 py-0.5 rounded-full text-xs ${filter === tab.key ? 'bg-ethiopian-gold/20' : 'bg-gray-100'
+                      }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -930,11 +1013,10 @@ const ManageOrders = () => {
                             <p className="text-xs text-gray-500 mt-1">{order.customer?.profile?.firstName} {order.customer?.profile?.lastName}</p>
                           </div>
                         </div>
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                          order.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-                          order.status === 'accepted' || order.status === 'price_quoted' ? 'bg-green-50 text-green-600 border-green-100' : 
-                          'bg-gray-50 text-gray-600 border-gray-100'
-                        }`}>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${order.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                          order.status === 'accepted' || order.status === 'price_quoted' ? 'bg-green-50 text-green-600 border-green-100' :
+                            'bg-gray-50 text-gray-600 border-gray-100'
+                          }`}>
                           {order.status}
                         </span>
                       </div>
@@ -946,16 +1028,16 @@ const ManageOrders = () => {
                         <div>
                           <p className="font-semibold text-gray-700">Requested</p>
                           <div className="text-xs text-gray-600 mt-1">
-                            <div>{order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</div>
+                            <div>{formatEthiopianDateTime(order.createdAt).date}</div>
                             <div className="text-[11px] text-gray-400 font-mono mt-0.5">
-                              {order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                              {formatEthiopianDateTime(order.createdAt).time}
                             </div>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-sm font-bold text-amber-600">{order.price ? `${order.price.toFixed(2)} ETB` : 'Not Quoted'}</p>
-                        <button 
+                        <button
                           onClick={() => {
                             setSelectedCustomOrder(order);
                             setShowCustomDetailModal(true);
@@ -971,107 +1053,107 @@ const ManageOrders = () => {
                 <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                      <thead className="bg-gray-50/80">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Design Photo</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Request ID</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Design Type</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Request Date</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Price Quote</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                          <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">ዲዛይን</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">የትዕዛዝ ቁጥር</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">ደንበኛ</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">የዲዛይን ዓይነት</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">ቀን</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">ዋጋ</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">ሁኔታ</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">እርምጃ</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                    {customOrders.map((order) => (
-                      <tr 
-                        key={order._id} 
-                        className="hover:bg-gray-50/80 transition cursor-pointer"
-                        onClick={() => { setSelectedCustomOrder(order); setShowCustomDetailModal(true); }}
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            {order.photos && (order.photos.front || order.photos.back) ? (
-                              <img 
-                                src={getFileUrl(order.photos.front || order.photos.back)} 
-                                alt="Design" 
-                                className="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-200"
-                                crossOrigin="anonymous"
-                                onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
-                              />
-                            ) : (
-                              <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100 italic text-[8px] text-amber-400 text-center px-1 font-black">NO PHOTO</div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-semibold text-gray-900">#{order._id.slice(-8).toUpperCase()}</div>
-                          <div className="flex gap-1 mt-1">
-                            {order.photos && (order.photos.front || order.photos.back) && (
-                              <span className="text-[9px] bg-amber-50 text-amber-600 px-1.5 py-0.5 rounded-md font-bold uppercase border border-amber-100">With Photos</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {order.customer?.profile?.firstName} {order.customer?.profile?.lastName}
-                          </div>
-                          <div className="text-xs text-gray-400">{order.customer?.email}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                             <div className="p-1.5 bg-amber-50 rounded-lg">
-                               <Scissors className="w-3.5 h-3.5 text-amber-600" />
-                             </div>
-                             <div>
-                               <div className="text-sm font-bold text-gray-800 capitalize">{order.gender} {order.itemType}</div>
-                               <div className="text-[10px] text-gray-400 font-medium">Custom Measurement</div>
-                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-600 font-medium">
-                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
-                          </div>
-                          <div className="text-[11px] text-gray-400 font-mono flex items-center gap-1 mt-0.5">
-                            <span>🕒</span>
-                            <span>{order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className={`text-sm font-bold ${order.price ? 'text-amber-600' : 'text-gray-400'}`}>
-                            {order.price ? `${order.price.toFixed(2)} ETB` : 'Not Quoted'}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
-                            order.status === 'pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
-                            order.status === 'accepted' || order.status === 'price_quoted' ? 'bg-green-50 text-green-600 border-green-100' : 
-                            'bg-gray-50 text-gray-600 border-gray-100'
-                          }`}>
-                            {order.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <button 
-                            onClick={() => {
-                              setSelectedCustomOrder(order);
-                              setShowCustomDetailModal(true);
-                            }}
-                            className="text-ethiopian-gold hover:text-amber-700 font-bold text-xs uppercase tracking-widest flex items-center gap-1.5 px-3 py-1.5 bg-ethiopian-gold/10 rounded-lg border border-ethiopian-gold/20 transition-all"
+                        {customOrders.map((order) => (
+                          <tr
+                            key={order._id}
+                            className="hover:bg-gray-50/60 transition cursor-pointer"
+                            onClick={() => { setSelectedCustomOrder(order); setShowCustomDetailModal(true); }}
                           >
-                             <EyeIcon className="w-3.5 h-3.5" />
-                             Review
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            </>
+                            <td className="px-2 py-1.5">
+                              <div className="flex items-center gap-1.5">
+                                {order.photos && (order.photos.front || order.photos.back) ? (
+                                  <img
+                                    src={getFileUrl(order.photos.front || order.photos.back)}
+                                    alt="Design"
+                                    className="w-7 h-7 rounded object-cover bg-gray-100 border border-gray-200"
+                                    crossOrigin="anonymous"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
+                                  />
+                                ) : (
+                                  <div className="w-7 h-7 rounded bg-gray-50 flex items-center justify-center border border-gray-200 italic text-[7px] text-gray-400 text-center font-bold">NO PIC</div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-2 py-1.5 whitespace-nowrap">
+                              <div className="text-[11px] font-bold text-gray-900">#{order._id.slice(-8).toUpperCase()}</div>
+                              <span className="text-[8px] bg-gray-50 text-gray-600 px-1 py-0.2 rounded font-medium uppercase border border-gray-200">ብጁ</span>
+                            </td>
+                            <td className="px-2 py-1.5 whitespace-nowrap">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedCustomOrder(order);
+                                  setShowCustomDetailModal(true);
+                                }}
+                                title={`${order.customer?.profile?.firstName || ''} ${order.customer?.profile?.lastName || ''} (${order.customer?.email || ''})`}
+                                style={{ fontSize: '10px', lineHeight: '14px' }}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded border border-gray-200 !text-[10px] font-medium transition-colors max-w-[105px]"
+                              >
+                                <UserIcon className="w-2.5 h-2.5 text-gray-500 flex-shrink-0" />
+                                <span className="truncate" style={{ fontSize: '10px', lineHeight: '14px' }}>{order.customer?.profile?.firstName || 'ደንበኛ'}</span>
+                              </button>
+                            </td>
+                            <td className="px-2 py-1.5">
+                              <div className="flex items-center gap-1">
+                                <Scissors className="w-2.5 h-2.5 text-gray-400 flex-shrink-0" />
+                                <span className="text-[10px] font-medium text-gray-800 capitalize truncate max-w-[120px]">{order.gender} {order.itemType}</span>
+                              </div>
+                            </td>
+                            <td className="px-2 py-1.5 whitespace-nowrap">
+                              <div className="text-[10px] text-gray-600 font-medium">
+                                {formatEthiopianDateTime(order.createdAt).date}
+                              </div>
+                              <div className="text-[9px] text-gray-400 font-mono">
+                                {formatEthiopianDateTime(order.createdAt).time}
+                              </div>
+                            </td>
+                            <td className="px-2 py-1.5 whitespace-nowrap">
+                              <div className={`text-[10px] font-bold ${order.price ? 'text-gray-900' : 'text-gray-400'}`}>
+                                {order.price ? `${order.price.toFixed(2)} ETB` : 'Not Quoted'}
+                              </div>
+                            </td>
+                            <td className="px-2 py-1.5 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium border ${order.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                                order.status === 'accepted' || order.status === 'price_quoted' ? 'bg-green-50 text-green-700 border-green-200' :
+                                  'bg-gray-50 text-gray-600 border-gray-200'
+                                }`}>
+                                {order.status}
+                              </span>
+                            </td>
+                            <td className="px-2 py-1.5 whitespace-nowrap">
+                              <button
+                                onClick={() => {
+                                  setSelectedCustomOrder(order);
+                                  setShowCustomDetailModal(true);
+                                }}
+                                style={{ fontSize: '10px', lineHeight: '14px' }}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 !text-[10px] font-medium transition-colors shadow-2xs whitespace-nowrap"
+                              >
+                                <EyeIcon className="w-2.5 h-2.5 text-gray-500 flex-shrink-0" />
+                                <span style={{ fontSize: '10px', lineHeight: '14px' }}>Review</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
             )}
           </div>
         )}
@@ -1097,62 +1179,52 @@ const ManageOrders = () => {
               </div>
             ) : (
               <>
-                <div className="space-y-4 md:hidden">
+                <div className="space-y-2.5 md:hidden">
                   {filtered.map((order) => {
                     const isDeletable = ['rejected', 'cancelled'].includes(order.status);
                     return (
-                      <div key={order._id} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 ring-1 ring-gray-100">
-                        <div className="flex items-start justify-between gap-3 mb-4">
+                      <div key={order._id} className="bg-white rounded-xl border border-gray-100 shadow-xs p-2.5">
+                        <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
-                            <p className="text-sm font-semibold text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-gray-600 mt-1">
-                              <span>{order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}</span>
-                              <span className="font-mono text-gray-500 font-medium">
-                                {order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                              </span>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <p className="text-xs font-bold text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</p>
+                              {order.isCustomOrder && (
+                                <span className="px-1.5 py-0.2 rounded text-[8px] font-black bg-amber-100 text-amber-900 border border-amber-300">
+                                  ✨ ብጁ ዲዛይን
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-gray-500 font-mono mt-0.5">
+                              <span>{formatEthiopianDateTime(order.createdAt).date} • {formatEthiopianDateTime(order.createdAt).time}</span>
                             </div>
                           </div>
-                          <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold border ${
-                            order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-100' :
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${order.status === 'delivered' ? 'bg-green-50 text-green-700 border-green-100' :
                             order.status === 'processing' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                            order.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                            order.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                            order.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
-                            'bg-gray-50 text-gray-600 border-gray-100'
-                          }`}>
-                            <span className="h-2.5 w-2.5 rounded-full bg-current" />
+                              order.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                order.status === 'completed' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                                  order.status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' :
+                                    'bg-gray-50 text-gray-600 border-gray-100'
+                            }`}>
                             {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
                           </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 mb-3 text-xs sm:text-sm text-gray-600">
-                          <div className="rounded-2xl bg-gray-50 p-3">
-                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Customer</p>
-                            <p className="mt-2 font-semibold text-gray-900">{order.customer?.profile?.firstName} {order.customer?.profile?.lastName}</p>
+                        <div className="grid grid-cols-2 gap-1.5 mb-2 text-xs text-gray-600">
+                          <div className="rounded-lg bg-gray-50/80 p-1.5">
+                            <p className="text-[9px] uppercase tracking-wider text-gray-400">ደንበኛ</p>
+                            <p className="text-xs font-bold text-gray-900 truncate">{order.customer?.profile?.firstName || 'Customer'}</p>
                           </div>
-                          <div className="rounded-2xl bg-gray-50 p-3">
-                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Net Earnings</p>
-                            <p className="mt-2 font-semibold text-gray-900">{(order.totals?.artisanEarning || (order.totals?.total * 0.85))?.toFixed(2)} ETB</p>
-                          </div>
-                          <div className="rounded-2xl bg-gray-50 p-3">
-                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Payment</p>
-                            <p className="mt-2 font-semibold text-gray-900">{order.payment?.method || 'Unknown'}</p>
-                          </div>
-                          <div className="rounded-2xl bg-gray-50 p-3">
-                            <p className="text-[11px] uppercase tracking-[0.2em] text-gray-400">Payout</p>
-                            <p className="mt-2 font-semibold text-gray-900">{order.payoutStatus || 'Pending'}</p>
+                          <div className="rounded-lg bg-gray-50/80 p-1.5">
+                            <p className="text-[9px] uppercase tracking-wider text-gray-400">የተጣራ ገቢ</p>
+                            <p className="text-xs font-bold text-ethiopian-gold">{(order.totals?.artisanEarning || (order.totals?.total * 0.85))?.toFixed(2)} ETB</p>
                           </div>
                         </div>
-                        <div className="flex flex-col gap-3">
-                          <div className="flex items-center gap-3 rounded-3xl bg-indigo-50/50 p-3 text-[12px] text-indigo-700">
-                            <TruckIcon className="w-4 h-4" />
-                            <span>{order.isCustom ? 'Custom order' : 'Standard order'}</span>
-                          </div>
+                        <div className="flex flex-col gap-2">
                           <div className="flex items-center gap-2">
                             {order.isCustom && order.photos?.front ? (
                               <img
                                 src={getFileUrl(order.photos.front)}
                                 alt="Custom Design"
-                                className="w-14 h-14 rounded-3xl object-cover bg-amber-50 border border-amber-100"
+                                className="w-10 h-10 rounded-lg object-cover bg-amber-50 border border-amber-100 shrink-0"
                                 crossOrigin="anonymous"
                                 onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
                               />
@@ -1161,26 +1233,26 @@ const ManageOrders = () => {
                                 src={
                                   order.items?.[0]?.product?.images?.[0]
                                     ? getFileUrl(
-                                        typeof order.items[0].product.images[0] === 'string'
-                                          ? order.items[0].product.images[0]
-                                          : order.items[0].product.images[0].url
-                                      )
+                                      typeof order.items[0].product.images[0] === 'string'
+                                        ? order.items[0].product.images[0]
+                                        : order.items[0].product.images[0].url
+                                    )
                                     : (order.items?.[0]?.image ? getFileUrl(order.items[0].image) : '/placeholder-product.svg')
                                 }
                                 alt={order.items?.[0]?.product?.name || 'Product'}
-                                className="w-14 h-14 rounded-3xl object-cover bg-gray-100 border border-gray-100"
+                                className="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-100 shrink-0"
                                 crossOrigin="anonymous"
                                 onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
                               />
                             )}
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">{order.isCustom ? 'Special Clothing Design' : order.items?.[0]?.product?.name || 'Product'}</p>
-                              <p className="text-xs text-gray-500 mt-1 truncate">
+                              <p className="text-xs font-bold text-gray-900 truncate">{order.isCustom ? 'ልዩ የልብስ ዲዛይን' : order.items?.[0]?.product?.name || 'ምርት'}</p>
+                              <p className="text-[10px] text-gray-500 truncate">
                                 {order.items?.[0]?.color ? `${order.items[0].color} • ` : ''}{order.items?.[0]?.size || 'Size N/A'}
                               </p>
                             </div>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 pt-2 mt-2 border-t border-gray-50">
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-gray-100">
                             {renderActions(order)}
                           </div>
                         </div>
@@ -1191,172 +1263,169 @@ const ManageOrders = () => {
                 <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                      <tr>
-                        {bulkDeleteMode && (
-                          <th className="px-4 py-3 w-10">
-                            <input
-                              type="checkbox"
-                              checked={selectedOrders.length > 0 && selectedOrders.length === filtered.filter(o => ['rejected', 'cancelled'].includes(o.status)).length}
-                              onChange={toggleSelectAll}
-                              className="w-4 h-4 rounded border-gray-300 text-ethiopian-gold focus:ring-ethiopian-gold"
-                            />
-                          </th>
-                        )}
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.order_id', 'Order')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.customer', 'Customer')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('nav.shop', 'Product')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('artisan_panel.total_revenue', 'Net Earning')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('checkout.billing_details', 'Payment & Payout')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.status', 'Status')}</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">{t('common.action', 'Actions')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {filtered.map((order) => {
-                        const isDeletable = ['rejected', 'cancelled'].includes(order.status);
-                        return (
-                          <tr key={order._id} className="hover:bg-gray-50/80 transition">
-                            {bulkDeleteMode && (
-                              <td className="px-4 py-4">
-                                {isDeletable ? (
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedOrders.includes(order._id)}
-                                    onChange={() => toggleOrderSelection(order._id)}
-                                    className="w-4 h-4 rounded border-gray-300 text-ethiopian-gold"
-                                  />
-                                ) : (
-                                  <span className="text-gray-300 text-xs">N/A</span>
-                                )}
-                              </td>
-                            )}
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-semibold text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</div>
-                              <div className="text-xs text-gray-600 font-medium mt-1">
-                                {order.createdAt ? new Date(order.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
-                              </div>
-                              <div className="text-[11px] text-gray-500 font-mono flex items-center gap-1 mt-0.5">
-                                <span>🕒</span>
-                                <span>{order.createdAt ? new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : ''}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {order.customer?.profile?.firstName} {order.customer?.profile?.lastName}
-                              </div>
-                              <div className="flex flex-col gap-1 mt-1">
-                                <span className="text-[10px] font-bold text-gray-400">
-                                  {order.payment?.method} - <span className={order.payment?.status === 'Paid' ? 'text-green-600' : 'text-amber-600'}>{order.payment?.status}</span>
-                                </span>
-                                <span className="text-[10px] text-gray-400">
-                                  {order.shippingAddress?.isAddressVisible ? order.shippingAddress?.phone : 'Phone Hidden'}
-                                </span>
-                                {!order.shippingAddress?.isAddressVisible && (
-                                  <span className="text-[9px] text-amber-500 font-medium italic">Verify payment to reveal details</span>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex items-center gap-3">
-                                <div className="relative flex-shrink-0">
-                                  {order.isCustom && order.photos?.front ? (
-                                    <img
-                                      src={getFileUrl(order.photos.front)}
-                                      alt="Custom Design"
-                                      className="w-10 h-10 rounded-lg object-cover bg-amber-50 border border-amber-100 shadow-sm"
-                                      crossOrigin="anonymous"
-                                      onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
+                      <thead className="bg-gray-50/80">
+                        <tr>
+                          {bulkDeleteMode && (
+                            <th className="px-2 py-1.5 w-7">
+                              <input
+                                type="checkbox"
+                                checked={selectedOrders.length > 0 && selectedOrders.length === filtered.filter(o => ['rejected', 'cancelled'].includes(o.status)).length}
+                                onChange={toggleSelectAll}
+                                className="w-3 h-3 rounded border-gray-300 text-gray-700 focus:ring-gray-400"
+                              />
+                            </th>
+                          )}
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('common.order_id', 'Order')}</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('common.customer', 'Customer')}</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('nav.shop', 'Product')}</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('artisan_panel.total_revenue', 'Net Earning')}</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('checkout.billing_details', 'Payment')}</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('common.status', 'Status')}</th>
+                          <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{t('common.action', 'Actions')}</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {filtered.map((order) => {
+                          const isDeletable = ['rejected', 'cancelled'].includes(order.status);
+                          return (
+                            <tr key={order._id} className="hover:bg-gray-50/60 transition">
+                              {bulkDeleteMode && (
+                                <td className="px-2 py-1.5">
+                                  {isDeletable ? (
+                                    <input
+                                      type="checkbox"
+                                      checked={selectedOrders.includes(order._id)}
+                                      onChange={() => toggleOrderSelection(order._id)}
+                                      className="w-3 h-3 rounded border-gray-300 text-gray-700"
                                     />
                                   ) : (
-                                    <img
-                                      src={
-                                        order.items?.[0]?.product?.images?.[0]
-                                          ? getFileUrl(
+                                    <span className="text-gray-300 text-[9px]">N/A</span>
+                                  )}
+                                </td>
+                              )}
+                              <td className="px-2 py-1.5 whitespace-nowrap">
+                                <div className="flex items-center gap-1">
+                                  <div className="text-[11px] font-bold text-gray-900">#{order.orderNumber || order._id?.slice(-8)}</div>
+                                  {order.isCustomOrder && (
+                                    <span className="px-1 py-0.2 rounded text-[8px] font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                                      ብጁ
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[9px] text-gray-400 font-mono flex items-center gap-1 mt-0.5">
+                                  <span>{formatEthiopianDateTime(order.createdAt).date}</span>
+                                  <span>{formatEthiopianDateTime(order.createdAt).time}</span>
+                                </div>
+                              </td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    viewDetails(order);
+                                  }}
+                                  title={`ደንበኛ: ${order.customer?.profile?.firstName || ''} ${order.customer?.profile?.lastName || ''} | ${order.payment?.method || ''} | ${order.shippingAddress?.phone || 'ስልክ ተደብቋል'}`}
+                                  style={{ fontSize: '10px', lineHeight: '14px' }}
+                                  className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded border border-gray-200 !text-[10px] font-medium transition-colors max-w-[105px]"
+                                >
+                                  <UserIcon className="w-2.5 h-2.5 text-gray-500 flex-shrink-0" />
+                                  <span className="truncate" style={{ fontSize: '10px', lineHeight: '14px' }}>
+                                    {order.customer?.profile?.firstName ? `${order.customer.profile.firstName} ${order.customer.profile.lastName?.charAt(0) || ''}.` : 'ደንበኛ'}
+                                  </span>
+                                </button>
+                              </td>
+                              <td className="px-2 py-1.5">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="relative flex-shrink-0">
+                                    {order.isCustom && order.photos?.front ? (
+                                      <img
+                                        src={getFileUrl(order.photos.front)}
+                                        alt="Custom Design"
+                                        className="w-7 h-7 rounded object-cover bg-amber-50 border border-amber-100"
+                                        crossOrigin="anonymous"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
+                                      />
+                                    ) : (
+                                      <img
+                                        src={
+                                          order.items?.[0]?.product?.images?.[0]
+                                            ? getFileUrl(
                                               typeof order.items[0].product.images[0] === 'string'
                                                 ? order.items[0].product.images[0]
                                                 : order.items[0].product.images[0].url
                                             )
-                                          : (order.items?.[0]?.image ? getFileUrl(order.items[0].image) : '/placeholder-product.svg')
-                                      }
-                                      alt={order.items?.[0]?.product?.name || ''}
-                                      className="w-10 h-10 rounded-lg object-cover bg-gray-100 border border-gray-100"
-                                      crossOrigin="anonymous"
-                                      onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
-                                    />
-                                  )}
-                                  {order.isCustom && (
-                                    <div className="absolute -top-1 -right-1 flex h-3 w-3">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                                            : (order.items?.[0]?.image ? getFileUrl(order.items[0].image) : '/placeholder-product.svg')
+                                        }
+                                        alt={order.items?.[0]?.product?.name || ''}
+                                        className="w-7 h-7 rounded object-cover bg-gray-100 border border-gray-100"
+                                        crossOrigin="anonymous"
+                                        onError={(e) => { e.target.onerror = null; e.target.src = '/placeholder-product.svg'; }}
+                                      />
+                                    )}
+                                    {order.isCustom && (
+                                      <div className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="min-w-0 max-w-[115px]">
+                                    <div className="text-[10px] font-medium text-gray-900 truncate">
+                                      {order.isCustom ? (
+                                        <span className="text-amber-700 font-semibold">ብጁ ዲዛይን</span>
+                                      ) : (
+                                        order.items?.[0]?.product?.name || 'Product'
+                                      )}
                                     </div>
-                                  )}
-                                </div>
-                                <div>
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {order.isCustom ? (
-                                      <span className="text-ethiopian-gold font-bold">Special Clothing Design</span>
-                                    ) : (
-                                      order.items?.[0]?.product?.name || 'Product'
-                                    )}
+                                    <div className="flex gap-1 mt-0.5">
+                                      {order.items?.[0]?.color && (
+                                        <span className="text-[7.5px] bg-gray-50 text-gray-600 px-1 py-0.2 rounded font-medium border border-gray-200 uppercase">
+                                          {order.items[0].color}
+                                        </span>
+                                      )}
+                                      {order.items?.[0]?.size && (
+                                        <span className="text-[7.5px] bg-gray-50 text-gray-600 px-1 py-0.2 rounded font-medium border border-gray-200 uppercase">
+                                          {order.items[0].size}
+                                        </span>
+                                      )}
+                                      {order.items?.length > 1 && (
+                                        <span className="text-[8px] text-gray-400 font-medium">+{order.items.length - 1}</span>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="flex gap-1 mt-0.5">
-                                    {order.items?.[0]?.color && (
-                                      <span className="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-md font-bold uppercase border border-blue-100">
-                                        {order.items[0].color}
-                                      </span>
-                                    )}
-                                    {order.items?.[0]?.size && (
-                                      <span className="text-[9px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded-md font-bold uppercase border border-purple-100">
-                                        {order.items[0].size}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {order.items?.length > 1 && (
-                                    <div className="text-xs text-gray-500">+{order.items.length - 1} more</div>
-                                  )}
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-bold text-ethiopian-gold">
-                                {(order.totals?.artisanEarning || (order.totals?.total * 0.85))?.toFixed(2)} ETB
-                              </div>
-                              <div className="text-xs text-gray-400 font-normal">Total: {order.totals?.total?.toFixed(2)}</div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col gap-1">
-                                <span className={`px-2 py-0.5 text-[10px] rounded-full inline-block w-fit ${
-                                  order.payment?.status === 'Paid' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                }`}>
-                                  Pay: {order.payment?.status || 'Unpaid'}
+                              </td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">
+                                <div className="text-[11px] font-bold text-gray-900">
+                                  {(order.totals?.artisanEarning || (order.totals?.total * 0.85))?.toFixed(2)} ETB
+                                </div>
+                                <div className="text-[9px] text-gray-400 font-normal">ድምር: {order.totals?.total?.toFixed(2)}</div>
+                              </td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">
+                                <div className="flex flex-col gap-0.5">
+                                  <span className="px-1 py-0.2 text-[8.5px] font-medium rounded border border-gray-200 bg-gray-50 text-gray-600 inline-block w-fit">
+                                    Pay: {order.payment?.status || 'Unpaid'}
+                                  </span>
+                                  <span className="px-1 py-0.2 text-[8.5px] font-medium rounded border border-gray-200 bg-gray-50 text-gray-600 inline-block w-fit">
+                                    Payout: {order.payoutStatus || 'Pending'}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9.5px] font-medium border ${statusStyles[order.status] || 'bg-gray-50 text-gray-700 border-gray-200'}`}>
+                                  {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
                                 </span>
-                                <span className={`px-2 py-0.5 text-[10px] rounded-full inline-block w-fit ${
-                                  order.payoutStatus === 'Paid' ? 'bg-blue-100 text-blue-800' :
-                                  order.payoutStatus === 'Ready' ? 'bg-amber-100 text-amber-800 animate-pulse' :
-                                  'bg-gray-100 text-gray-600'
-                                }`}>
-                                  Payout: {order.payoutStatus || 'Pending'}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-                                statusStyles[order.status] || 'bg-gray-100 text-gray-800 border-gray-200'
-                              }`}>
-                                {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              {renderActions(order)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                              </td>
+                              <td className="px-2 py-1.5 whitespace-nowrap">
+                                {renderActions(order)}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
               </>
             )}
           </>
@@ -1405,11 +1474,10 @@ const ManageOrders = () => {
                     <button
                       key={i + 1}
                       onClick={() => setCurrentPage(i + 1)}
-                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
-                        currentPage === i + 1
-                          ? 'z-10 bg-ethiopian-gold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ethiopian-gold'
-                          : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
-                      }`}
+                      className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${currentPage === i + 1
+                        ? 'z-10 bg-ethiopian-gold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ethiopian-gold'
+                        : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                        }`}
                     >
                       {i + 1}
                     </button>

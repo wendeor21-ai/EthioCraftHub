@@ -77,16 +77,22 @@ const productModelDef = {
 
   virtuals: {
     totalQuantity: (data) => {
+      const invQty = Number(data.inventory?.quantity);
+      if (!isNaN(invQty)) return invQty;
       if (data.variations?.length) {
         return data.variations.reduce((sum, v) => sum + (v.quantity || 0), 0);
       }
-      return data.inventory?.quantity || 0;
+      return 0;
     },
     isAvailable: (data) => {
-      const qty = data.variations?.length
-        ? data.variations.reduce((sum, v) => sum + (v.quantity || 0), 0)
-        : data.inventory?.quantity || 0;
-      return data.status === 'active' && qty > 0;
+      const invQty = Number(data.inventory?.quantity);
+      const qty = !isNaN(invQty)
+        ? invQty
+        : (data.variations?.length
+            ? data.variations.reduce((sum, v) => sum + (v.quantity || 0), 0)
+            : 0);
+      const isActive = data.status === 'active' || (!data.status && qty > 0);
+      return isActive && qty > 0;
     },
     primaryImage: (data) => {
       const imgs = data.images || [];
@@ -118,10 +124,24 @@ const productModelDef = {
       generateAITags(data);
     }
 
-    if (data.variations?.length) {
+    const invQty = Number(data.inventory?.quantity);
+    if (!isNaN(invQty)) {
+      if (invQty <= 0) {
+        data.status = 'out_of_stock';
+      } else if (data.status === 'out_of_stock' || data.status === 'sold') {
+        data.status = 'active';
+      }
+      if (Array.isArray(data.variations) && data.variations.length > 0) {
+        if (data.variations.length === 1) {
+          data.variations[0].quantity = invQty;
+        }
+      }
+    } else if (data.variations?.length) {
       const total = data.variations.reduce((sum, v) => sum + (v.quantity || 0), 0);
       data.inventory = data.inventory || {};
       data.inventory.quantity = total;
+      if (total <= 0) data.status = 'out_of_stock';
+      else if (data.status === 'out_of_stock' || data.status === 'sold') data.status = 'active';
     }
 
     if (data.images?.length) {
@@ -265,15 +285,25 @@ Product.searchProducts = function (query, filters = {}) {
     .sort({ createdAt: -1 });
 };
 
-Product.getFeatured = function (limit = 10) {
-  return Product.find({
-    featured: true,
-    status: 'active',
-    'inventory.quantity': { $gt: 0 },
-  })
-    .populate('artisan', 'profile.firstName profile.lastName')
-    .limit(limit)
-    .sort({ createdAt: -1 });
+Product.getFeatured = async function (limit = 10) {
+  try {
+    const products = await Product.find({
+      status: 'active',
+    })
+      .populate('artisan', 'profile.firstName profile.lastName profile.storeName profile.storeLogo')
+      .sort({ createdAt: -1 })
+      .limit(limit * 3);
+
+    return (products || [])
+      .filter(p => {
+        const invQty = Number(p.inventory?.quantity);
+        return !isNaN(invQty) ? invQty > 0 : (Number(p.stock) > 0);
+      })
+      .slice(0, limit);
+  } catch (err) {
+    console.error('Product.getFeatured error:', err.message);
+    return [];
+  }
 };
 
 module.exports = Product;

@@ -12,21 +12,40 @@ import axios from "axios";
 
 // Create axios instance
 // Default API port is 5001 (server.js defaults to 5001). Allow overriding with REACT_APP_API_URL.
-export const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+// Determine API Base URL safely - Always use same-origin relative '/api' in production
+const resolveAxiosBase = () => {
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    return '/api';
+  }
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  return 'http://localhost:5000/api';
+};
+
+export const API_BASE_URL = resolveAxiosBase();
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  timeout: 45000,
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and handle FormData boundary
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers["x-access-token"] = token;
+      config.headers["X-Access-Token"] = token;
+    }
+    // When sending FormData, delete Content-Type so browser/axios sets multipart/form-data with exact boundary
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+      delete config.headers["content-type"];
+      if (config.headers.common) {
+        delete config.headers.common["Content-Type"];
+        delete config.headers.common["content-type"];
+      }
     }
     return config;
   },
@@ -41,22 +60,8 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Only clear session and redirect on 401 with explicit expired/invalid token codes.
-    // Do NOT redirect if user is already on login page or for transient errors.
-    if (error.response?.status === 401) {
-      const code = error.response?.data?.code;
-      const authFailureCodes = ['NO_TOKEN', 'INVALID_TOKEN', 'TOKEN_EXPIRED'];
-      if (authFailureCodes.includes(code)) {
-        const isAuthPage = window.location.pathname === '/login' || window.location.pathname === '/register';
-        if (!isAuthPage) {
-          console.warn('🔒 Auth token expired or invalid, redirecting to login');
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('user');
-          window.location.href = '/login';
-        }
-      }
-    }
-
+    // Graceful handling without destructive full-page redirect.
+    // Background endpoints (notifications, wishlist, stats) must never force the browser back to login.
     return Promise.reject(error);
   },
 );
@@ -71,6 +76,26 @@ export const authAPI = {
   // Register user
   register: (userData) => {
     return api.post("/auth/register", userData);
+  },
+
+  // Send registration OTP
+  sendRegistrationOtp: (email) => {
+    return api.post("/auth/send-registration-otp", { email });
+  },
+
+  // Verify registration OTP
+  verifyRegistrationOtp: (email, otp) => {
+    return api.post("/auth/verify-registration-otp", { email, otp });
+  },
+
+  // Verify Google login OTP for privileged accounts (artisan / admin)
+  verifyGoogleLoginOtp: (email, otp, tempToken) => {
+    return api.post("/auth/verify-google-login-otp", { email, otp, tempToken });
+  },
+
+  // Resend Google login OTP
+  resendGoogleLoginOtp: (email, tempToken) => {
+    return api.post("/auth/resend-google-login-otp", { email, tempToken });
   },
 
   // Logout user
@@ -247,6 +272,7 @@ export const adminAPI = {
     api.post("/admin/platform-settings", payload),
   recalculateRates: (payload) => api.post("/admin/recalculate-rates", payload),
   downloadBackup: () => api.get("/admin/backup/download", { responseType: "blob" }),
+  getBroadcasts: () => api.get("/admin/notifications/broadcasts"),
   broadcastNotification: (payload) =>
     api.post("/admin/notifications/broadcast", payload),
   deleteBroadcast: (id) => api.delete(`/admin/notifications/broadcasts/${id}`),

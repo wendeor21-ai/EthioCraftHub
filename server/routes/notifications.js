@@ -15,11 +15,32 @@ const readJson = (name, fallback) => {
   return fallback;
 };
 
-// Public endpoint for broadcasts
+const writeJson = (name, data) => {
+  const p = path.join(dataDir, name + ".json");
+  try {
+    fs.writeFileSync(p, JSON.stringify(data, null, 2), "utf8");
+  } catch (e) {
+    console.error("writeJson", p, e);
+  }
+};
+
+// Public endpoint for broadcasts with auto-expiration
 router.get("/broadcasts", (req, res) => {
   const broadcasts = readJson("broadcasts", []);
-  // filter active broadcasts; for now return all
-  res.json({ broadcasts });
+  const now = Date.now();
+  
+  // Filter active (non-expired) broadcasts
+  const active = broadcasts.filter((b) => {
+    if (!b.expiresAt) return true;
+    return new Date(b.expiresAt).getTime() > now;
+  });
+
+  // If any expired, clean up JSON storage silently
+  if (active.length !== broadcasts.length) {
+    writeJson("broadcasts", active);
+  }
+
+  res.json({ broadcasts: active });
 });
 
 // Public endpoint for platform settings (safe to expose basic branding info)
@@ -32,10 +53,9 @@ router.get("/platform-settings", (req, res) => {
     logoUrl: "",
   });
 
-  // Ensure logoUrl is a full path if it starts with /uploads
-  if (settings.logoUrl && settings.logoUrl.startsWith('/uploads')) {
-    const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 5001}`;
-    settings.logoUrl = `${backendUrl}${settings.logoUrl}`;
+  // Ensure logoUrl is clean relative path without localhost
+  if (settings.logoUrl) {
+    settings.logoUrl = settings.logoUrl.replace(/^https?:\/\/localhost(:\d+)?/i, '').replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/i, '');
   }
 
   res.json({ settings });

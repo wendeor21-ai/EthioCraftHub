@@ -1,7 +1,8 @@
 /**
  * FAQ Page for EthioCraft Global
  * 
- * Frequently Asked Questions with accordion-style display
+ * Frequently Asked Questions (የእርዳታ እና ድጋፍ ጥያቄዎች)
+ * Fully mobile-first, responsive, and translated into Amharic
  */
 
 import { useState } from 'react';
@@ -17,7 +18,10 @@ import {
   Truck,
   User,
   Shield,
-  MessageCircle
+  MessageCircle,
+  Sparkles,
+  Phone,
+  X
 } from 'lucide-react';
 
 const FAQ = () => {
@@ -27,104 +31,104 @@ const FAQ = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
 
   const categories = [
-    { id: 'all', name: 'All Questions', icon: HelpCircle, color: 'text-gray-600' },
-    { id: 'orders', name: 'Orders', icon: Package, color: 'text-blue-600' },
-    { id: 'payments', name: 'Payments', icon: CreditCard, color: 'text-green-600' },
-    { id: 'shipping', name: 'Shipping', icon: Truck, color: 'text-amber-600' },
-    { id: 'account', name: 'Account', icon: User, color: 'text-purple-600' },
-    { id: 'security', name: 'Security', icon: Shield, color: 'text-red-600' }
+    { id: 'all', name: 'ሁሉም', enName: 'All', icon: HelpCircle },
+    { id: 'orders', name: 'ትዕዛዞች', enName: 'Orders', icon: Package },
+    { id: 'payments', name: 'ክፍያዎች', enName: 'Payments', icon: CreditCard },
+    { id: 'shipping', name: 'ማጓጓዣና ርክክብ', enName: 'Shipping', icon: Truck },
+    { id: 'account', name: 'የግል መለያ', enName: 'Account', icon: User },
+    { id: 'security', name: 'ደህንነት', enName: 'Security', icon: Shield }
   ];
 
   const faqs = [
     {
       id: 1,
       category: 'orders',
-      question: 'How do I place an order?',
-      answer: 'Browse our products, add items to your cart, and proceed to checkout. You\'ll need to create an account or log in to complete your purchase. Follow the checkout steps to enter your shipping information and payment details.'
+      question: 'ትዕዛዝ እንዴት ማስገባት እችላለሁ? (How do I place an order?)',
+      answer: 'የሚፈልጉትን ባህላዊ የዕደ-ጥበብ ምርት ይምረጡ፤ "ወደ ዘንቢል አክል" የሚለውን በመጫን ምርቶችን ካሰባሰቡ በኋላ ወደ ክፍያ (Checkout) ይቀጥሉ። አድራሻዎን እና የተመቻችዎትን የመክፈያ ዘዴ በመምረጥ ትዕዛዝዎን በቀላሉ ያጠናቅቁ።'
     },
     {
       id: 2,
       category: 'orders',
-      question: 'Can I cancel or modify my order?',
-      answer: 'You can cancel or modify your order within 24 hours of placing it by contacting our support team. Once the order has been processed and shipped, cancellation is no longer possible, but you can return the item after delivery.'
+      question: 'ትዕዛዜን መሰረዝ ወይም ማስተካከል እችላለሁ? (Can I cancel or modify my order?)',
+      answer: 'አዎ፣ ትዕዛዝ ባስገቡ በ24 ሰዓት ውስጥ የደንበኞች ድጋፍ ቡድናችንን በማነጋገር መሰረዝ ወይም ማስተካከል ይችላሉ። ትዕዛዙ ተዘጋጅቶ ከተላከ በኋላ መሰረዝ ባይቻልም፣ ዕቃው ከደረሰዎት በኋላ የመመለስ ሂደት መጀመር ይችላሉ።'
     },
     {
       id: 3,
       category: 'orders',
-      question: 'How do I track my order?',
-      answer: 'Go to "My Orders" in your account menu and click on the "Track Order" button next to your order. You\'ll see real-time updates on your order status and estimated delivery date.'
+      question: 'የትዕዛዜን ሁኔታ እንዴት መከታተል እችላለሁ? (How do I track my order?)',
+      answer: 'በፕሮፋይልዎ ስር ወደ "የእኔ ትዕዛዞች (My Orders)" በመግባት ከትዕዛዝዎ ጎን "ክትትል (Track)" የሚለውን ይጫኑ። የትዕዛዝዎን የደረሰበት ደረጃ እና የሚደርስበትን ግምታዊ ቀን በቅጽበት ማየት ይችላሉ።'
     },
     {
       id: 4,
       category: 'payments',
-      question: 'What payment methods do you accept?',
-      answer: 'We accept major credit cards (Visa, Mastercard, American Express), debit cards, and mobile money payments. All transactions are encrypted and secure.'
+      question: 'ምን ዓይነት የመክፈያ ዘዴዎችን ትቀበላላችሁ? (What payment methods do you accept?)',
+      answer: 'የሀገር ውስጥ እና የውጭ ክፍያዎችን እንደግፋለን፤ ቴሌብር (Telebirr)፣ የኢትዮጵያ ንግድ ባንክ (CBE)፣ ቻፓ (Chapa) እንዲሁም ዓለም አቀፍ የክሬዲት/ዴቢት ካርዶች (Visa, Mastercard) ተቀባይነት አላቸው። ሁሉም ክፍያዎች ደህንነታቸው የተጠበቀ ነው።'
     },
     {
       id: 5,
       category: 'payments',
-      question: 'Is my payment information secure?',
-      answer: 'Yes! We use industry-standard SSL encryption to protect your payment information. We never store your full credit card details on our servers. All payments are processed through secure payment gateways.'
+      question: 'የክፍያ መረጃዬ ደህንነቱ የተጠበቀ ነው? (Is my payment secure?)',
+      answer: 'በእርግጥ! ሁሉም የክፍያ ሂደቶች በከፍተኛ የSSL ምስጠራ (Encryption) እና በታመኑ የክፍያ መተላለፊያዎች የተጠበቁ ናቸው። የካርድዎን ወይም የባንክ ሂሳብዎን ሚስጥራዊ ቁጥሮች በሰርቨራችን ላይ በፍጹም አናስቀምጥም።'
     },
     {
       id: 6,
       category: 'payments',
-      question: 'How do refunds work?',
-      answer: 'Refunds are processed within 7-10 business days after we receive your returned item. The refund will be credited to your original payment method. Contact support to initiate a return and refund request.'
+      question: 'የገንዘብ ተመላሽ (Refund) እንዴት ይሰራል? (How do refunds work?)',
+      answer: 'የተመለሰው ዕቃ በባለሙያው ተመርምሮ ከደረሰን በኋላ በ7-10 የሥራ ቀናት ውስጥ ገንዘብዎ በተከፈለበት መንገድ ይመለስልዎታል። ተመላሽ ለመጠየቅ የድጋፍ ቡድናችንን ያነጋግሩ።'
     },
     {
       id: 7,
       category: 'shipping',
-      question: 'How long does shipping take?',
-      answer: 'Standard shipping takes 5-7 business days within Ethiopia. International shipping takes 10-15 business days depending on the destination. Express shipping options are available at checkout.'
+      question: 'ዕቃው ለመድረስ ምን ያህል ጊዜ ይወስዳል? (How long does shipping take?)',
+      answer: 'በኢትዮጵያ ውስጥ ባሉ ከተሞች መደበኛ ማድረሻ ከ2 እስከ 5 የሥራ ቀናት ይወስዳል። ለዓለም አቀፍ ደንበኞች እንደ ሀገሩ ርቀት ከ7 እስከ 15 የሥራ ቀናት ይወስዳል።'
     },
     {
       id: 8,
       category: 'shipping',
-      question: 'Do you ship internationally?',
-      answer: 'Yes! We ship to select countries worldwide. Shipping costs and delivery times vary by destination. Check availability and rates at checkout by entering your shipping address.'
+      question: 'ወደ ውጭ ሀገራት ዕቃዎችን ትልካላችሁ? (Do you ship internationally?)',
+      answer: 'አዎ! የኢትዮጵያን ባህላዊ ምርቶች ወደ ተመረጡ የዓለም ሀገራት በታመኑ ዓለም አቀፍ የፖስታና የማጓጓዣ ድርጅቶች (DHL, EMS) በኩል እናደርሳለን። ዋጋውን እና የጊዜ ገደቡን በክፍያ ገጽ ላይ ማየት ይችላሉ።'
     },
     {
       id: 9,
       category: 'shipping',
-      question: 'What if my package is lost or damaged?',
-      answer: 'If your package is lost or arrives damaged, please contact our support team within 48 hours of the expected delivery date. We\'ll investigate and arrange for a replacement or full refund.'
+      question: 'ዕቃው ቢጠፋ ወይም ተበላሽቶ ቢደርስ ምን ማድረግ አለብኝ? (What if my package is lost or damaged?)',
+      answer: 'ዕቃው የደረሰበት ቀን ጀምሮ በ48 ሰዓታት ውስጥ የፎቶ ማስረጃ በማያያዝ ለድጋፍ ቡድናችን ያሳውቁን። ጉዳዩን ወዲያውኑ መርምረን አዲስ ዕቃ እንተካለን ወይም ሙሉ ክፍያዎን እንመልሳለን።'
     },
     {
       id: 10,
       category: 'account',
-      question: 'How do I create an account?',
-      answer: 'Click the "Join EthioCraft" or "Register" button in the navigation menu. Fill in your details including name, email, and password. You\'ll receive a confirmation email to verify your account.'
+      question: 'አዲስ መለያ (Account) እንዴት መክፈት እችላለሁ? (How do I create an account?)',
+      answer: 'ከላይ ያለውን "ይመዝገቡ (Register)" የሚለውን በመጫን ሙሉ ስምዎን፣ ኢሜይልዎን እና የሚስጥር ቁጥር በማስገባት በደቂቃዎች ውስጥ መለያዎን መክፈት ይችላሉ።'
     },
     {
       id: 11,
       category: 'account',
-      question: 'I forgot my password. What should I do?',
-      answer: 'Click "Forgot Password" on the login page. Enter your email address and we\'ll send you a password reset link. Follow the instructions in the email to create a new password.'
+      question: 'የሚስጥር ቃሌን (Password) ብረሳው ምን ማድረግ አለብኝ? (I forgot my password. What should I do?)',
+      answer: 'በመግቢያው ገጽ ላይ "የሚስጥር ቃል ረሳሁ (Forgot Password)" የሚለውን ይጫኑ፤ ኢሜይልዎን ሲያስገቡ አዲስ የሚስጥር ቃል ማስተካከያ ማስፈንጠሪያ ይላክልዎታል።'
     },
     {
       id: 12,
       category: 'account',
-      question: 'How do I update my profile information?',
-      answer: 'Log in to your account and go to "Account Settings" or "Edit Profile" from the user menu. You can update your name, phone number, and other preferences. Email changes may require verification.'
+      question: 'የግል መረጃዬን እንዴት ማሻሻል እችላለሁ? (How do I update my profile information?)',
+      answer: 'ወደ መለያዎ ገብተው "ፕሮፋይል (Profile)" የሚለውን በመምረጥ ስምዎን፣ ስልክ ቁጥርዎን እና የመኖሪያ አድራሻዎን በማንኛውም ጊዜ ማስተካከል ይችላሉ።'
     },
     {
       id: 13,
       category: 'security',
-      question: 'How do I change my password?',
-      answer: 'Go to "Security" in your account menu. Enter your current password, then your new password twice to confirm. Your password must be at least 8 characters long for security.'
+      question: 'የሚስጥር ቃሌን እንዴት መቀየር እችላለሁ? (How do I change my password?)',
+      answer: 'በመለያዎ ገጽ ላይ ወደ "ደህንነት (Security)" በመግባት የነበረውን የሚስጥር ቃል እና አዲሱን በማስገባት በቀላሉ መቀየር ይችላሉ። የሚስጥር ቃልዎ ቢያንስ 8 ፊደላት/ቁጥሮች መሆን አለበት።'
     },
     {
       id: 14,
       category: 'security',
-      question: 'Is my personal information safe?',
-      answer: 'Yes! We take data privacy seriously. Your personal information is encrypted and stored securely. We never share your data with third parties without your consent. Read our Privacy Policy for more details.'
+      question: 'የግል መረጃዬ ደህንነት እንዴት ይጠበቃል? (Is my personal information safe?)',
+      answer: 'የደንበኞቻችን መረጃ ሚስጥራዊነት በከፍተኛ ደረጃ የተጠበቀ ነው። መረጃዎን ያለእርስዎ ፈቃድ ለማንኛውም ሶስተኛ ወገን አሳልፈን አንሰጥም።'
     },
     {
       id: 15,
       category: 'security',
-      question: 'How do I delete my account?',
-      answer: 'To delete your account, please contact our support team. Account deletion is permanent and cannot be undone. All your data will be removed from our systems within 30 days.'
+      question: 'መለያዬን በቋሚነት መሰረዝ እችላለሁ? (How do I delete my account?)',
+      answer: 'አዎ፣ መለያዎ እንዲሰረዝ ከፈለጉ የድጋፍ ቡድናችንን በኢሜይል ወይም በቀጥታ መልዕክት ያነጋግሩ፤ ጥያቄዎ ተረጋግጦ መረጃዎ ይሰረዛል።'
     }
   ];
 
@@ -141,127 +145,217 @@ const FAQ = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-8">
-      <div className="container mx-auto px-4 max-w-5xl">
-        {/* Header */}
-        <div className="mb-8">
+    <div className="min-h-screen bg-[#F8F9FB] pb-16">
+      {/* Top Brand Stripe */}
+      <div className="h-1.5 bg-gradient-to-r from-green-600 via-amber-400 to-red-600 w-full" />
+
+      <div className="max-w-3xl mx-auto px-4 pt-4 sm:pt-6">
+        {/* Navigation & Header */}
+        <div className="mb-4">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 mb-4 transition-colors"
+            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-600 hover:text-amber-800 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-colors mb-3"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>ተመለስ (Back)</span>
           </button>
-          <h1 className="text-4xl font-bold text-gray-800 mb-2 flex items-center">
-            <HelpCircle className="w-10 h-10 mr-3 text-purple-600" />
-            Frequently Asked Questions
-          </h1>
-          <p className="text-gray-600">Find quick answers to common questions</p>
+          
+          <div className="flex items-center space-x-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+              <HelpCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight">
+                ተደጋግመው የሚጠየቁ ጥያቄዎች (FAQs)
+              </h1>
+              <p className="text-xs text-gray-500 mt-0.5">
+                ስለ ግብይት፣ ክፍያ፣ ማድረሻ እና መለያዎ ፈጣን ምላሾች
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Search Bar */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+        {/* Search Bar - Mobile Compact */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2.5 mb-4">
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search FAQs..."
-              className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg"
+              placeholder="ጥያቄዎችን እዚህ ይፈልጉ (Search FAQs)..."
+              className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none bg-gray-50/50"
             />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 p-1 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Category Filter */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Filter by Category</h2>
-          <div className="flex flex-wrap gap-3">
+        {/* Category Filter - Mobile Horizontal Scrolling Pill Bar */}
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+              በዘርፍ ይምረጡ (Categories)
+            </span>
+            <span className="text-[11px] text-gray-400 font-medium">
+              {filteredFaqs.length} ጥያቄዎች
+            </span>
+          </div>
+
+          {/* Horizontal scroll container with smooth touch scrolling */}
+          <div className="flex space-x-2 overflow-x-auto pb-1.5 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:gap-2 sm:space-x-0">
             {categories.map((category) => {
               const Icon = category.icon;
+              const isSelected = selectedCategory === category.id;
+              const count = category.id === 'all' 
+                ? faqs.length 
+                : faqs.filter(f => f.category === category.id).length;
+
               return (
                 <button
                   key={category.id}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedCategory === category.id
-                      ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-medium shrink-0 transition-all ${
+                    isSelected
+                      ? 'bg-amber-600 text-white shadow-sm border border-amber-600'
+                      : 'bg-white text-gray-700 border border-gray-200 hover:border-amber-400 hover:bg-amber-50/40'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${selectedCategory === category.id ? 'text-white' : category.color}`} />
+                  <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
                   <span>{category.name}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    isSelected ? 'bg-amber-700/60 text-white' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                    {count}
+                  </span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* FAQ List */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        {/* FAQ Accordion List */}
+        <div className="space-y-2.5 mb-6">
           {filteredFaqs.length > 0 ? (
-            <div className="space-y-4">
-              {filteredFaqs.map((faq) => (
+            filteredFaqs.map((faq) => {
+              const isOpen = openQuestion === faq.id;
+              return (
                 <div
                   key={faq.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden transition-all hover:shadow-md"
+                  className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm transition-all"
                 >
                   <button
                     onClick={() => toggleQuestion(faq.id)}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between p-3.5 text-left hover:bg-gray-50/70 transition-colors"
                   >
-                    <span className="font-semibold text-gray-800 text-lg pr-4">
-                      {faq.question}
-                    </span>
-                    {openQuestion === faq.id ? (
-                      <ChevronUp className="w-6 h-6 text-purple-600 flex-shrink-0" />
-                    ) : (
-                      <ChevronDown className="w-6 h-6 text-gray-400 flex-shrink-0" />
-                    )}
+                    <div className="pr-3 flex-1">
+                      <span className="font-semibold text-gray-900 text-xs sm:text-sm block">
+                        {faq.question}
+                      </span>
+                    </div>
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                      isOpen ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {isOpen ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
+                    </div>
                   </button>
-                  {openQuestion === faq.id && (
-                    <div className="px-5 pb-5 pt-2 bg-gray-50 border-t border-gray-200 animate-fade-in">
-                      <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+
+                  {isOpen && (
+                    <div className="px-3.5 pb-3.5 pt-1 bg-amber-50/20 border-t border-gray-100 animate-fadeIn">
+                      <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-normal">
+                        {faq.answer}
+                      </p>
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+            })
           ) : (
-            <div className="text-center py-12">
-              <HelpCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-600 text-lg">No FAQs found matching your search.</p>
-              <p className="text-gray-500 text-sm mt-2">Try different keywords or browse all categories</p>
+            <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+              <HelpCircle className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+              <p className="text-xs sm:text-sm font-semibold text-gray-700">
+                የተፈለገው ጥያቄ አልተገኘም
+              </p>
+              <p className="text-[11px] text-gray-400 mt-1">
+                እባክዎ የተለየ ቃል በመጠቀም ይፈልጉ ወይም ሁሉንም ጥያቄዎች ይመልከቱ
+              </p>
+              <button
+                onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
+                className="mt-3 px-3.5 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg text-xs font-bold transition-colors"
+              >
+                ሁሉንም አሳይ
+              </button>
             </div>
           )}
         </div>
 
-        {/* ZemaAI CTA */}
-        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-xl shadow-lg p-8 mt-8 text-center text-white">
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-3xl">🤖</span>
+        {/* Quick Assistance Help Channels - Mobile Friendly 3 Grid */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-3">
+          <div className="flex items-center space-x-2">
+            <span className="text-base">💬</span>
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-gray-900">
+                ተጨማሪ እርዳታ ይፈልጋሉ? (Need More Help?)
+              </h3>
+              <p className="text-[11px] text-gray-500">
+                የሚፈልጉትን መልስ ካላገኙ ከታች ካሉት አማራጮች አንዱን ይጠቀሙ
+              </p>
+            </div>
           </div>
-          <h3 className="text-2xl font-bold mb-2">Try Zema AI Assistant</h3>
-          <p className="mb-6 opacity-90">Get instant answers powered by AI! Zema can help you with product recommendations, order questions, and more.</p>
-          <button
-            onClick={() => navigate('/zema-ai')}
-            className="px-8 py-3 bg-white text-orange-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold shadow-lg"
-          >
-            Chat with Zema AI
-          </button>
-        </div>
 
-        {/* Contact Support CTA */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl shadow-lg p-8 mt-6 text-center text-white">
-          <MessageCircle className="w-12 h-12 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold mb-2">Still have questions?</h3>
-          <p className="mb-6 opacity-90">Can't find what you're looking for? We're here to help!</p>
-          <button
-            onClick={() => navigate('/contact-support')}
-            className="px-8 py-3 bg-white text-purple-600 rounded-lg hover:bg-gray-100 transition-colors font-semibold shadow-lg"
-          >
-            Contact Support
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+            {/* Zema AI */}
+            <button
+              onClick={() => navigate('/zema-ai')}
+              className="p-3 rounded-lg border border-amber-200 bg-amber-50/40 hover:bg-amber-100/50 text-left transition-colors flex items-center space-x-2.5"
+            >
+              <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-amber-900 truncate">ዜማ AI ረዳት</h4>
+                <p className="text-[10px] text-amber-700 truncate">ፈጣን ምላሽ በ AI</p>
+              </div>
+            </button>
+
+            {/* Direct Chat / Messages */}
+            <button
+              onClick={() => navigate('/messages')}
+              className="p-3 rounded-lg border border-blue-200 bg-blue-50/40 hover:bg-blue-100/50 text-left transition-colors flex items-center space-x-2.5"
+            >
+              <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <MessageCircle className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-blue-900 truncate">የቀጥታ መልዕክት</h4>
+                <p className="text-[10px] text-blue-700 truncate">ከባለሙያ/አስተዳዳሪ ጋር</p>
+              </div>
+            </button>
+
+            {/* Contact Support */}
+            <button
+              onClick={() => navigate('/contact-support')}
+              className="p-3 rounded-lg border border-green-200 bg-green-50/40 hover:bg-green-100/50 text-left transition-colors flex items-center space-x-2.5"
+            >
+              <div className="w-8 h-8 rounded-lg bg-green-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <Phone className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-green-900 truncate">የደንበኞች ድጋፍ</h4>
+                <p className="text-[10px] text-green-700 truncate">በስልክ እና ኢሜይል</p>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </div>

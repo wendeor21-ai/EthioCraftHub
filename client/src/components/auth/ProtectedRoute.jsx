@@ -55,15 +55,19 @@ const ProtectedRoute = ({
     if (user?.role === 'admin') {
       return <Navigate to="/admin/dashboard" replace />;
     } else if (user?.role === 'artisan') {
-      return <Navigate to="/artisan/dashboard" replace />;
+      return <Navigate to={isVerifiedArtisan() ? "/artisan/dashboard" : "/artisan/verification"} replace />;
     } else {
       return <Navigate to="/" replace />;
     }
   }
 
   // Check artisan verification requirement
-  // Always allow access to the verification page itself to prevent redirect loops
-  if (requireVerification && user?.role === 'artisan' && !isVerifiedArtisan() && location.pathname !== '/artisan/verification') {
+  // Direct unverified artisans exclusively to the verification page
+  if (
+    user?.role === 'artisan' &&
+    !isVerifiedArtisan() &&
+    location.pathname !== '/artisan/verification'
+  ) {
     console.log('❌ Artisan not verified, redirecting to verification');
     return <Navigate to="/artisan/verification" replace />;
   }
@@ -86,7 +90,7 @@ export const AdminRoute = ({ children }) => (
   </ProtectedRoute>
 );
 
-export const ArtisanRoute = ({ children, requireVerification = true }) => (
+export const ArtisanRoute = ({ children, requireVerification = false }) => (
   <ProtectedRoute 
     roles={['artisan', 'admin']} 
     requireVerification={requireVerification}

@@ -13,7 +13,7 @@ import ErrorMessage from '../../components/common/ErrorMessage';
 import { adminAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 
-const ModerateProducts = () => {
+const ModerateProducts = ({ insideDashboard, onSelectTab }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -53,43 +53,17 @@ const ModerateProducts = () => {
         setError('');
       } else {
         console.warn('Failed to fetch products from admin API');
-        setProducts(getMockProducts());
+        setProducts([]);
+        setError('Failed to load products');
       }
     } catch (err) {
       console.error('Error fetching products:', err);
       setError('Failed to load products');
-      setProducts(getMockProducts());
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
-
-  const getMockProducts = () => [
-    {
-      _id: 'prod001',
-      name: 'Traditional Coffee Set',
-      description: 'Handcrafted ceramic coffee set with traditional Ethiopian designs',
-      price: 45.0,
-      category: 'Pottery',
-      artisan: { _id: 'user001', profile: { firstName: 'Sarah', lastName: 'Bekele' } },
-      images: [{ url: '/images/coffee-set.svg', isPrimary: true }],
-      status: 'active',
-      inventory: { quantity: 10 },
-      createdAt: '2026-01-20T10:00:00',
-    },
-    {
-      _id: 'prod002',
-      name: 'Handwoven Basket',
-      description: 'Beautiful traditional basket made from natural fibers',
-      price: 35.0,
-      category: 'Basketry',
-      artisan: { _id: 'user003', profile: { firstName: 'Emma', lastName: 'Tadesse' } },
-      images: [{ url: '/images/basket.svg', isPrimary: true }],
-      status: 'draft',
-      inventory: { quantity: 15 },
-      createdAt: '2026-02-05T14:30:00',
-    },
-  ];
 
   const filteredProducts = products.filter(p => {
     if (filter !== 'all' && p.status !== filter) return false;
@@ -182,64 +156,84 @@ const ModerateProducts = () => {
   const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
   const getStatusColor = (status) => ({ active: 'bg-green-100 text-green-800', pending: 'bg-yellow-100 text-yellow-800', flagged: 'bg-orange-100 text-orange-800', suspended: 'bg-red-100 text-red-800' }[status] || 'bg-gray-100 text-gray-800');
 
-  if (loading) return (<div className="min-h-screen flex items-center justify-center"><LoadingSpinner size="large" /></div>);
+  if (loading) return (<div className={insideDashboard ? "py-12 flex items-center justify-center" : "min-h-screen flex items-center justify-center"}><LoadingSpinner size="large" /></div>);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="mb-8">
-          <button onClick={() => navigate('/admin/dashboard')} className="text-ethiopian-gold hover:text-ethiopian-earth mb-4 flex items-center">← Back to Dashboard</button>
-          <h1 className="text-3xl font-bold text-gray-900">Moderate Products</h1>
-          <p className="text-gray-600 mt-2">Review and manage product listings</p>
+    <div className={insideDashboard ? "bg-transparent py-2 w-full" : "min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-8"}>
+      <div className={insideDashboard ? "w-full" : "container mx-auto px-4 max-w-7xl"}>
+        <div className="mb-6">
+          {!insideDashboard && (
+            <button onClick={() => navigate('/admin/dashboard')} className="text-amber-600 hover:text-amber-700 mb-3 flex items-center text-xs font-semibold">← Back to Dashboard</button>
+          )}
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900">Moderate Products</h1>
+          <p className="text-xs text-gray-500 mt-1">Review and manage product listings</p>
         </div>
 
         {error && <ErrorMessage message={error} className="mb-6" />}
 
         {success && <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6">{success}</div>}
 
-        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <div className="flex space-x-2">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3.5 sm:p-5 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-1.5">
               {['all','pending','flagged','active','inactive'].map(s => (
-                <button key={s} onClick={() => setFilter(s)} className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter===s?'bg-ethiopian-gold text-white':'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>{s.charAt(0).toUpperCase()+s.slice(1)}</button>
+                <button
+                  key={s}
+                  onClick={() => setFilter(s)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    filter === s
+                      ? 'bg-amber-600 text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </button>
               ))}
             </div>
 
-            <div className="relative">
-              <input type="text" placeholder="Search products..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent" />
-              <svg className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
+              />
+              <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-white rounded-xl shadow-2xs border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
+            <table className="w-full text-xs">
+              <thead className="bg-gray-50 border-b border-gray-100 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Artisan</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className="px-3 py-2 text-left">Image</th>
+                  <th className="px-3 py-2 text-left">Title</th>
+                  <th className="px-3 py-2 text-left">Artisan</th>
+                  <th className="px-3 py-2 text-left">Category</th>
+                  <th className="px-3 py-2 text-left">Price</th>
+                  <th className="px-3 py-2 text-left">Uploaded</th>
+                  <th className="px-3 py-2 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-100">
                 {filteredProducts.map(p => (
-                  <tr key={p._id} className={p.isFlagged? 'bg-orange-50' : ''}>
-                    <td className="px-6 py-4 whitespace-nowrap"><img src={p.images?.[0]?.url || '/images/placeholder.svg'} alt={p.name} className="w-16 h-12 object-cover rounded" /></td>
-                    <td className="px-6 py-4 whitespace-nowrap"><div className="font-medium text-gray-900">{p.name}</div><div className="text-sm text-gray-500">{p.description?.slice(0,80)}{p.description && p.description.length>80?'...':''}</div></td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{p.artisan?.profile?.firstName} {p.artisan?.profile?.lastName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{p.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-ethiopian-gold">{formatCurrency(p.price)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{formatDate(p.createdAt)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                      {p.status === 'pending' && (<button onClick={() => approveProduct(p._id)} className="text-green-600 hover:text-green-900">Approve</button>)}
-                      <button onClick={() => openEdit(p)} className="text-blue-600 hover:text-blue-900">Edit</button>
-                      <button onClick={() => flagProduct(p._id)} className="text-orange-600 hover:text-orange-900">Flag</button>
-                      <button onClick={() => rejectProduct(p._id)} className="text-red-600 hover:text-red-900">Reject</button>
+                  <tr key={p._id} className={p.isFlagged? 'bg-orange-50/50' : 'hover:bg-amber-50/30 transition-colors'}>
+                    <td className="px-3 py-1.5 whitespace-nowrap"><img src={p.images?.[0]?.url || '/images/placeholder.svg'} alt={p.name} className="w-9 h-8 object-cover rounded-md border border-gray-100" /></td>
+                    <td className="px-3 py-1.5 whitespace-nowrap"><div className="font-semibold text-gray-900 text-xs leading-tight">{p.name}</div><div className="text-[10px] text-gray-500 truncate max-w-xs">{p.description}</div></td>
+                    <td className="px-3 py-1.5 whitespace-nowrap text-xs text-gray-600">{p.artisan?.profile?.firstName} {p.artisan?.profile?.lastName}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap text-[11px] text-gray-600">{p.category}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap text-xs font-bold text-amber-700">{formatCurrency(p.price)}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap text-[10.5px] text-gray-500">{formatDate(p.createdAt)}</td>
+                    <td className="px-3 py-1.5 whitespace-nowrap text-xs font-medium space-x-1.5 text-right">
+                      {p.status === 'pending' && (<button onClick={() => approveProduct(p._id)} className="text-green-600 hover:text-green-800 text-[11px] font-semibold">Approve</button>)}
+                      <button onClick={() => openEdit(p)} className="text-blue-600 hover:text-blue-800 text-[11px] font-semibold">Edit</button>
+                      <button onClick={() => flagProduct(p._id)} className="text-orange-600 hover:text-orange-800 text-[11px] font-semibold">Flag</button>
+                      <button onClick={() => rejectProduct(p._id)} className="text-red-600 hover:text-red-800 text-[11px] font-semibold">Reject</button>
                     </td>
                   </tr>
                 ))}
@@ -248,14 +242,14 @@ const ModerateProducts = () => {
           </div>
 
           {filteredProducts.length === 0 && (
-            <div className="text-center py-12"><p className="text-gray-500">No products found matching your criteria</p></div>
+            <div className="text-center py-12"><p className="text-gray-500 text-xs">No products found matching your criteria</p></div>
           )}
         </div>
 
         {/* Edit Modal */}
         {editOpen && editingProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2 p-6">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-xl w-[95%] sm:w-11/12 md:w-3/4 lg:w-1/2 p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-semibold">Edit Product</h2>
                 <button onClick={() => setEditOpen(false)} className="text-gray-500 hover:text-gray-800">Close</button>

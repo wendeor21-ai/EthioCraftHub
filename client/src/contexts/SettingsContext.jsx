@@ -85,10 +85,21 @@ export const SettingsProvider = ({ children }) => {
 
   // Real-time Socket.io listeners for live broadcasts & real-time cancellation
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    // In production on cPanel Passenger, use interval refresh to avoid WebSocket handshake locks and polling loops
+    if (!isLocal) {
+      const pollTimer = setInterval(refresh, 60000);
+      return () => clearInterval(pollTimer);
+    }
+
     const socket = io(API_BASE_URL, {
       withCredentials: true,
-      transports: ['polling', 'websocket'],
-      reconnectionAttempts: 10,
+      transports: ['websocket'],
+      reconnectionAttempts: 2,
+      reconnectionDelay: 5000,
+      timeout: 5000
     });
 
     socket.on('connect', () => {
@@ -150,8 +161,13 @@ export const SettingsProvider = ({ children }) => {
     };
   }, []);
 
-  // Filter out any broadcasts the current user explicitly dismissed in this session
-  const activeVisibleBroadcasts = broadcasts.filter(b => !dismissedBroadcastIds.includes(String(b._id)));
+  // Filter out any broadcasts the current user explicitly dismissed in this session or that have expired
+  const now = Date.now();
+  const activeVisibleBroadcasts = broadcasts.filter(b => {
+    if (dismissedBroadcastIds.includes(String(b._id))) return false;
+    if (b.expiresAt && new Date(b.expiresAt).getTime() <= now) return false;
+    return true;
+  });
 
   return (
     <SettingsContext.Provider value={{ 
@@ -160,6 +176,7 @@ export const SettingsProvider = ({ children }) => {
       broadcasts: activeVisibleBroadcasts, 
       allBroadcasts: broadcasts,
       dismissBroadcast,
+      fetchBroadcasts,
       refresh, 
       updateSettings,
       updateHomeConfig,

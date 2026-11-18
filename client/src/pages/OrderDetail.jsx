@@ -10,8 +10,11 @@ import api from '../utils/api';
 import { API_BASE_URL } from '../config/api';
 import { ArrowLeft, Package, DollarSign, Calendar, CreditCard, Upload, CheckCircle2, Clock, XCircle, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { formatOrderDateTime } from '../utils/dateUtils';
+import { useCustomTranslation } from '../hooks/useCustomTranslation';
 
 const OrderDetail = () => {
+  const { t, currentLanguage } = useCustomTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
@@ -123,8 +126,8 @@ const OrderDetail = () => {
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
               <Calendar className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="text-xs text-gray-500">Order Date</p>
-                <p className="font-semibold text-gray-800">{new Date(order.createdAt).toLocaleDateString()}</p>
+                <p className="text-xs text-gray-500">{currentLanguage === 'am' ? 'የትዕዛዝ ቀን' : 'Order Date'}</p>
+                <p className="font-semibold text-gray-800 text-sm">{formatOrderDateTime(order.createdAt, currentLanguage).full}</p>
               </div>
             </div>
           </div>

@@ -10,6 +10,7 @@ import { EyeIcon, EyeSlashIcon, EnvelopeIcon, LockClosedIcon, ArrowRightIcon } f
 import { useAuth } from '../../contexts/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { useCustomTranslation } from '../../hooks/useCustomTranslation';
+import { API_BASE_URL } from '../../config/api';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -124,7 +125,7 @@ const Login = () => {
   };
 
   // ── Social Auth Handlers ──────────────────────────────────────────────────
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  const API_URL = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
 
   const handleGoogleLogin = () => {
     setSocialLoading('google');

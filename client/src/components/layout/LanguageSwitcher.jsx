@@ -32,6 +32,7 @@ const LanguageSwitcher = ({ compact = false }) => {
   };
 
   const currentLng = supportedLanguages.find(l => l.code === i18n.language) || supportedLanguages[0];
+  const langCode = (currentLng?.code || 'en').toUpperCase().slice(0, 2);
 
   // Compact mode: small globe + 2-letter code, used in mobile navbar
   if (compact) {
@@ -39,14 +40,14 @@ const LanguageSwitcher = ({ compact = false }) => {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-gray-50 border border-gray-200 hover:border-ethiopian-gold transition-all"
+          className="h-9 px-2.5 rounded-full bg-gray-50/90 border border-gray-200 hover:border-amber-500 hover:bg-amber-50/50 flex items-center gap-1 text-xs font-bold text-gray-700 transition-all shadow-2xs cursor-pointer"
           aria-label="Select Language"
         >
-          <Globe className="w-3.5 h-3.5 text-gray-500" />
-          <span className="text-[11px] font-bold text-gray-700 uppercase leading-none">
+          <Globe className="w-3.5 h-3.5 text-gray-600 shrink-0" />
+          <span className="text-[11px] font-bold text-gray-800 uppercase leading-none">
             {currentLng.code.slice(0, 2)}
           </span>
-          <ChevronDown className={`w-2.5 h-2.5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {isOpen && (
@@ -60,15 +61,15 @@ const LanguageSwitcher = ({ compact = false }) => {
                 <button
                   key={language.code}
                   onClick={() => handleLanguageChange(language.code)}
-                  className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-amber-50 ${isActive ? 'bg-amber-50/40' : ''}`}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-amber-50 cursor-pointer ${isActive ? 'bg-amber-50/60 font-bold' : ''}`}
                 >
                   <div className="flex flex-col items-start">
-                    <span className={`text-xs font-bold ${isActive ? 'text-ethiopian-gold' : 'text-gray-800'}`}>
+                    <span className={`text-xs ${isActive ? 'text-amber-700 font-bold' : 'text-gray-800 font-medium'}`}>
                       {language.nativeName}
                     </span>
                     <span className="text-[9px] text-gray-400">{language.name}</span>
                   </div>
-                  {isActive && <Check className="w-3.5 h-3.5 text-ethiopian-gold shrink-0" />}
+                  {isActive && <Check className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
                 </button>
               );
             })}
@@ -82,17 +83,17 @@ const LanguageSwitcher = ({ compact = false }) => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-white/50 backdrop-blur-sm border border-gray-200 hover:border-ethiopian-gold hover:bg-white transition-all duration-200 shadow-sm group"
+        className="h-9 px-2.5 rounded-full hover:bg-gray-50 transition-all duration-150 flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-emerald-900 cursor-pointer"
         aria-label="Select Language"
       >
-        <Globe className="w-4 h-4 text-gray-600 group-hover:text-ethiopian-gold transition-colors" />
-        <span className="text-sm font-semibold text-gray-700">{currentLng.nativeName}</span>
-        <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <Globe className="w-4 h-4 text-[#0F5132] shrink-0" />
+        <span className="text-xs font-bold text-gray-800 uppercase tracking-tight">{langCode}</span>
+        <ChevronDown className={`w-3 h-3 text-gray-400 transition-transform duration-150 shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-[100] animate-fade-in divide-y divide-gray-50">
-          <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50/50">
+        <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 z-[100] animate-fadeIn divide-y divide-gray-50">
+          <div className="px-3 py-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50/50">
             Select Language
           </div>
           {supportedLanguages.map((language) => {
@@ -101,17 +102,15 @@ const LanguageSwitcher = ({ compact = false }) => {
               <button
                 key={language.code}
                 onClick={() => handleLanguageChange(language.code)}
-                className={`w-full flex items-center justify-between px-4 py-3 text-sm transition-colors hover:bg-amber-50 group ${
-                  isActive ? 'bg-amber-50/30' : ''
-                }`}
+                className={`w-full flex items-center justify-between px-3 py-2 text-sm transition-colors hover:bg-amber-50 cursor-pointer ${isActive ? 'bg-amber-50/60' : ''}`}
               >
                 <div className="flex flex-col items-start">
-                  <span className={`font-bold ${isActive ? 'text-ethiopian-gold' : 'text-gray-900'}`}>
+                  <span className={`text-xs ${isActive ? 'text-amber-700 font-bold' : 'text-gray-800 font-medium'}`}>
                     {language.nativeName}
                   </span>
-                  <span className="text-[10px] text-gray-500">{language.name}</span>
+                  <span className="text-[9px] text-gray-400">{language.name}</span>
                 </div>
-                {isActive && <Check className="w-4 h-4 text-ethiopian-gold" />}
+                {isActive && <Check className="w-3.5 h-3.5 text-amber-600 shrink-0" />}
               </button>
             );
           })}

@@ -150,68 +150,68 @@ const WithdrawalManagement = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-            <div className="flex items-center justify-between">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-2.5 mb-3">
+          <div className="bg-white rounded-xl shadow-2xs p-2.5 sm:p-3 border-l-4 border-blue-500 border border-gray-100 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Pending</p>
+                <p className="text-base sm:text-xl font-bold text-blue-600 mt-0.5">
                   {withdrawals.filter(w => w.withdrawalStatus === 'pending').length}
                 </p>
               </div>
-              <ClockIcon className="w-8 h-8 text-blue-500" />
+              <ClockIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-blue-500 shrink-0" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-2xs p-2.5 sm:p-3 border-l-4 border-yellow-500 border border-gray-100 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm text-gray-600">Processing</p>
-                <p className="text-2xl font-bold text-yellow-600">
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Processing</p>
+                <p className="text-base sm:text-xl font-bold text-yellow-600 mt-0.5">
                   {withdrawals.filter(w => w.withdrawalStatus === 'processing').length}
                 </p>
               </div>
-              <BanknotesIcon className="w-8 h-8 text-yellow-500" />
+              <BanknotesIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-yellow-500 shrink-0" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-2xs p-2.5 sm:p-3 border-l-4 border-green-500 border border-gray-100 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm text-gray-600">Completed</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Completed</p>
+                <p className="text-base sm:text-xl font-bold text-green-600 mt-0.5">
                   {withdrawals.filter(w => w.withdrawalStatus === 'completed').length}
                 </p>
               </div>
-              <CheckCircleIcon className="w-8 h-8 text-green-500" />
+              <CheckCircleIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-green-500 shrink-0" />
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-            <div className="flex items-center justify-between">
+          <div className="bg-white rounded-xl shadow-2xs p-2.5 sm:p-3 border-l-4 border-red-500 border border-gray-100 hover:shadow-xs transition-all">
+            <div className="flex items-center justify-between gap-1">
               <div>
-                <p className="text-sm text-gray-600">Failed</p>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="text-[10px] sm:text-[10.5px] font-semibold text-gray-500 uppercase tracking-wider">Failed</p>
+                <p className="text-base sm:text-xl font-bold text-red-600 mt-0.5">
                   {withdrawals.filter(w => w.withdrawalStatus === 'failed').length}
                 </p>
               </div>
-              <XCircleIcon className="w-8 h-8 text-red-500" />
+              <XCircleIcon className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-red-500 shrink-0" />
             </div>
           </div>
         </div>
 
         {/* Filter Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-4 overflow-hidden">
+          <div className="border-b border-gray-100 overflow-x-auto">
+            <nav className="flex -mb-px whitespace-nowrap min-w-max px-2">
               {['pending', 'processing', 'completed', 'failed'].map((status) => (
                 <button
                   key={status}
                   onClick={() => setFilter(status)}
-                  className={`px-6 py-4 text-sm font-medium border-b-2 ${
+                  className={`px-4 py-3 text-xs sm:text-sm font-semibold border-b-2 transition-all ${
                     filter === status
-                      ? 'border-ethiopian-gold text-ethiopian-gold'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-amber-600 text-amber-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-200'
                   }`}
                 >
                   {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -222,7 +222,7 @@ const WithdrawalManagement = () => {
         </div>
 
         {/* Withdrawals Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           {loading ? (
             <div className="flex justify-center py-12">
               <LoadingSpinner size="large" />
@@ -234,71 +234,71 @@ const WithdrawalManagement = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-100 text-xs">
+                <thead className="bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-3.5 py-2 text-left">
                       Date
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-3.5 py-2 text-left">
                       Artisan
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-3.5 py-2 text-left">
                       Amount
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-3.5 py-2 text-left">
                       Method
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-3.5 py-2 text-left">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="px-3.5 py-2 text-right">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-100">
                   {withdrawals.map((withdrawal) => (
-                    <tr key={withdrawal._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <tr key={withdrawal._id} className="hover:bg-amber-50/30 transition-colors">
+                      <td className="px-3.5 py-2 whitespace-nowrap text-xs text-gray-900">
                         {new Date(withdrawal.createdAt).toLocaleDateString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3.5 py-2 whitespace-nowrap">
                         <div className="flex items-center">
-                          <UserIcon className="w-5 h-5 text-gray-400 mr-2" />
+                          <UserIcon className="w-4 h-4 text-gray-400 mr-1.5 shrink-0" />
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-xs font-semibold text-gray-900 leading-tight">
                               {withdrawal.artisan?.email || 'N/A'}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-[10px] text-gray-500">
                               {withdrawal.artisan?.profile?.firstName} {withdrawal.artisan?.profile?.lastName}
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-semibold text-gray-900">
+                      <td className="px-3.5 py-2 whitespace-nowrap">
+                        <span className="text-xs font-bold text-gray-900">
                           {Math.abs(withdrawal.netAmount).toFixed(2)} ETB
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3.5 py-2 whitespace-nowrap">
                         {getMethodBadge(withdrawal.withdrawalMethod)}
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-[10px] text-gray-500 mt-0.5">
                           {withdrawal.withdrawalAccountDetails?.phoneNumber ||
                             withdrawal.withdrawalAccountDetails?.accountNumber ||
                             'N/A'}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-3.5 py-2 whitespace-nowrap">
                         {getStatusBadge(withdrawal.withdrawalStatus)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                      <td className="px-3.5 py-2 whitespace-nowrap text-xs font-medium text-right">
+                        <div className="flex gap-1.5 justify-end">
                           <button
                             onClick={() => openDetailModal(withdrawal)}
-                            className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                            className="text-blue-600 hover:text-blue-900 inline-flex items-center gap-1 text-[11px] font-semibold"
                           >
-                            <EyeIcon className="w-4 h-4" />
+                            <EyeIcon className="w-3.5 h-3.5" />
                             View
                           </button>
                           {withdrawal.withdrawalStatus === 'pending' && (

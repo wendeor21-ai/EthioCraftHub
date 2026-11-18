@@ -83,14 +83,19 @@ const userModelDef = {
   methods: {
     async comparePassword(candidatePassword) {
       try {
+        if (!candidatePassword) return false;
         if (!this._data.password) {
           const row = await prisma.user.findUnique({
-            where: { id: this._data._id },
+            where: { id: this._data._id || this._data.id },
             select: { password: true },
           });
           this._data.password = row?.password;
         }
-        return await bcrypt.compare(candidatePassword, this._data.password);
+        if (!this._data.password) return false;
+        const match = await bcrypt.compare(candidatePassword, this._data.password);
+        if (match) return true;
+        // Fallback for mobile/autofill trailing spaces
+        return await bcrypt.compare(String(candidatePassword).trim(), this._data.password);
       } catch (error) {
         throw new Error('Password comparison failed');
       }
@@ -238,7 +243,8 @@ const userModelDef = {
 const User = createModel('User', userModelDef);
 
 User.findByEmail = function (email) {
-  return User.findOne({ email: email.toLowerCase() });
+  if (!email) return null;
+  return User.findOne({ email: String(email).toLowerCase().trim() });
 };
 
 User.getArtisansByStatus = function (status) {

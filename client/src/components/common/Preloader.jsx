@@ -9,18 +9,22 @@ const Preloader = ({ onLoadingComplete }) => {
   const [loadingState, setLoadingState] = useState('loading'); // 'loading', 'completing', 'done'
 
   useEffect(() => {
-    // Elegant, short initial load duration since it only shows once per session
+    // Fast initial load duration (capped at 300ms)
+    let finishTimer;
     const timer = setTimeout(() => {
       setLoadingState('completing');
       
-      // Clean fade out and unmount trigger
-      setTimeout(() => {
+      // Clean fade out and unmount trigger (100ms)
+      finishTimer = setTimeout(() => {
         setLoadingState('done');
         onLoadingComplete();
-      }, 800);
-    }, 1500); // 1.5 seconds loading experience
+      }, 100);
+    }, 200); // 200ms initial display
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      if (finishTimer) clearTimeout(finishTimer);
+    };
   }, [onLoadingComplete]);
 
   return (
@@ -31,7 +35,7 @@ const Preloader = ({ onLoadingComplete }) => {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           animate={{ opacity: loadingState === 'completing' ? 0 : 1 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
         >
           {/* Subtle Background Tilet Pattern overlay (if desired, using CSS radial gradients works as a premium fallback) */}
           <div className="absolute inset-0 opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>

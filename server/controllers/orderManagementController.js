@@ -980,6 +980,17 @@ exports.uploadReceipt = asyncHandler(async (req, res) => {
   await order.save();
   console.log(`✅ Order ${order.orderNumber} updated with receipt`);
 
+  // 🔔 Real-time notification to artisan dashboard NOW that receipt is submitted!
+  try {
+    const { notifyArtisansOfNewOrder } = require('./paymentController');
+    if (typeof notifyArtisansOfNewOrder === 'function') {
+      notifyArtisansOfNewOrder(req, order);
+      console.log(`📡 [Receipt Upload] Dispatched newOrder notification for order #${order.orderNumber}`);
+    }
+  } catch (notifErr) {
+    console.error("❌ Failed to notify artisan on receipt upload:", notifErr.message);
+  }
+
   res.json({
     success: true,
     message: "Receipt uploaded and awaiting verification",

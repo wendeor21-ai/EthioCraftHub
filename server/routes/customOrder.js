@@ -70,14 +70,24 @@ router.post(
     const customOrder = new CustomOrder(orderData);
     await customOrder.save();
     
-    // Emit real-time notification ONLY to the specific artisan if provided
+    // Emit real-time notification to the target artisan or all artisans
     const io = req.app.get('io');
-    if (io && targetArtisanId) {
-      io.to(`user_${targetArtisanId}`).emit('newCustomOrder', {
+    if (io) {
+      const payload = {
         orderId: customOrder._id,
-        customerName: `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim() || 'A user',
-        itemType: itemType
-      });
+        customerName: `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim() || 'A customer',
+        itemType: itemType,
+        gender: gender,
+        createdAt: customOrder.createdAt
+      };
+      if (targetArtisanId) {
+        const tId = String(targetArtisanId);
+        io.to(tId).emit('newCustomOrder', payload);
+        io.to(`user_${tId}`).emit('newCustomOrder', payload);
+        io.to(`artisan_${tId}`).emit('newCustomOrder', payload);
+      } else {
+        io.emit('newCustomOrder', payload);
+      }
     }
 
     res.status(201).json({ success: true, data: customOrder });
@@ -96,14 +106,15 @@ router.get(
     if (req.user.role !== 'artisan') {
       return res.status(403).json({ error: 'Access denied' });
     }
+    const currentArtisanId = String(req.user._id || req.user.id);
     const orders = await CustomOrder.find({
       $or: [
-        { artisan: req.user._id },
-        { artisan: null },
-        { artisan: { $exists: false } }
+        { artisan: currentArtisanId },
+        { artisan: null }
       ]
     })
       .populate('customer', 'profile.firstName profile.lastName email')
+      .populate('product', 'name images price')
       .sort('-createdAt');
     res.json({ success: true, data: orders });
   })
@@ -165,11 +176,14 @@ router.patch(
     if (status === 'price_quoted') {
       const io = req.app.get('io');
       if (io && order.customer) {
-        io.to(`user_${order.customer.toString()}`).emit('customOrderPriceQuoted', {
+        const custId = String(order.customer._id || order.customer);
+        const quotePayload = {
           orderId: order._id,
           price: order.price,
-          message: 'An artisan has quoted a price for your custom design!'
-        });
+          message: 'የእጅ ጥበብ ባለሙያው ለብጁ ዲዛይንዎ ዋጋ ቆርጦ ልኮልዎታል! An artisan has quoted a price for your custom design!'
+        };
+        io.to(custId).emit('customOrderPriceQuoted', quotePayload);
+        io.to(`user_${custId}`).emit('customOrderPriceQuoted', quotePayload);
       }
     }
 

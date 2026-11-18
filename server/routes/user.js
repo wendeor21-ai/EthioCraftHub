@@ -58,8 +58,10 @@ router.delete('/shipping-addresses/:addressId', userController.deleteShippingAdd
 
 // Guidelines
 // @route   PATCH /api/users/accept-guidelines
+// @route   POST  /api/users/accept-guidelines
 // @desc    Mark guidelines as accepted
 // @access  Private
 router.patch('/accept-guidelines', userController.acceptGuidelines);
+router.post('/accept-guidelines', userController.acceptGuidelines);
 
 module.exports = router;

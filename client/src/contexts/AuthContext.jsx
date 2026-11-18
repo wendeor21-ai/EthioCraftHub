@@ -72,8 +72,8 @@ export const AuthProvider = ({ children }) => {
               verificationStatus: freshUser.verification?.status
             });
           } catch (error) {
-            console.warn('⚠️ Could not refresh user data from backend, using cached data:', error.message);
-            // Continue with cached data if backend fetch fails
+            console.warn('⚠️ Could not refresh user data from backend, continuing with saved user session:', error.message);
+            // Do NOT log out here! The user has a valid saved session in localStorage.
           }
         } catch (error) {
           console.error('Error parsing user data:', error);
@@ -201,6 +201,14 @@ export const AuthProvider = ({ children }) => {
       if (newUser.id && !newUser._id) {
         newUser._id = newUser.id;
       }
+      if (newUser._id && !newUser.id) {
+        newUser.id = newUser._id;
+      }
+
+      // Ensure user role is always populated
+      if (!newUser.role && userData.role) {
+        newUser.role = userData.role;
+      }
       
       // Store token and user data
       localStorage.setItem('authToken', token);
@@ -263,12 +271,14 @@ export const AuthProvider = ({ children }) => {
     switch (userRole) {
       case 'admin':
         return '/admin/dashboard';
-      case 'artisan':
-        // If not verified, force redirect to verification page
-        if (currentUser?.verification?.status !== 'approved') {
+      case 'artisan': {
+        const vStatus = currentUser?.verification?.status?.toLowerCase?.();
+        const isApproved = vStatus === 'approved' && currentUser?.isVerified === true;
+        if (!isApproved) {
           return '/artisan/verification';
         }
         return '/artisan/dashboard';
+      }
       case 'customer':
         return '/products';
       default:
@@ -276,22 +286,36 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Check if artisan is verified
+  // Check if artisan is verified and active
   const isVerifiedArtisan = () => {
-    return user?.role === 'artisan' && user?.verification?.status === 'approved';
+    if (!user || user.role !== 'artisan') return false;
+    const status = user.verification?.status?.toLowerCase?.();
+    return status === 'approved' && user.isVerified === true;
   };
 
   // Refresh user data from backend
   const refreshUser = async () => {
     try {
       const response = await authAPI.getMe();
-      const userData = response.data.user;
+      const userData = response.data?.user;
+      if (!userData) return null;
       
       // Ensure user data has both id and _id for compatibility
       if (userData.id && !userData._id) {
         userData._id = userData.id;
       }
       
+      // Preserve local guidelines flag if user already accepted in current session
+      try {
+        const uid = userData.id || userData._id || userData.email;
+        const acceptedLocal = localStorage.getItem(`artisan_guidelines_accepted_${uid}`) === 'true' ||
+                              localStorage.getItem('artisan_guidelines_accepted') === 'true';
+        const local = JSON.parse(localStorage.getItem('user') || '{}');
+        if ((local.hasAcceptedGuidelines || acceptedLocal) && !userData.hasAcceptedGuidelines) {
+          userData.hasAcceptedGuidelines = true;
+        }
+      } catch (e) {}
+
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       return userData;

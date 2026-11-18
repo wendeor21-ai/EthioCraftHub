@@ -31,20 +31,50 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // Increased to 10MB for video support
+    fileSize: 50 * 1024 * 1024 // 50MB for video and high-res media support
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|pdf|mp4/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
+    const allowedExt = /\.(jpe?g|png|webp|gif|jfif|heic|heif|bmp|tiff|pdf|mp4|mov|quicktime|webm|m4v|avi|mkv|3gp)$/i;
+    const extMatch = allowedExt.test(path.extname(file.originalname).toLowerCase());
+    const isMediaMime = !file.mimetype || 
+                        file.mimetype.startsWith('image/') || 
+                        file.mimetype.startsWith('video/') || 
+                        file.mimetype === 'application/pdf' ||
+                        file.mimetype === 'application/octet-stream';
 
-    if (mimetype && extname) {
+    if (extMatch || isMediaMime) {
       return cb(null, true);
     } else {
-      cb(new Error('Only images (JPG, PNG), PDF, and MP4 videos are allowed'));
+      cb(new Error('Supported formats: JPG, PNG, WEBP, PDF, and Videos (MP4, MOV, WEBM)'));
     }
   }
 });
+
+// Safe multer wrapper with structured error response
+const uploadVerificationDocs = (req, res, next) => {
+  upload.fields([
+    { name: 'identity', maxCount: 1 },
+    { name: 'tradeLicense', maxCount: 1 },
+    { name: 'tinCertificate', maxCount: 1 },
+    { name: 'productPhotos', maxCount: 5 },
+    { name: 'workVideos', maxCount: 2 }
+  ])(req, res, (err) => {
+    if (err) {
+      console.error('❌ Multer verification upload error:', err.message);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          error: 'File too large',
+          message: 'One or more files exceed the 50MB limit. Please upload a smaller video or photo.'
+        });
+      }
+      return res.status(400).json({
+        error: 'Upload error',
+        message: err.message || 'Error processing uploaded files'
+      });
+    }
+    next();
+  });
+};
 
 /**
  * @route   POST /api/artisan/verify-submit
@@ -54,13 +84,7 @@ const upload = multer({
 router.post(
   '/verify-submit',
   authenticate,
-  upload.fields([
-    { name: 'identity', maxCount: 1 },
-    { name: 'tradeLicense', maxCount: 1 },
-    { name: 'tinCertificate', maxCount: 1 },
-    { name: 'productPhotos', maxCount: 5 },
-    { name: 'workVideos', maxCount: 2 }
-  ]),
+  uploadVerificationDocs,
   asyncHandler(async (req, res) => {
     console.log('📝 Processing comprehensive artisan verification request...');
     
@@ -74,18 +98,31 @@ router.post(
       termsAccepted 
     } = req.body;
 
+    // Find user to merge data and check existing documents if any
+    let user = req.user;
+    if (!user || !user.profile) {
+      user = await User.findById(req.user._id) || (req.user.email ? await User.findByEmail(req.user.email) : null);
+    }
+    if (!user) return res.status(404).json({ error: 'User not found', message: 'User account not found' });
+    const targetUserId = String(user._id || user.id || req.user._id || req.user.id);
+
     // Validation
-    if (!req.files?.identity) {
+    const hasIdentityFile = req.files?.identity && req.files.identity.length > 0;
+    const hasTradeLicenseFile = req.files?.tradeLicense && req.files.tradeLicense.length > 0;
+    const existingId = user.verification?.identityCard || user.verification?.documents?.[0];
+    const existingLicense = user.verification?.tradeLicense;
+
+    if (!hasIdentityFile && !existingId) {
       return res.status(400).json({ error: 'Validation failed', message: 'Identity document is required.' });
     }
-    if (!req.files?.tradeLicense) {
+    if (!hasTradeLicenseFile && !existingLicense) {
       return res.status(400).json({ error: 'Validation failed', message: 'Trade License is required to operate on EthioCraft Global.' });
     }
 
     // Bank account: digits only, 13–16 digits
     if (accountNumber) {
-      const digits = accountNumber.replace(/\D/g, '');
-      if (!/^\d+$/.test(accountNumber) || digits.length < 13 || digits.length > 16) {
+      const digits = String(accountNumber).replace(/\D/g, '');
+      if (digits.length < 13 || digits.length > 16) {
         return res.status(400).json({ error: 'Validation failed', message: 'Please enter a valid 13–16 digit Ethiopian bank account number.' });
       }
     }
@@ -96,12 +133,8 @@ router.post(
     }
 
     // Get file paths helper
-    const getPath = (field) => req.files[field] ? `/uploads/verification/${req.files[field][0].filename}` : null;
-    const getPaths = (field) => req.files[field] ? req.files[field].map(f => `/uploads/verification/${f.filename}`) : [];
-
-    // Find and update user
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    const getPath = (field) => req.files?.[field]?.[0] ? `/uploads/verification/${req.files[field][0].filename}` : null;
+    const getPaths = (field) => req.files?.[field] ? req.files[field].map(f => `/uploads/verification/${f.filename}`) : [];
 
     // 1. Update Profile/Business Info — safely merge with existing data
     const existingProfile = user.profile || {};
@@ -143,10 +176,25 @@ router.post(
       feedback: '',
     };
 
-    // Use Prisma directly to avoid MongoCompat nested JSON mutation issues
+    // Find the exact user in Prisma by ID or email
     const { prisma } = require('../lib/prisma');
+    let dbUser = await prisma.user.findFirst({
+      where: {
+        OR: [
+          ...(targetUserId ? [{ id: targetUserId }] : []),
+          ...(user.email ? [{ email: String(user.email).toLowerCase().trim() }] : []),
+          ...(req.user?.email ? [{ email: String(req.user.email).toLowerCase().trim() }] : []),
+        ]
+      }
+    });
+
+    if (!dbUser) {
+      return res.status(404).json({ error: 'User not found', message: 'User record not found in database' });
+    }
+
+    const actualDbId = dbUser.id;
     await prisma.user.update({
-      where: { id: String(req.user._id) },
+      where: { id: actualDbId },
       data: {
         profile: updatedProfile,
         bankDetails: updatedBankDetails,
@@ -154,10 +202,31 @@ router.post(
       },
     });
 
+    // Also update MongoCompat cache/document
+    try {
+      await User.findByIdAndUpdate(actualDbId, {
+        profile: updatedProfile,
+        bankDetails: updatedBankDetails,
+        verification: updatedVerification,
+      });
+    } catch (mcErr) {}
+
+    console.log('✅ Artisan verification updated successfully for user:', dbUser.email, 'Status: pending');
+
     res.status(200).json({
       success: true,
       message: 'Verification submitted successfully. Your account is now under review.',
       verification: updatedVerification,
+      user: {
+        id: dbUser.id,
+        _id: dbUser.id,
+        email: dbUser.email,
+        role: dbUser.role,
+        profile: updatedProfile,
+        bankDetails: updatedBankDetails,
+        verification: updatedVerification,
+        hasAcceptedGuidelines: dbUser.hasAcceptedGuidelines === true,
+      }
     });
   })
 );
@@ -174,8 +243,18 @@ router.post(
     if (req.user.role !== 'artisan') {
       return res.status(403).json({ error: 'Access denied' });
     }
-    await User.findByIdAndUpdate(req.user._id, { hasAcceptedGuidelines: true });
-    res.status(200).json({ success: true, message: 'Guidelines accepted.' });
+    const userId = String(req.user._id || req.user.id);
+    const { prisma } = require('../lib/prisma');
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { hasAcceptedGuidelines: true }
+      });
+    } catch (pe) {
+      console.warn('Prisma accept-guidelines fallback:', pe.message);
+    }
+    await User.findByIdAndUpdate(userId, { hasAcceptedGuidelines: true });
+    res.status(200).json({ success: true, message: 'Guidelines accepted.', hasAcceptedGuidelines: true });
   })
 );
 

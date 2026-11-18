@@ -103,29 +103,29 @@ const ShippingSettings = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Shipping & Delivery Settings</h3>
-        <p className="text-sm text-gray-600">Configure your shipping methods, pricing, and delivery options</p>
+        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">Shipping & Delivery Settings</h3>
+        <p className="text-xs text-gray-500">Configure your shipping methods, pricing, and delivery options</p>
       </div>
 
       {/* Shipping Methods */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Truck className="w-5 h-5 text-ethiopian-gold" />
+      <div className="bg-white border border-gray-100 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <h4 className="text-xs sm:text-sm font-bold text-gray-900 mb-3 flex items-center gap-1.5">
+          <Truck className="w-4 h-4 text-ethiopian-gold" />
           Shipping Methods
         </h4>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {settings.methods.map((method, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  {method.name === 'Standard Delivery' && <Package className="w-5 h-5 text-blue-600" />}
-                  {method.name === 'Express Delivery' && <Truck className="w-5 h-5 text-red-600" />}
-                  {method.name === 'Store Pickup' && <Store className="w-5 h-5 text-green-600" />}
-                  <span className="font-medium text-gray-900">{method.name}</span>
+            <div key={index} className="border border-gray-100 rounded-lg p-3 bg-gray-50/50">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {method.name === 'Standard Delivery' && <Package className="w-4 h-4 text-blue-600" />}
+                  {method.name === 'Express Delivery' && <Truck className="w-4 h-4 text-red-600" />}
+                  {method.name === 'Store Pickup' && <Store className="w-4 h-4 text-green-600" />}
+                  <span className="text-xs font-bold text-gray-900">{method.name}</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -134,13 +134,13 @@ const ShippingSettings = () => {
                     onChange={(e) => handleMethodChange(index, 'enabled', e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ethiopian-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+                  <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-ethiopian-gold"></div>
                 </label>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                     Base Price (ETB)
                   </label>
                   <input
@@ -148,13 +148,13 @@ const ShippingSettings = () => {
                     min="0"
                     value={method.basePrice}
                     onChange={(e) => handleMethodChange(index, 'basePrice', parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                    className="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
                     disabled={!method.enabled}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                     Estimated Days
                   </label>
                   <input
@@ -162,20 +162,20 @@ const ShippingSettings = () => {
                     min="1"
                     value={method.estimatedDays}
                     onChange={(e) => handleMethodChange(index, 'estimatedDays', parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                    className="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
                     disabled={!method.enabled}
                   />
                 </div>
 
                 <div className="md:col-span-1">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                     Description
                   </label>
                   <input
                     type="text"
                     value={method.description || ''}
                     onChange={(e) => handleMethodChange(index, 'description', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                    className="w-full px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
                     placeholder="Brief description"
                     disabled={!method.enabled}
                   />
@@ -187,19 +187,19 @@ const ShippingSettings = () => {
       </div>
 
       {/* Regional Pricing */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-ethiopian-gold" />
+      <div className="bg-white border border-gray-100 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <h4 className="text-xs sm:text-sm font-bold text-gray-900 mb-1 flex items-center gap-1.5">
+          <MapPin className="w-4 h-4 text-ethiopian-gold" />
           Regional Pricing
         </h4>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-xs text-gray-500 mb-3">
           Add extra shipping costs for specific regions (added to base price)
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
           {ETHIOPIAN_REGIONS.map((region) => (
             <div key={region}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-[11px] font-semibold text-gray-600 mb-1 truncate">
                 {region}
               </label>
               <div className="relative">
@@ -208,10 +208,10 @@ const ShippingSettings = () => {
                   min="0"
                   value={getRegionalPrice(region)}
                   onChange={(e) => handleRegionalPricingChange(region, e.target.value)}
-                  className="w-full px-3 py-2 pl-8 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                  className="w-full px-2.5 py-1.5 pl-6 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
                   placeholder="0"
                 />
-                <DollarSign className="w-4 h-4 text-gray-400 absolute left-2.5 top-3" />
+                <DollarSign className="w-3 h-3 text-gray-400 absolute left-2 top-2.5" />
               </div>
             </div>
           ))}
@@ -219,13 +219,13 @@ const ShippingSettings = () => {
       </div>
 
       {/* Additional Settings */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h4 className="font-semibold text-gray-900 mb-4">Additional Settings</h4>
+      <div className="bg-white border border-gray-100 rounded-xl p-3.5 sm:p-4 shadow-sm">
+        <h4 className="text-xs sm:text-sm font-bold text-gray-900 mb-3">Additional Settings</h4>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Free Shipping Threshold */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-[11px] font-semibold text-gray-600 mb-1">
               Free Shipping Threshold (ETB)
             </label>
             <input
@@ -233,18 +233,18 @@ const ShippingSettings = () => {
               min="0"
               value={settings.freeShippingThreshold}
               onChange={(e) => setSettings({ ...settings, freeShippingThreshold: parseFloat(e.target.value) || 0 })}
-              className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+              className="w-full sm:w-64 px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
               placeholder="e.g., 1000"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-[10px] text-gray-400 mt-0.5">
               Orders above this amount get free shipping (set to 0 to disable)
             </p>
           </div>
 
           {/* Weight-Based Pricing */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-gray-700">
+          <div className="border-t border-gray-100 pt-3">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-semibold text-gray-700">
                 Weight-Based Pricing
               </label>
               <label className="relative inline-flex items-center cursor-pointer">
@@ -257,13 +257,13 @@ const ShippingSettings = () => {
                   })}
                   className="sr-only peer"
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ethiopian-gold/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-ethiopian-gold"></div>
+                <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-ethiopian-gold"></div>
               </label>
             </div>
 
             {settings.weightBasedPricing.enabled && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-[11px] font-semibold text-gray-600 mb-1">
                   Price per Kilogram (ETB)
                 </label>
                 <input
@@ -274,7 +274,7 @@ const ShippingSettings = () => {
                     ...settings,
                     weightBasedPricing: { ...settings.weightBasedPricing, pricePerKg: parseFloat(e.target.value) || 0 }
                   })}
-                  className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent"
+                  className="w-full sm:w-64 px-2.5 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-1 focus:ring-ethiopian-gold focus:border-ethiopian-gold bg-white"
                   placeholder="e.g., 20"
                 />
               </div>
@@ -284,12 +284,12 @@ const ShippingSettings = () => {
       </div>
 
       {/* Info Box */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-          <div className="text-sm text-blue-800">
-            <p className="font-medium mb-1">Shipping Tips:</p>
-            <ul className="list-disc list-inside space-y-1">
+      <div className="bg-blue-50/70 border border-blue-200/80 rounded-xl p-3">
+        <div className="flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-blue-900">
+            <p className="font-bold mb-1">Shipping Tips:</p>
+            <ul className="list-disc list-inside space-y-0.5 text-blue-800">
               <li>Enable at least one shipping method for customers to place orders</li>
               <li>Regional pricing is added on top of the base shipping price</li>
               <li>Free shipping threshold encourages larger orders</li>
@@ -300,14 +300,14 @@ const ShippingSettings = () => {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-1">
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-3 bg-ethiopian-gold text-white rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-4 py-2 bg-ethiopian-gold text-white text-xs font-bold rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
         >
-          <Save className="w-5 h-5" />
-          {saving ? 'Saving...' : 'Save Shipping Settings'}
+          <Save className="w-3.5 h-3.5" />
+          {saving ? 'Saving...' : 'Save Settings'}
         </button>
       </div>
     </div>

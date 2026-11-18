@@ -416,8 +416,18 @@ exports.getArtisanPublicDetails = async (req, res) => {
  */
 exports.acceptGuidelines = async (req, res) => {
   try {
+    const userId = String(req.user._id || req.user.id);
+    const { prisma } = require('../lib/prisma');
+    try {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { hasAcceptedGuidelines: true }
+      });
+    } catch (pe) {
+      console.warn('Prisma acceptGuidelines fallback:', pe.message);
+    }
     const user = await User.findByIdAndUpdate(
-      req.user._id,
+      userId,
       { hasAcceptedGuidelines: true },
       { new: true }
     );
@@ -433,7 +443,7 @@ exports.acceptGuidelines = async (req, res) => {
       success: true,
       message: "Guidelines accepted successfully",
       data: {
-        hasAcceptedGuidelines: user.hasAcceptedGuidelines
+        hasAcceptedGuidelines: true
       }
     });
   } catch (error) {

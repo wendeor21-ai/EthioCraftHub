@@ -7,16 +7,18 @@ const DashboardLayout = ({ children, hideSidebar = false }) => {
   const handleCollapsedChange = useCallback((val) => setCollapsed(val), []);
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="flex h-screen max-h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
       {!hideSidebar && (
         <Sidebar onCollapsedChange={handleCollapsedChange} />
       )}
       <main
-        className={`flex-1 overflow-x-hidden min-w-0 transition-all duration-300
+        className={`flex-1 h-full overflow-y-auto overflow-x-hidden min-w-0 transition-all duration-300 overscroll-contain scroll-smooth
           ${!hideSidebar ? 'pt-14 lg:pt-0' : ''}
         `}
       >
-        {children}
+        <div className="pb-12">
+          {children}
+        </div>
       </main>
     </div>
   );

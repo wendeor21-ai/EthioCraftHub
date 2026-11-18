@@ -1,52 +1,128 @@
 /**
  * Prisma Client singleton for EthioCraft Global
+ * Resilient multi-host connection manager for local, cPanel, and cloud deployments
  */
-let prisma;
-try {
-  const { PrismaClient } = require('@prisma/client');
-  const globalForPrisma = global;
-  prisma =
-    globalForPrisma.__ethiocraftPrisma ||
-    new PrismaClient({
-      log:
-        process.env.NODE_ENV === 'development'
-          ? ['warn', 'error']
-          : ['error'],
-    });
+const path = require('path');
+const fs = require('fs');
 
-  if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.__ethiocraftPrisma = prisma;
+// Ensure environment variables are loaded across all deployment structures
+const candidateEnvPaths = [
+  path.join(process.cwd(), '.env'),
+  path.join(process.cwd(), '.env.production'),
+  path.join(__dirname, '.env'),
+  path.join(__dirname, '.env.production'),
+  path.join(__dirname, '..', '.env'),
+  path.join(__dirname, '..', '.env.production'),
+  path.join(__dirname, '..', '..', '.env'),
+  path.join(__dirname, '..', '..', '.env.production'),
+];
+
+for (const envPath of candidateEnvPaths) {
+  if (fs.existsSync(envPath)) {
+    try {
+      require('dotenv').config({ path: envPath });
+    } catch (e) {}
   }
-} catch (err) {
-  console.error("⚠️ PrismaClient initialization error:", err.message);
-  prisma = new Proxy({}, {
-    get: () => new Proxy({}, { get: () => () => Promise.resolve([]) })
-  });
 }
 
-async function connectDB() {
-  try {
-    if (prisma && typeof prisma.$connect === 'function') {
-      await prisma.$connect();
-      const url = process.env.DATABASE_URL || '';
-      const dbType = url.startsWith('mysql:') ? 'MySQL' : url.startsWith('postgresql:') ? 'PostgreSQL' : 'Database';
-      console.log(`✅ ${dbType} Connected via Prisma`);
-      const dbName = url.split('/').pop()?.split('?')[0] || 'ethiocraft_global';
-      console.log(`📊 Database: ${dbName}`);
+const { PrismaClient } = require('@prisma/client');
+
+// Fallback production credentials
+const PROD_URLS = [
+  process.env.DATABASE_URL,
+  'mysql://ethiocaq_userdb:Ethiocraft%40%261%2F03%2F2019@127.0.0.1:3306/ethiocaq_ethiocraft?connect_timeout=3',
+  'mysql://ethiocaq_userdb:Ethiocraft%40%261%2F03%2F2019@localhost:3306/ethiocaq_ethiocraft?connect_timeout=3',
+  'mysql://ethiocaq_userdb:Ethiocraft%40%261%2F03%2F2019@localhost/ethiocaq_ethiocraft?socket=/var/lib/mysql/mysql.sock&connect_timeout=3',
+  'mysql://ethiocaq_userdb:Ethiocraft%40%261%2F03%2F2019@localhost/ethiocaq_ethiocraft?socket=/tmp/mysql.sock&connect_timeout=3',
+].filter(Boolean);
+
+const DEV_URLS = [
+  process.env.DATABASE_URL,
+  'mysql://root:@127.0.0.1:3306/ethiocraft_global?connect_timeout=3',
+  'mysql://root:@localhost:3306/ethiocraft_global?connect_timeout=3',
+].filter(Boolean);
+
+let activePrisma = null;
+let lastDbError = null;
+let activeConnectionUrl = null;
+
+// Initial eager client creation
+try {
+  const initialUrl = process.env.DATABASE_URL || (process.env.NODE_ENV === 'production' ? PROD_URLS[1] : DEV_URLS[1]);
+  activePrisma = new PrismaClient({
+    datasources: { db: { url: initialUrl } },
+    log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+  });
+  activeConnectionUrl = initialUrl;
+} catch (err) {
+  console.warn("⚠️ Initial PrismaClient creation deferred:", err.message);
+}
+
+// Resilient Dynamic Proxy: always dispatches to the latest connected Prisma instance
+const prisma = new Proxy({}, {
+  get(target, prop) {
+    if (activePrisma && activePrisma[prop] !== undefined) {
+      const val = activePrisma[prop];
+      if (typeof val === 'function') {
+        return val.bind(activePrisma);
+      }
+      return val;
     }
-  } catch (err) {
-    console.error("⚠️ Prisma connect error (will retry):", err.message);
+    // Return empty array / 0 / null fallback if not connected yet
+    return new Proxy({}, {
+      get: () => () => Promise.resolve([])
+    });
   }
+});
+
+async function connectDB() {
+  const candidates = process.env.NODE_ENV === 'production' ? PROD_URLS : [...DEV_URLS, ...PROD_URLS];
+  const uniqueCandidates = [...new Set(candidates)];
+
+  for (const candidateUrl of uniqueCandidates) {
+    try {
+      const maskedUrl = candidateUrl.replace(/:[^:@]+@/, ':****@');
+      console.log(`🔌 Attempting MySQL connection to: ${maskedUrl}`);
+
+      const client = new PrismaClient({
+        datasources: { db: { url: candidateUrl } },
+        log: ['error'],
+      });
+
+      await client.$connect();
+      const count = await client.user.count();
+
+      // Successfully connected and verified user query!
+      activePrisma = client;
+      activeConnectionUrl = candidateUrl;
+      process.env.DATABASE_URL = candidateUrl;
+      lastDbError = null;
+
+      console.log(`✅ MySQL Connected successfully! Found ${count} platform users.`);
+      return client;
+    } catch (err) {
+      lastDbError = err.message;
+      console.warn(`⚠️ Candidate failed: ${candidateUrl.split('@')[1] || candidateUrl} - ${err.message}`);
+    }
+  }
+
+  console.error("❌ All MySQL connection candidates failed. Last error:", lastDbError);
 }
 
 async function disconnectDB() {
   try {
-    if (prisma && typeof prisma.$disconnect === 'function') {
-      await prisma.$disconnect();
+    if (activePrisma && typeof activePrisma.$disconnect === 'function') {
+      await activePrisma.$disconnect();
     }
-  } catch (err) {
-    // Ignore disconnect error
-  }
+  } catch (err) {}
 }
 
-module.exports = { prisma, connectDB, disconnectDB };
+function getDatabaseStatus() {
+  return {
+    connected: !!activePrisma && !lastDbError,
+    activeUrl: activeConnectionUrl ? activeConnectionUrl.replace(/:[^:@]+@/, ':****@') : 'none',
+    error: lastDbError,
+  };
+}
+
+module.exports = { prisma, connectDB, disconnectDB, getDatabaseStatus };

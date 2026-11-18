@@ -12,7 +12,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
 
-function CustomOrdersAnalytics() {
+function CustomOrdersAnalytics({ insideDashboard, onSelectTab }) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState({ orders: [], stats: {} });
@@ -39,8 +39,8 @@ function CustomOrdersAnalytics() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#4A3018]"></div>
+      <div className={insideDashboard ? "py-12 flex items-center justify-center" : "flex h-screen items-center justify-center bg-gray-50"}>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
       </div>
     );
   }
@@ -48,59 +48,60 @@ function CustomOrdersAnalytics() {
   const { orders, stats } = data;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto space-y-8 mt-16 font-['Inter',sans-serif]">
+    <div className={insideDashboard ? "w-full space-y-6 py-2" : "min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"}>
+      <div className={insideDashboard ? "w-full space-y-5" : "max-w-7xl mx-auto space-y-8 mt-16 font-['Inter',sans-serif]"}>
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-1">
           <div>
-            <h1 className="text-3xl font-bold font-['Playfair_Display',serif] text-neutral-900 border-l-4 border-[#CFA66E] pl-4">Custom Design Analytics</h1>
-            <p className="mt-2 text-neutral-500">Monitor custom tailoring orders, transactions, and commission generation.</p>
+            <h1 className="text-base sm:text-lg font-bold text-neutral-900 border-l-4 border-amber-500 pl-2.5">Custom Design Analytics</h1>
+            <p className="mt-0.5 text-[11px] sm:text-xs text-neutral-500">Monitor custom tailoring orders, transactions, and commission generation.</p>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <StatCard title="Total Custom Orders" value={orders.length} icon={<Scissors />} color="blue" />
-          <StatCard title="Completed Transactions" value={stats.count || 0} icon={<TrendingUp />} color="emerald" />
-          <StatCard title="Total Revenue (ETB)" value={stats.totalRevenue?.toFixed(2) || '0.00'} icon={<DollarSign />} color="indigo" />
-          <StatCard title="Platform Commission (10%)" value={stats.totalCommission?.toFixed(2) || '0.00'} icon={<CreditCard />} color="amber" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
+          <StatCard title="Total Custom Orders" value={orders.length} icon={<Scissors className="w-4 h-4 sm:w-4.5 sm:h-4.5" />} color="blue" />
+          <StatCard title="Completed Transactions" value={stats.count || 0} icon={<TrendingUp className="w-4 h-4 sm:w-4.5 sm:h-4.5" />} color="emerald" />
+          <StatCard title="Total Revenue (ETB)" value={stats.totalRevenue?.toFixed(2) || '0.00'} icon={<DollarSign className="w-4 h-4 sm:w-4.5 sm:h-4.5" />} color="indigo" />
+          <StatCard title="Platform Commission (10%)" value={stats.totalCommission?.toFixed(2) || '0.00'} icon={<CreditCard className="w-4 h-4 sm:w-4.5 sm:h-4.5" />} color="amber" />
         </div>
 
         {/* Orders Table */}
-        <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
-          <div className="p-6 border-b border-neutral-200">
-            <h2 className="text-xl font-bold text-neutral-900">Recent Custom Requests</h2>
+        <div className="bg-white rounded-xl shadow-2xs border border-neutral-200 overflow-hidden">
+          <div className="px-3.5 py-2.5 sm:px-4 sm:py-2.5 border-b border-neutral-200 flex items-center justify-between">
+            <h2 className="text-xs sm:text-sm font-bold text-neutral-900">Recent Custom Requests</h2>
+            <span className="text-[10px] text-neutral-500 font-medium">{orders.length} total requests</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-[#4A3018]/5 text-neutral-600 font-semibold uppercase text-xs">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-neutral-50 text-neutral-600 font-bold uppercase text-[10px] tracking-wider border-b border-neutral-200">
                 <tr>
-                  <th className="px-6 py-4 rounded-tl-lg">Order Info</th>
-                  <th className="px-6 py-4">Customer</th>
-                  <th className="px-6 py-4">Artisan</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Financials</th>
-                  <th className="px-6 py-4 rounded-tr-lg">Actions</th>
+                  <th className="px-3 py-2 sm:px-3.5 sm:py-2">Order Info</th>
+                  <th className="px-3 py-2 sm:px-3.5 sm:py-2">Customer</th>
+                  <th className="px-3 py-2 sm:px-3.5 sm:py-2">Artisan</th>
+                  <th className="px-3 py-2 sm:px-3.5 sm:py-2">Status</th>
+                  <th className="px-3 py-2 sm:px-3.5 sm:py-2">Financials</th>
+                  <th className="px-3 py-2 sm:px-3.5 sm:py-2 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
                 {orders.map((order) => (
-                  <tr key={order._id} className="hover:bg-neutral-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-neutral-900">{order.gender} {order.itemType}</div>
-                      <div className="text-neutral-500 text-xs">ID: {order._id.slice(-6)}</div>
+                  <tr key={order._id} className="hover:bg-amber-50/30 transition-colors">
+                    <td className="px-3 py-2 sm:px-3.5 sm:py-2">
+                      <div className="font-semibold text-neutral-900 leading-tight">{order.gender} {order.itemType}</div>
+                      <div className="text-neutral-500 text-[10px]">ID: {order._id.slice(-6)}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{order.customer?.profile?.firstName}</div>
-                      <div className="text-xs text-neutral-500">{order.customer?.email}</div>
+                    <td className="px-3 py-2 sm:px-3.5 sm:py-2">
+                      <div className="font-medium text-neutral-900 leading-tight">{order.customer?.profile?.firstName || '—'}</div>
+                      <div className="text-[10px] text-neutral-500 truncate max-w-[140px]">{order.customer?.email}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium">{order.artisan?.profile?.firstName}</div>
-                      <div className="text-xs text-neutral-500">{order.artisan?.businessProfile?.businessName || order.artisan?.email}</div>
+                    <td className="px-3 py-2 sm:px-3.5 sm:py-2">
+                      <div className="font-medium text-neutral-900 leading-tight">{order.artisan?.profile?.firstName || '—'}</div>
+                      <div className="text-[10px] text-neutral-500 truncate max-w-[140px]">{order.artisan?.businessProfile?.businessName || order.artisan?.email}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    <td className="px-3 py-2 sm:px-3.5 sm:py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold inline-block ${
                         order.status === 'paid' ? 'bg-emerald-100 text-emerald-800' :
                         order.status === 'price_quoted' ? 'bg-blue-100 text-blue-800' :
                         'bg-amber-100 text-amber-800'
@@ -108,16 +109,17 @@ function CustomOrdersAnalytics() {
                         {order.status.replace('_', ' ').toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-neutral-900">{order.price} ETB</div>
-                      <div className="text-xs text-[#8B6B40] font-medium mt-0.5">Fee: {order.commission} ETB</div>
+                    <td className="px-3 py-2 sm:px-3.5 sm:py-2">
+                      <div className="font-bold text-neutral-900 leading-tight">{order.price} ETB</div>
+                      <div className="text-[10px] text-amber-700 font-medium">Fee: {order.commission} ETB</div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-2 sm:px-3.5 sm:py-2 text-right">
                       <button 
                         onClick={() => setSelectedOrder(order)}
-                        className="text-[#4A3018] hover:bg-[#4A3018]/10 p-2 rounded-lg transition-colors"
+                        className="text-neutral-700 hover:text-amber-700 hover:bg-amber-50 p-1.5 rounded transition-colors inline-flex items-center"
+                        title="View Details"
                       >
-                        <Eye className="w-5 h-5" />
+                        <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </button>
                     </td>
                   </tr>
@@ -213,20 +215,20 @@ function CustomOrdersAnalytics() {
 
 const StatCard = ({ title, value, icon, color }) => {
   const colorMap = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
-    emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    indigo: "bg-indigo-50 text-indigo-600 border-indigo-100",
-    amber: "bg-amber-50 text-amber-600 border-amber-100",
+    blue: "bg-blue-50/80 text-blue-700 border-blue-200/70",
+    emerald: "bg-emerald-50/80 text-emerald-700 border-emerald-200/70",
+    indigo: "bg-indigo-50/80 text-indigo-700 border-indigo-200/70",
+    amber: "bg-amber-50/80 text-amber-700 border-amber-200/70",
   };
 
   return (
-    <div className={`p-6 rounded-2xl border ${colorMap[color]} shadow-sm`}>
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-sm font-semibold opacity-80 mb-1">{title}</p>
-          <h3 className="text-3xl font-black">{value}</h3>
+    <div className={`p-2.5 sm:p-3 rounded-xl border ${colorMap[color]} shadow-2xs transition-all hover:shadow-xs`}>
+      <div className="flex justify-between items-center gap-1.5">
+        <div className="min-w-0">
+          <p className="text-[10px] sm:text-[11px] font-semibold opacity-80 uppercase tracking-wider truncate">{title}</p>
+          <h3 className="text-base sm:text-xl font-bold leading-tight mt-0.5">{value}</h3>
         </div>
-        <div className="p-3 bg-white/60 rounded-xl">
+        <div className="p-1.5 sm:p-2 bg-white/80 rounded-lg shrink-0 shadow-2xs">
           {icon}
         </div>
       </div>

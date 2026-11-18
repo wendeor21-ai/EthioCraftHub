@@ -9,6 +9,18 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import 'normalize.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/playfair-display/600.css';
+import '@fontsource/playfair-display/700.css';
+import '@fontsource/noto-sans-ethiopic/400.css';
+import '@fontsource/noto-sans-ethiopic/500.css';
+import '@fontsource/noto-sans-ethiopic/600.css';
+import '@fontsource/noto-sans-ethiopic/700.css';
 import './index.css';
 import './i18n';
 import App from './App';

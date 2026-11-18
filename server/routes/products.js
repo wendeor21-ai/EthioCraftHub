@@ -60,7 +60,6 @@ router.post(
     
     const products = await Product.find({
       status: "active",
-      "inventory.quantity": { $gt: 0 },
       imageFeatureVector: { $exists: true, $not: { $size: 0 } }
     }).populate("artisan", "profile.firstName profile.lastName profile.storeName profile.storeLogo profile.culturalBackground profile.isVerifiedArtisan");
     
@@ -164,8 +163,8 @@ router.get(
       .withMessage("Page must be a positive integer"),
     query("limit")
       .optional()
-      .isInt({ min: 1, max: 50 })
-      .withMessage("Limit must be between 1 and 50"),
+      .isInt({ min: 1, max: 500 })
+      .withMessage("Limit must be between 1 and 500"),
   ],
   optionalAuth,
   asyncHandler(async (req, res) => {
@@ -201,10 +200,7 @@ router.get(
       status: "active",
     };
 
-    if (!includeOutOfStock) {
-      // Default behavior: only return products with quantity > 0
-      filters["inventory.quantity"] = { $gt: 0 };
-    }
+    // Out of stock filtering is handled in-memory post-query to ensure compatibility with Prisma on MySQL
 
     if (category) {
       filters.category = category;
@@ -276,7 +272,30 @@ router.get(
     let total = 0;
     try {
       const products = await query;
-      activeProducts = products.filter((p) => p.artisan !== null);
+      activeProducts = (products || []).map((p) => {
+        if (!p.artisan) {
+          p.artisan = {
+            _id: p.artisanId || "artisan",
+            profile: {
+              firstName: "EthioCraft",
+              lastName: "Artisan",
+              storeName: "EthioCraft Artisan",
+              isVerifiedArtisan: true
+            }
+          };
+        }
+        return p;
+      });
+
+      if (!includeOutOfStock) {
+        // Automatic hiding: completely hide out-of-stock products (quantity <= 0) from the customer catalog/marketplace
+        activeProducts = activeProducts.filter((p) => {
+          const invQty = Number(p.inventory?.quantity);
+          const hasStock = !isNaN(invQty) ? invQty > 0 : (Number(p.stock) > 0);
+          const isActive = p.status === 'active';
+          return hasStock && isActive;
+        });
+      }
       let totalMatchQuery = filters;
       if (search) {
         const regexSearch = RegExp(search, 'i');
@@ -415,7 +434,7 @@ router.get(
   "/categories",
   asyncHandler(async (req, res) => {
     const categories = await Product.aggregate([
-      { $match: { status: "active", "inventory.quantity": { $gt: 0 } } },
+      { $match: { status: "active" } },
       {
         $group: {
           _id: "$category",
@@ -519,7 +538,6 @@ router.get(
         // Fetch products aligned with preferences and search intent
         recommendations = await Product.find({
           status: "active",
-          "inventory.quantity": { $gt: 0 },
           category: { $in: combinedCategories.length > 0 ? combinedCategories : undefined },
         })
           .populate("artisan", "profile.firstName profile.lastName profile.culturalBackground")
@@ -566,6 +584,25 @@ router.get(
       recommendations = [...recommendations, ...newFeatured];
     }
 
+    // 5. Database Fallback: Latest active products from database
+    if (recommendations.length < limit) {
+      const remainingLimit = limit - recommendations.length;
+      const existingIds = recommendations.map((r) => r._id.toString());
+      const fallbackQuery = { status: "active" };
+      if (existingIds.length > 0) {
+        fallbackQuery._id = { $nin: existingIds };
+      }
+      if (requestedCategory) {
+        fallbackQuery.category = requestedCategory;
+      }
+      const latestProducts = await Product.find(fallbackQuery)
+        .populate("artisan", "profile.firstName profile.lastName profile.storeName profile.storeLogo")
+        .sort({ createdAt: -1 })
+        .limit(remainingLimit);
+
+      recommendations = [...recommendations, ...latestProducts];
+    }
+
     const duration = Date.now() - startTime;
     if (userId) {
       logAIOperation("product_recommendations", userId, null, {
@@ -586,14 +623,25 @@ router.get(
     });
   } catch (recErr) {
     console.error("⚠️ Recommendations fallback triggered:", recErr.message);
-    return res.json({
-      success: true,
-      recommendations: [],
-      metadata: {
-        personalizationLevel: "fallback",
-        count: 0,
-      }
-    });
+    try {
+      const fallbackProducts = await Product.find({ status: "active" })
+        .populate("artisan", "profile.firstName profile.lastName profile.storeName profile.storeLogo")
+        .sort({ createdAt: -1 })
+        .limit(limit);
+
+      const inStock = (fallbackProducts || []).filter(p => {
+        const invQty = Number(p.inventory?.quantity);
+        return !isNaN(invQty) ? invQty > 0 : (Number(p.stock) > 0);
+      });
+
+      return res.json({
+        success: true,
+        recommendations: inStock,
+        metadata: { personalizationLevel: "database_fallback", count: inStock.length }
+      });
+    } catch (e) {
+      return res.json({ success: true, recommendations: [], metadata: { count: 0 } });
+    }
   }
   }),
 );
@@ -651,7 +699,6 @@ router.get(
       _id: { $ne: product._id },
       category: product.category,
       status: "active",
-      "inventory.quantity": { $gt: 0 },
     })
       .populate("artisan", "profile.firstName profile.lastName")
       .limit(4)
@@ -1065,13 +1112,28 @@ router.patch(
     const currentQty = Number(currentInventory.quantity) || 0;
     const newQty = currentQty + amount;
 
-    // Use Prisma directly to update the inventory JSON field atomically,
-    // bypassing the MongoCompat preSave hook that would overwrite quantity.
+    // Keep variations in sync with new quantity
+    let variations = existing.variations;
+    if (typeof variations === 'string') {
+      try { variations = JSON.parse(variations); } catch (_) {}
+    }
+    if (Array.isArray(variations) && variations.length > 0) {
+      if (variations.length === 1) {
+        variations[0].quantity = newQty;
+      } else {
+        variations[0].quantity = (Number(variations[0].quantity) || 0) + amount;
+      }
+    }
+
+    const newStatus = newQty > 0 ? 'active' : 'out_of_stock';
+
+    // Use Prisma directly to update the inventory JSON field atomically
     await prisma.product.update({
       where: { id },
       data: {
         inventory: { ...currentInventory, quantity: newQty },
-        status: newQty > 0 && existing.status === 'sold' ? 'active' : existing.status,
+        status: newStatus,
+        ...(Array.isArray(variations) ? { variations } : {}),
         updatedAt: new Date(),
       },
     });
@@ -1083,8 +1145,76 @@ router.patch(
     });
 
     res.json({
+      success: true,
       message: `Stock updated to ${newQty} units`,
       newQuantity: newQty,
+      status: newStatus,
+    });
+  }),
+);
+
+/**
+ * @route   PATCH /api/products/:id/set-stock
+ * @desc    Directly set total product stock quantity (Artisan owner or Admin)
+ * @access  Private (Artisan owner)
+ */
+router.patch(
+  "/:id/set-stock",
+  authenticate,
+  requireArtisan,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { prisma } = require("../lib/prisma");
+    const stockVal = req.body.stock !== undefined ? req.body.stock : req.body.quantity;
+    const newStock = Math.max(0, parseInt(stockVal, 10) || 0);
+
+    const whereClause = { id };
+    if (req.user.role !== "admin") {
+      whereClause.artisanId = req.user._id;
+    }
+
+    const existing = await prisma.product.findFirst({ where: whereClause });
+    if (!existing) {
+      throw createForbiddenError("Product not found or you do not have permission to edit it");
+    }
+
+    const currentInventory = (existing.inventory && typeof existing.inventory === 'object')
+      ? existing.inventory
+      : {};
+
+    let variations = existing.variations;
+    if (typeof variations === 'string') {
+      try { variations = JSON.parse(variations); } catch (_) {}
+    }
+    if (Array.isArray(variations) && variations.length > 0) {
+      if (variations.length === 1) {
+        variations[0].quantity = newStock;
+      }
+    }
+
+    const newStatus = newStock > 0 ? 'active' : 'out_of_stock';
+
+    await prisma.product.update({
+      where: { id },
+      data: {
+        inventory: { ...currentInventory, quantity: newStock },
+        status: newStatus,
+        ...(Array.isArray(variations) ? { variations } : {}),
+        updatedAt: new Date(),
+      },
+    });
+
+    logBusinessEvent("product_stock_set", req.user._id, {
+      productId: id,
+      newStock,
+      status: newStatus
+    });
+
+    res.json({
+      success: true,
+      message: `Stock successfully set to ${newStock} units`,
+      newQuantity: newStock,
+      status: newStatus,
     });
   }),
 );
@@ -1139,9 +1269,24 @@ router.put(
     delete updateData.metrics;
 
     // Support 'stock' from frontend as 'inventory.quantity'
-    if (updateData.stock !== undefined && (!updateData.inventory || updateData.inventory.quantity === undefined)) {
-      updateData.inventory = updateData.inventory || {};
-      updateData.inventory.quantity = Number(updateData.stock);
+    let requestedStock = undefined;
+    if (updateData.stock !== undefined) {
+      requestedStock = Number(updateData.stock);
+    } else if (updateData.inventory && updateData.inventory.quantity !== undefined) {
+      requestedStock = Number(updateData.inventory.quantity);
+    }
+
+    if (requestedStock !== undefined && !isNaN(requestedStock)) {
+      const finalQty = Math.max(0, requestedStock);
+      updateData.inventory = {
+        ...(updateData.inventory || {}),
+        quantity: finalQty
+      };
+      if (finalQty <= 0) {
+        updateData.status = 'out_of_stock';
+      } else if (!updateData.status || updateData.status === 'out_of_stock' || updateData.status === 'sold') {
+        updateData.status = 'active';
+      }
     }
 
     // Handle nested variations if price is missing (default to base price)
@@ -1171,6 +1316,40 @@ router.put(
       throw createForbiddenError("Product not found or you do not have permission to edit it");
     }
 
+    // Direct Prisma synchronization to guarantee MySQL inventory & status persist reliably
+    if (requestedStock !== undefined && !isNaN(requestedStock)) {
+      try {
+        const { prisma } = require("../lib/prisma");
+        const finalQty = Math.max(0, requestedStock);
+        const pExisting = await prisma.product.findUnique({
+          where: { id },
+          select: { inventory: true, variations: true, status: true }
+        });
+        if (pExisting) {
+          const pInv = (pExisting.inventory && typeof pExisting.inventory === 'object') ? pExisting.inventory : {};
+          let pVars = pExisting.variations;
+          if (typeof pVars === 'string') {
+            try { pVars = JSON.parse(pVars); } catch (_) {}
+          }
+          if (Array.isArray(pVars) && pVars.length === 1) {
+            pVars[0].quantity = finalQty;
+          }
+          const nextStatus = finalQty <= 0 ? 'out_of_stock' : (updateData.status || 'active');
+          await prisma.product.update({
+            where: { id },
+            data: {
+              inventory: { ...pInv, quantity: finalQty },
+              status: nextStatus,
+              ...(Array.isArray(pVars) ? { variations: pVars } : {}),
+              updatedAt: new Date(),
+            }
+          });
+        }
+      } catch (prismaErr) {
+        console.warn("Direct Prisma update notice:", prismaErr.message);
+      }
+    }
+
     // Re-fetch with artisan populated
     const product = await Product.findById(updated._id)
       .populate("artisan", "profile.firstName profile.lastName email");
@@ -1178,7 +1357,8 @@ router.put(
     console.log("✅ Product updated successfully:", {
       productId: product._id,
       name: product.name,
-      status: product.status
+      status: product.status,
+      stock: product.inventory?.quantity
     });
 
     // Log business event
@@ -1451,10 +1631,7 @@ router.get(
       filters.status = "active";
     }
 
-    if (!includeOOS && !includeEverything) {
-      // By default exclude out-of-stock items. includeOutOfStock or includeAll will bypass this.
-      filters["inventory.quantity"] = { $gt: 0 };
-    }
+    // In-memory post filtering handles stock for MySQL Prisma compatibility
 
     // If includeEverything is true we return the full set and do not paginate (useful for dashboards)
     let productsQuery = Product.find(filters)

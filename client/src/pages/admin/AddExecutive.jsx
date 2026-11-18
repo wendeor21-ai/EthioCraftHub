@@ -14,7 +14,7 @@ const DEPARTMENTS = [
   'Technical Operations',
 ];
 
-const AddExecutive = () => {
+const AddExecutive = ({ insideDashboard, onSelectTab }) => {
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -91,16 +91,18 @@ const AddExecutive = () => {
     }`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className={insideDashboard ? "bg-transparent py-2 w-full flex justify-center" : "min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50 py-8"}>
+      <div className={insideDashboard ? "w-full max-w-2xl" : "container mx-auto px-4 max-w-2xl"}>
         {/* Header */}
-        <button
-          onClick={() => navigate('/admin/users')}
-          className="flex items-center gap-2 text-amber-700 hover:text-amber-900 mb-6 text-sm font-medium transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Manage Users
-        </button>
+        {!insideDashboard && (
+          <button
+            onClick={() => onSelectTab ? onSelectTab('users') : navigate('/admin/users')}
+            className="flex items-center gap-2 text-amber-700 hover:text-amber-900 mb-6 text-sm font-medium transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Manage Users
+          </button>
+        )}
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           {/* Title bar */}

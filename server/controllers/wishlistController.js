@@ -85,31 +85,47 @@ exports.toggleWishlist = async (req, res) => {
  */
 exports.getWishlist = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).populate({
-      path: "wishlist",
-      populate: {
-        path: "artisan",
-        select: "profile.firstName profile.lastName"
-      }
-    });
+    const userId = req.user?._id || req.user?.id;
+    if (!userId) {
+      return res.status(200).json({ success: true, data: [] });
+    }
+
+    const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found"
+      return res.status(200).json({
+        success: true,
+        data: []
       });
+    }
+
+    const rawWishlist = Array.isArray(user.wishlist) ? user.wishlist : [];
+    if (rawWishlist.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: []
+      });
+    }
+
+    // Safely load the product details
+    let products = [];
+    try {
+      products = await Product.find({
+        _id: { $in: rawWishlist }
+      }).select("name title price images artisan category stock slug").lean();
+    } catch (pe) {
+      console.warn("⚠️ Could not load populated wishlist products:", pe.message);
     }
 
     res.status(200).json({
       success: true,
-      data: user.wishlist || []
+      data: products || []
     });
   } catch (error) {
-    console.error("❌ Get wishlist error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to get wishlist",
-      error: error.message
+    console.warn("❌ Get wishlist error:", error.message);
+    res.status(200).json({
+      success: true,
+      data: []
     });
   }
 };

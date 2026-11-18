@@ -18,6 +18,7 @@ import {
   SparklesIcon
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import api from '../utils/api';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -41,16 +42,8 @@ const PaymentSuccess = () => {
     try {
       const token = localStorage.getItem('authToken'); // Fixed: Use 'authToken' key
 
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const origin = apiUrl.replace(/\/api\/?$/, "");
-      const response = await fetch(`${origin}/api/payment/verify/${txRef}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
+      const res = await api.get(`/payment/verify/${txRef}`);
+      const data = res.data;
 
       if (data.success) {
         setOrder(data.data.order);

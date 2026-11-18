@@ -52,288 +52,113 @@ const PromotionCard = ({ promotion, onToggleStatus, onDelete, onPreview }) => {
   };
 
   return (
-    <div className="promotion-card">
-      <div className="card-header">
-        <div className="promotion-title">
-          <h3>{promotion.name}</h3>
-          <span className="status-badge" style={{ 
-            color: badge.color, 
-            background: badge.bg 
-          }}>
-            {badge.text}
-          </span>
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 sm:p-4 hover:shadow transition-shadow flex flex-col justify-between">
+      <div>
+        <div className="mb-2">
+          <div className="flex justify-between items-center gap-2 mb-1">
+            <h3 className="text-xs sm:text-sm font-bold text-gray-900 truncate">{promotion.name}</h3>
+            <span
+              className="text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0"
+              style={{ color: badge.color, background: badge.bg }}
+            >
+              {badge.text}
+            </span>
+          </div>
+          {promotion.urgencyBadge && status === 'active' && (
+            <div className="text-[10px] font-bold text-white px-2 py-0.5 rounded bg-gradient-to-r from-red-500 to-rose-600 animate-pulse text-center inline-block mt-0.5">
+              🔥 {promotion.badgeText || 'Limited Time!'}
+            </div>
+          )}
         </div>
-        {promotion.urgencyBadge && status === 'active' && (
-          <div className="urgency-badge">
-            🔥 {promotion.badgeText || 'Limited Time!'}
+
+        {/* Discount Display */}
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg p-2.5 sm:p-3 text-center my-2.5 shadow-2xs">
+          <div className="text-base sm:text-lg font-black tracking-tight">{getDiscountDisplay()}</div>
+          {promotion.discountType === 'coupon' && (
+            <div className="text-[11px] font-mono tracking-widest bg-white/20 px-2 py-0.5 rounded mt-1 inline-block">
+              {promotion.couponCode}
+            </div>
+          )}
+        </div>
+
+        {/* Promotion Details */}
+        <div className="space-y-1.5 text-xs my-2.5">
+          <div className="flex justify-between items-center border-b border-gray-50 pb-1">
+            <span className="text-[11px] text-gray-500">Target:</span>
+            <span className="text-[11px] font-semibold text-gray-800">
+              {promotion.targetType === 'all' ? 'All Products' : 'Specific Products'}
+            </span>
+          </div>
+          <div className="flex justify-between items-center border-b border-gray-50 pb-1">
+            <span className="text-[11px] text-gray-500">Duration:</span>
+            <span className="text-[11px] font-semibold text-gray-800">
+              {formatDate(promotion.startDate)} - {formatDate(promotion.endDate)}
+            </span>
+          </div>
+          {status === 'active' && (
+            <div className="flex justify-between items-center bg-amber-50/70 p-1.5 rounded-md border border-amber-100">
+              <span className="text-[11px] font-semibold text-amber-800">⏰ Time Left:</span>
+              <span className="text-[11px] font-bold text-amber-900">{getDaysRemaining()} days</span>
+            </div>
+          )}
+        </div>
+
+        {/* Analytics Section */}
+        {promotion.analytics && (
+          <div className="bg-gray-50/80 rounded-lg p-2.5 my-2 border border-gray-100">
+            <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">
+              📊 Real-Time Analytics
+            </div>
+            <div className="grid grid-cols-3 gap-1.5 text-center">
+              <div className="bg-white p-1.5 rounded border border-gray-100">
+                <div className="text-xs sm:text-sm font-black text-blue-600">{promotion.analytics.totalSales || 0}</div>
+                <div className="text-[9px] text-gray-400 font-medium">Sales</div>
+              </div>
+              <div className="bg-white p-1.5 rounded border border-gray-100">
+                <div className="text-xs sm:text-sm font-black text-emerald-600 truncate">{promotion.analytics.revenue || 0} ETB</div>
+                <div className="text-[9px] text-gray-400 font-medium">Revenue</div>
+              </div>
+              <div className="bg-white p-1.5 rounded border border-gray-100">
+                <div className="text-xs sm:text-sm font-black text-purple-600">{promotion.analytics.uses || 0}</div>
+                <div className="text-[9px] text-gray-400 font-medium">Uses</div>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      <div className="discount-display">
-        <div className="discount-value">{getDiscountDisplay()}</div>
-        {promotion.discountType === 'coupon' && (
-          <div className="coupon-code">{promotion.couponCode}</div>
-        )}
-      </div>
-
-      <div className="promotion-details">
-        <div className="detail-row">
-          <span className="label">Type:</span>
-          <span className="value">{promotion.targetType === 'all' ? 'All Products' : 'Specific Products'}</span>
-        </div>
-        <div className="detail-row">
-          <span className="label">Duration:</span>
-          <span className="value">{formatDate(promotion.startDate)} - {formatDate(promotion.endDate)}</span>
-        </div>
-        {status === 'active' && (
-          <div className="detail-row highlight">
-            <span className="label">⏰ Time Left:</span>
-            <span className="value">{getDaysRemaining()} days</span>
-          </div>
-        )}
-      </div>
-
-      {promotion.analytics && (
-        <div className="analytics-section">
-          <div className="analytics-title">📊 Performance (Real-Time)</div>
-          <div className="analytics-grid">
-            <div className="analytics-item">
-              <div className="analytics-value">{promotion.analytics.totalSales || 0}</div>
-              <div className="analytics-label">Sales</div>
-            </div>
-            <div className="analytics-item">
-              <div className="analytics-value">{promotion.analytics.revenue || 0} ETB</div>
-              <div className="analytics-label">Revenue</div>
-            </div>
-            <div className="analytics-item">
-              <div className="analytics-value">{promotion.analytics.uses || 0}</div>
-              <div className="analytics-label">Uses</div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="card-actions">
-        <button className="btn-preview" onClick={() => onPreview(promotion)}>
+      {/* Card Actions */}
+      <div className="flex items-center gap-1.5 pt-2 border-t border-gray-100 mt-2">
+        <button
+          onClick={() => onPreview(promotion)}
+          className="flex-1 px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-lg transition-colors"
+        >
           👁️ Preview
         </button>
         {status === 'active' && (
-          <button 
-            className="btn-toggle" 
+          <button
             onClick={() => onToggleStatus(promotion._id, 'inactive')}
+            className="flex-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition-colors"
           >
             Pause
           </button>
         )}
         {(status === 'inactive' || status === 'scheduled') && (
-          <button 
-            className="btn-toggle active" 
+          <button
             onClick={() => onToggleStatus(promotion._id, 'active')}
+            className="flex-1 px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg transition-colors"
           >
             Activate
           </button>
         )}
-        <button 
-          className="btn-delete" 
+        <button
           onClick={() => onDelete(promotion._id)}
+          className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors border border-red-100"
+          title="Delete Promotion"
         >
           🗑️
         </button>
       </div>
-
-      <style>{`
-        .promotion-card {
-          background: white;
-          border-radius: 12px;
-          padding: 1.5rem;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .promotion-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-        }
-
-        .card-header {
-          margin-bottom: 1rem;
-        }
-
-        .promotion-title {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 0.5rem;
-        }
-
-        .promotion-title h3 {
-          font-size: 1.25rem;
-          color: #1a1a1a;
-          margin: 0;
-        }
-
-        .status-badge {
-          padding: 0.25rem 0.75rem;
-          border-radius: 20px;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-
-        .urgency-badge {
-          background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-          color: white;
-          padding: 0.5rem 1rem;
-          border-radius: 8px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          text-align: center;
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.8; }
-        }
-
-        .discount-display {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 1.5rem;
-          border-radius: 10px;
-          text-align: center;
-          margin-bottom: 1rem;
-        }
-
-        .discount-value {
-          font-size: 2rem;
-          font-weight: 700;
-          margin-bottom: 0.5rem;
-        }
-
-        .coupon-code {
-          background: rgba(255,255,255,0.2);
-          padding: 0.5rem 1rem;
-          border-radius: 6px;
-          font-family: monospace;
-          font-size: 1.1rem;
-          letter-spacing: 2px;
-        }
-
-        .promotion-details {
-          margin-bottom: 1rem;
-        }
-
-        .detail-row {
-          display: flex;
-          justify-content: space-between;
-          padding: 0.5rem 0;
-          border-bottom: 1px solid #f3f4f6;
-        }
-
-        .detail-row.highlight {
-          background: #fef3c7;
-          padding: 0.5rem;
-          border-radius: 6px;
-          border: none;
-          margin-top: 0.5rem;
-        }
-
-        .label {
-          color: #666;
-          font-size: 0.9rem;
-        }
-
-        .value {
-          color: #1a1a1a;
-          font-weight: 500;
-          font-size: 0.9rem;
-        }
-
-        .analytics-section {
-          background: #f9fafb;
-          padding: 1rem;
-          border-radius: 8px;
-          margin-bottom: 1rem;
-        }
-
-        .analytics-title {
-          font-weight: 600;
-          color: #1a1a1a;
-          margin-bottom: 0.75rem;
-        }
-
-        .analytics-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-        }
-
-        .analytics-item {
-          text-align: center;
-        }
-
-        .analytics-value {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #2563eb;
-        }
-
-        .analytics-label {
-          font-size: 0.75rem;
-          color: #666;
-          margin-top: 0.25rem;
-        }
-
-        .card-actions {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .btn-preview, .btn-toggle, .btn-delete {
-          flex: 1;
-          padding: 0.625rem;
-          border: none;
-          border-radius: 6px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-size: 0.875rem;
-        }
-
-        .btn-preview {
-          background: #f3f4f6;
-          color: #1a1a1a;
-        }
-
-        .btn-preview:hover {
-          background: #e5e7eb;
-        }
-
-        .btn-toggle {
-          background: #fbbf24;
-          color: white;
-        }
-
-        .btn-toggle.active {
-          background: #10b981;
-        }
-
-        .btn-toggle:hover {
-          opacity: 0.9;
-        }
-
-        .btn-delete {
-          background: #fee2e2;
-          color: #ef4444;
-          flex: 0 0 auto;
-          padding: 0.625rem 1rem;
-        }
-
-        .btn-delete:hover {
-          background: #fecaca;
-        }
-      `}</style>
     </div>
   );
 };

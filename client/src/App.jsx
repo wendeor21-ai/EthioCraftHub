@@ -16,6 +16,8 @@ import { SoundProvider } from './contexts/SoundContext';
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
 import Preloader from './components/common/Preloader';
+import ErrorBoundary from './components/common/ErrorBoundary';
+import ScrollToTop from './components/common/ScrollToTop';
 
 // Page Components
 import Home from './pages/Home';
@@ -129,13 +131,15 @@ function App() {
               <div className={`transition-opacity duration-700 ${showContent ? 'opacity-100' : 'opacity-0'}`}>
                 {/* እዚህ ጋር Future Flags ተጨምረዋል ማስጠንቀቂያውን ለማጥፋት */}
                 <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                  <ScrollToTop />
                   <div className="App min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
                     {/* Navigation */}
                     <Navbar />
 
                     {/* Main Content */}
                     <main className="flex-grow">
-                      <Routes>
+                      <ErrorBoundary>
+                        <Routes>
                         {/* Public Routes */}
                         <Route path="/" element={<Home />} />
                         {/* ... የተቀሩት የRoute ዝርዝሮች እንደነበሩ ይቀጥላሉ ... */}
@@ -278,7 +282,7 @@ function App() {
                         <Route
                           path="/artisan/dashboard"
                           element={
-                            <ArtisanRoute requireVerification={true}>
+                            <ArtisanRoute requireVerification={false}>
                               <Dashboard />
                             </ArtisanRoute>
                           }
@@ -286,7 +290,7 @@ function App() {
                         <Route
                           path="/dashboard"
                           element={
-                            <ArtisanRoute requireVerification={true}>
+                            <ArtisanRoute requireVerification={false}>
                               <Dashboard />
                             </ArtisanRoute>
                           }
@@ -313,7 +317,7 @@ function App() {
                           path="/artisan/products"
                           element={
                             <ArtisanRoute>
-                              <MyProducts />
+                              <Dashboard defaultTab="products" />
                             </ArtisanRoute>
                           }
                         />
@@ -321,7 +325,7 @@ function App() {
                           path="/artisan/promotions"
                           element={
                             <ArtisanRoute>
-                              <ArtisanPromotions />
+                              <Dashboard defaultTab="promotions" />
                             </ArtisanRoute>
                           }
                         />
@@ -329,7 +333,7 @@ function App() {
                           path="/artisan/settings"
                           element={
                             <ArtisanRoute>
-                              <ArtisanSettings />
+                              <Dashboard defaultTab="settings" />
                             </ArtisanRoute>
                           }
                         />
@@ -337,7 +341,7 @@ function App() {
                           path="/artisan/payments"
                           element={
                             <ArtisanRoute>
-                              <Finance />
+                              <Dashboard defaultTab="finance" />
                             </ArtisanRoute>
                           }
                         />
@@ -345,7 +349,7 @@ function App() {
                           path="/artisan/finance"
                           element={
                             <ArtisanRoute>
-                              <Finance />
+                              <Dashboard defaultTab="finance" />
                             </ArtisanRoute>
                           }
                         />
@@ -353,7 +357,7 @@ function App() {
                           path="/artisan/reports"
                           element={
                             <ArtisanRoute>
-                              <Reports />
+                              <Dashboard defaultTab="reports" />
                             </ArtisanRoute>
                           }
                         />
@@ -361,7 +365,7 @@ function App() {
                           path="/artisan/inventory-alerts"
                           element={
                             <ArtisanRoute>
-                              <InventoryAlerts />
+                              <Dashboard defaultTab="inventory-alerts" />
                             </ArtisanRoute>
                           }
                         />
@@ -369,7 +373,7 @@ function App() {
                           path="/artisan/reviews"
                           element={
                             <ArtisanRoute>
-                              <Reviews />
+                              <Dashboard defaultTab="reviews" />
                             </ArtisanRoute>
                           }
                         />
@@ -377,7 +381,7 @@ function App() {
                           path="/artisan/shipping"
                           element={
                             <ArtisanRoute>
-                              <ShippingDelivery />
+                              <Dashboard defaultTab="shipping" />
                             </ArtisanRoute>
                           }
                         />
@@ -393,7 +397,7 @@ function App() {
                           path="/artisan/orders"
                           element={
                             <ArtisanRoute>
-                              <ManageOrders />
+                              <Dashboard defaultTab="orders" />
                             </ArtisanRoute>
                           }
                         />
@@ -409,7 +413,7 @@ function App() {
                           path="/artisan/analytics"
                           element={
                             <ArtisanRoute>
-                              <Analytics />
+                              <Dashboard defaultTab="reports" />
                             </ArtisanRoute>
                           }
                         />
@@ -433,7 +437,7 @@ function App() {
                           path="/artisan/verification"
                           element={
                             <ArtisanRoute requireVerification={false}>
-                              <ArtisanVerification />
+                              <Dashboard defaultTab="verification" />
                             </ArtisanRoute>
                           }
                         />
@@ -485,12 +489,12 @@ function App() {
                           }
                         />
 
-                        {/* Admin-specific Routes */}
+                        {/* Admin-specific Routes - Unified In-Dashboard Experience */}
                         <Route
                           path="/admin/executives/add"
                           element={
                             <AdminRoute>
-                              <AddExecutive />
+                              <Dashboard defaultTab="executives" />
                             </AdminRoute>
                           }
                         />
@@ -498,7 +502,7 @@ function App() {
                           path="/admin/users"
                           element={
                             <AdminRoute>
-                              <ManageUsers />
+                              <Dashboard defaultTab="users" />
                             </AdminRoute>
                           }
                         />
@@ -506,7 +510,7 @@ function App() {
                           path="/admin/verifications"
                           element={
                             <AdminRoute>
-                              <VerifyArtisans />
+                              <Dashboard defaultTab="verifications" />
                             </AdminRoute>
                           }
                         />
@@ -514,7 +518,7 @@ function App() {
                           path="/admin/products"
                           element={
                             <AdminRoute>
-                              <ModerateProducts />
+                              <Dashboard defaultTab="products" />
                             </AdminRoute>
                           }
                         />
@@ -522,7 +526,7 @@ function App() {
                           path="/admin/analytics"
                           element={
                             <AdminRoute>
-                              <AnalyticsDashboard />
+                              <Dashboard defaultTab="reports" />
                             </AdminRoute>
                           }
                         />
@@ -530,7 +534,7 @@ function App() {
                           path="/admin/reports"
                           element={
                             <AdminRoute>
-                              <ViewReports />
+                              <Dashboard defaultTab="reports" />
                             </AdminRoute>
                           }
                         />
@@ -538,7 +542,7 @@ function App() {
                           path="/admin/settings"
                           element={
                             <AdminRoute>
-                              <AdminSettings />
+                              <Dashboard defaultTab="settings" />
                             </AdminRoute>
                           }
                         />
@@ -546,7 +550,7 @@ function App() {
                           path="/admin/zema-ai-monitor"
                           element={
                             <AdminRoute>
-                              <ZemaAIMonitor />
+                              <Dashboard defaultTab="zema-ai-monitor" />
                             </AdminRoute>
                           }
                         />
@@ -554,7 +558,15 @@ function App() {
                           path="/admin/withdrawals"
                           element={
                             <AdminRoute>
-                              <WithdrawalManagement />
+                              <Dashboard defaultTab="withdrawals" />
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/notifications"
+                          element={
+                            <AdminRoute>
+                              <Dashboard defaultTab="notifications" />
                             </AdminRoute>
                           }
                         />
@@ -563,7 +575,15 @@ function App() {
                           path="/admin/core-utilities"
                           element={
                             <AdminRoute>
-                              <CoreUtilities />
+                              <Dashboard defaultTab="core-utilities" />
+                            </AdminRoute>
+                          }
+                        />
+                        <Route
+                          path="/admin/core/ledger"
+                          element={
+                            <AdminRoute>
+                              <Dashboard defaultTab="ledger" />
                             </AdminRoute>
                           }
                         />
@@ -619,7 +639,7 @@ function App() {
                           path="/admin/custom-orders"
                           element={
                             <AdminRoute>
-                              <CustomOrdersAnalytics />
+                              <Dashboard defaultTab="custom-orders" />
                             </AdminRoute>
                           }
                         />
@@ -659,6 +679,7 @@ function App() {
                         {/* 404 Route */}
                         <Route path="*" element={<NotFound />} />
                       </Routes>
+                    </ErrorBoundary>
                     </main>
 
                     {/* Footer */}

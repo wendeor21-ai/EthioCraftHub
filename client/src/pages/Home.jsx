@@ -1,3 +1,4 @@
+import { getFileUrl } from '../utils/getFileUrl';
 /**
  * Home Page for EthioCraft Global - Premium Modern Design
  * Hero section: text top-aligned, reduced font sizes, attractive styling
@@ -64,12 +65,24 @@ function Home() {
 
   const getLocalized = (item, field, fallbackKey) => {
     if (!item) return fallbackKey ? t(fallbackKey) : '';
-    // 1. Try language specific field (e.g. title_am)
+    // 1. Language specific field (e.g. title_am or title_en)
     if (item[`${field}_${currentLang}`]) return item[`${field}_${currentLang}`];
-    // 2. Try legacy field if current is English
-    if (currentLang === 'en' && item[field]) return item[field];
-    // 3. Fallback to global translation or legacy field as last resort
-    return fallbackKey ? t(fallbackKey) : item[field] || '';
+    // Special alias: subtitle <-> description
+    if (field === 'subtitle') {
+      if (item[`description_${currentLang}`]) return item[`description_${currentLang}`];
+      if (item.subtitle) return item.subtitle;
+      if (item.description) return item.description;
+      if (item.description_en) return item.description_en;
+    }
+    if (field === 'title') {
+      if (item.title) return item.title;
+      if (item.title_en) return item.title_en;
+    }
+    // 2. Generic field or English fallback
+    if (item[field]) return item[field];
+    if (item[`${field}_en`]) return item[`${field}_en`];
+    // 3. Fallback to dictionary
+    return fallbackKey ? t(fallbackKey) : '';
   };
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -133,16 +146,23 @@ function Home() {
         try {
           // If authenticated, get personalized recommendations
           const endpoint = (isAuthenticated && user?._id) ? `/products/recommendations/${user?._id}` : '/products/recommendations';
-          const response = await api.get(endpoint, { params: { limit: 8 } });
+          const response = await api.get(endpoint, { params: { limit: 12 } });
           products = response.data.recommendations || response.data.products || [];
         } catch (recErr) {
           console.warn('Recommendations fetch failed, falling back to products', recErr);
-          const response = await api.get('/products', { params: { limit: 8, status: 'active' } });
+          const response = await api.get('/products', { params: { limit: 12, sortBy: 'createdAt', sortOrder: 'desc' } });
           products = response.data.products || [];
         }
 
+        if (!products || products.length === 0) {
+          try {
+            const fallbackRes = await api.get('/products', { params: { limit: 12, sortBy: 'createdAt', sortOrder: 'desc' } });
+            products = fallbackRes.data?.products || [];
+          } catch (e) { }
+        }
+
         // Final data sanitization
-        const cleanProducts = products.map(p => {
+        const cleanProducts = (products || []).map(p => {
           const item = { ...p };
           if (Array.isArray(item.images)) {
             item.images = item.images.filter(img => {
@@ -153,15 +173,7 @@ function Home() {
           return item;
         });
 
-        if (cleanProducts.length > 0) {
-          setFeaturedProducts(cleanProducts);
-        } else {
-          // If still empty, use sample data but with absolute fallback images
-          setFeaturedProducts([
-            { _id: 'sample1', name: "Ethiopian Shawl", price: 45, category: 'Textiles', images: [] },
-            { _id: 'sample2', name: "Coffee Ceremony Set", price: 120, category: 'Pottery', images: [] }
-          ]);
-        }
+        setFeaturedProducts(cleanProducts);
       } catch (err) {
         console.error('Error in fetchRecommendations:', err);
       } finally {
@@ -188,7 +200,7 @@ function Home() {
       title_ti: "ትክክለኛ ኢትዮጵያዊ ናይ ኢድ ጥበብ ስራሕቲ ርኸቡ",
       subtitle_en: "Handcrafted Treasures from the Heart of Africa",
       subtitle_am: "ከአፍሪካ እምብርት በእጅ የተሰሩ ውድ ቅርሶች",
-      image: "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=1600&q=90",
+      image: "https://i.ibb.co/WWTJjQZ1/1b89d069-9411-49a6-a1a8-d31f68908a8e.png",
       cta_en: "Explore Collection",
       cta_am: "ስብስቦችን ያስሱ",
       link: "/products",
@@ -200,7 +212,7 @@ function Home() {
       title_am: "ቅርስ ከዘመናዊነት ጋር የሚገናኝበት",
       subtitle_en: "Timeless Craftsmanship for the Global Citizen",
       subtitle_am: "ለዓለም አቀፍ ዜጋ ዘላለማዊ የእጅ ጥበብ",
-      image: "https://images.unsplash.com/photo-1533105079780-92b9be482077?auto=format&fit=crop&w=1600&q=90",
+      image: "https://i.ibb.co/LD4vRPqD/f4140900-ecf2-4213-961c-eb3835d4a25e.webp",
       cta_en: "Discover More",
       cta_am: "ተጨማሪ እወቅ",
       link: "/products",
@@ -254,13 +266,12 @@ function Home() {
             {heroSlides.map((slide, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
-                  index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-                }`}
+                className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                  }`}
               >
                 <div className="absolute inset-0 w-full h-full">
                   <img
-                    src={slide.image}
+                    src={getFileUrl(slide.image)}
                     alt={slide.title}
                     className="w-full h-full object-cover object-center"
                   />
@@ -325,11 +336,10 @@ function Home() {
               <button
                 key={index}
                 onClick={() => { setIsAutoPlaying(false); setCurrentSlide(index); setTimeout(() => setIsAutoPlaying(true), 10000); }}
-                className={`transition-all duration-500 rounded-full ${
-                  index === currentSlide
+                className={`transition-all duration-500 rounded-full ${index === currentSlide
                     ? "w-6 sm:w-10 h-1.5 sm:h-2 bg-ethiopian-gold"
                     : "w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white/50"
-                }`}
+                  }`}
               />
             ))}
           </div>

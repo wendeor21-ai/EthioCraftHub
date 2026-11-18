@@ -13,8 +13,11 @@ import {
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { getFileUrl } from '../../utils/getFileUrl';
+import { formatOrderDateTime } from '../../utils/dateUtils';
+import { useCustomTranslation } from '../../hooks/useCustomTranslation';
 
 const CustomOrderDetailModal = ({ order, onClose, onRefresh }) => {
+  const { currentLanguage } = useCustomTranslation();
   const [loading, setLoading] = useState(false);
   const [price, setPrice] = useState(order.price || '');
   const [rejectionReason, setRejectionReason] = useState('');
@@ -64,7 +67,7 @@ const CustomOrderDetailModal = ({ order, onClose, onRefresh }) => {
             </div>
             <div>
               <h2 className="text-2xl font-black">Custom Design Request</h2>
-              <p className="text-amber-100 text-xs font-medium">#{order._id.slice(-8).toUpperCase()} • Received {new Date(order.createdAt).toLocaleDateString()}</p>
+              <p className="text-amber-100 text-xs font-medium">#{order._id.slice(-8).toUpperCase()} • {formatOrderDateTime(order.createdAt, currentLanguage).full}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">

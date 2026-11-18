@@ -48,31 +48,31 @@ const ReviewModal = ({ selectedRequest, feedback, setFeedback, onApprove, onReje
   const pay = selectedRequest.bankDetails || {};
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col">
         {/* Modal Header */}
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 font-bold text-xl">
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-xl sm:rounded-2xl flex items-center justify-center text-amber-600 font-bold text-lg sm:text-xl">
               {p.firstName?.charAt(0)}
             </div>
             <div>
-              <h2 className="text-xl font-black text-gray-900 leading-tight">{p.firstName} {p.lastName}</h2>
-              <p className="text-xs text-gray-500 font-medium">Verification Review • Submitted {formatDate(v.submittedAt)}</p>
+              <h2 className="text-base sm:text-xl font-black text-gray-900 leading-tight">{p.firstName} {p.lastName}</h2>
+              <p className="text-[11px] sm:text-xs text-gray-500 font-medium">Verification Review • Submitted {formatDate(v.submittedAt)}</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 font-bold text-lg leading-none">✕</button>
+          <button onClick={onClose} className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full text-gray-400 font-bold text-base sm:text-lg leading-none">✕</button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
             {/* Left Column: Personal & Identity */}
-            <div className="space-y-8">
+            <div className="space-y-4 sm:space-y-8">
               <section>
-                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
                   <User className="w-4 h-4" /> Personal & Identity
                 </h3>
-                <div className="bg-gray-50 p-6 rounded-3xl space-y-4">
+                <div className="bg-gray-50 p-4 sm:p-6 rounded-2xl sm:rounded-3xl space-y-3 sm:space-y-4">
                   <div className="flex justify-between items-center"><span className="text-xs text-gray-500">Email</span><span className="text-xs font-bold">{selectedRequest.email}</span></div>
                   <div className="flex justify-between items-center"><span className="text-xs text-gray-500">Phone</span><span className="text-xs font-bold">{p.phone || '—'}</span></div>
                   <div className="flex justify-between items-center"><span className="text-xs text-gray-500">Address</span><span className="text-xs font-bold text-right">{p.address?.street || '—'}</span></div>
@@ -201,7 +201,7 @@ const ReviewModal = ({ selectedRequest, feedback, setFeedback, onApprove, onReje
   );
 };
 
-const VerifyArtisans = () => {
+const VerifyArtisans = ({ insideDashboard, onSelectTab }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -295,20 +295,24 @@ const VerifyArtisans = () => {
     );
   });
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner size="large" /></div>;
+  if (loading) return <div className={insideDashboard ? "py-12 flex items-center justify-center" : "min-h-screen flex items-center justify-center"}><LoadingSpinner size="large" /></div>;
 
   return (
-    <div className="min-h-screen bg-transparent py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+    <div className={insideDashboard ? "bg-transparent py-2 w-full" : "min-h-screen bg-transparent py-8"}>
+      <div className={insideDashboard ? "w-full" : "container mx-auto px-4 max-w-7xl"}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 tracking-tight">Artisan Verifications</h1>
-            <p className="text-gray-500 text-sm mt-1">Reviewing the guardians of Ethiopian craftmanship.</p>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">Artisan Verifications</h1>
+            <p className="text-xs text-gray-500 mt-0.5">Review and approve artisan accounts.</p>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center flex-wrap gap-1.5">
             {['pending', 'approved', 'rejected', 'all'].map(t => (
-              <button key={t} onClick={() => setFilter(t)} className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${filter === t ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100 shadow-sm'}`}>
+              <button 
+                key={t} 
+                onClick={() => setFilter(t)} 
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${filter === t ? 'bg-gray-900 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'}`}
+              >
                 {t}
               </button>
             ))}
@@ -316,52 +320,52 @@ const VerifyArtisans = () => {
         </div>
 
         {/* Requests Table */}
-        <div className="bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-white/60 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-2xs border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50/50 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+            <table className="w-full text-xs">
+              <thead className="bg-gray-50 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-200">
                 <tr>
-                  <th className="px-8 py-5 text-left">Artisan</th>
-                  <th className="px-8 py-5 text-left">Business</th>
-                  <th className="px-8 py-5 text-left">Docs</th>
-                  <th className="px-8 py-5 text-left">Date</th>
-                  <th className="px-8 py-5 text-right">Actions</th>
+                  <th className="px-3.5 py-2 text-left">Artisan</th>
+                  <th className="px-3.5 py-2 text-left">Business</th>
+                  <th className="px-3.5 py-2 text-left">Docs</th>
+                  <th className="px-3.5 py-2 text-left">Date</th>
+                  <th className="px-3.5 py-2 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-100">
                 {filteredRequests.map((r) => (
-                  <tr key={r._id} className="group hover:bg-gray-50/50 transition-colors">
-                    <td className="px-8 py-6 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-amber-50 rounded-2xl flex items-center justify-center text-amber-600 font-bold">
-                          {r.profile?.firstName?.charAt(0)}
+                  <tr key={r._id} className="group hover:bg-amber-50/30 transition-colors">
+                    <td className="px-3.5 py-2 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center text-amber-700 font-bold text-xs shrink-0">
+                          {r.profile?.firstName?.charAt(0) || 'A'}
                         </div>
-                        <div>
-                           <p className="text-xs font-bold text-gray-900">{r.profile?.firstName} {r.profile?.lastName}</p>
-                           <p className="text-[10px] text-gray-500">{r.email}</p>
+                        <div className="min-w-0">
+                           <p className="text-xs font-bold text-gray-900 leading-tight">{r.profile?.firstName} {r.profile?.lastName}</p>
+                           <p className="text-[10px] text-gray-500 truncate max-w-[140px]">{r.email}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6 whitespace-nowrap">
-                      <p className="text-xs font-bold text-gray-900">{r.profile?.businessInfo?.businessName || 'Freelance'}</p>
-                      <p className="text-[10px] text-amber-600 font-medium">TIN: {r.profile?.businessInfo?.tinNumber || '—'}</p>
+                    <td className="px-3.5 py-2 whitespace-nowrap">
+                      <p className="text-xs font-semibold text-gray-900 leading-tight">{r.profile?.businessInfo?.businessName || 'Freelance'}</p>
+                      <p className="text-[10px] text-amber-700 font-medium">TIN: {r.profile?.businessInfo?.tinNumber || '—'}</p>
                     </td>
-                    <td className="px-8 py-6 whitespace-nowrap">
-                       <div className="flex gap-1">
-                          {r.verification?.identityCard && <ShieldCheck className="w-4 h-4 text-green-500" />}
-                          {r.verification?.productPhotos?.length > 0 && <ImageIcon className="w-4 h-4 text-blue-500" />}
-                          {r.verification?.workVideos?.length > 0 && <Video className="w-4 h-4 text-purple-500" />}
+                    <td className="px-3.5 py-2 whitespace-nowrap">
+                       <div className="flex gap-1 items-center">
+                          {r.verification?.identityCard && <ShieldCheck className="w-3.5 h-3.5 text-green-600" />}
+                          {r.verification?.productPhotos?.length > 0 && <ImageIcon className="w-3.5 h-3.5 text-blue-600" />}
+                          {r.verification?.workVideos?.length > 0 && <Video className="w-3.5 h-3.5 text-purple-600" />}
                        </div>
                     </td>
-                    <td className="px-8 py-6 whitespace-nowrap">
-                      <p className="text-[10px] font-bold text-gray-500">{formatDate(r.verification?.submittedAt)}</p>
+                    <td className="px-3.5 py-2 whitespace-nowrap">
+                      <p className="text-[10.5px] text-gray-500">{formatDate(r.verification?.submittedAt)}</p>
                     </td>
-                    <td className="px-8 py-6 text-right">
+                    <td className="px-3.5 py-2 text-right">
                        <button
                          onClick={() => { setSelectedRequest(r); setIsReviewModalOpen(true); }}
-                         className="inline-flex items-center gap-2 bg-gray-50 text-gray-900 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-100 hover:text-amber-800 transition-all border border-gray-100"
+                         className="inline-flex items-center gap-1 bg-amber-50 text-amber-900 px-2.5 py-1 rounded-md text-[10.5px] font-semibold hover:bg-amber-100 transition-all border border-amber-200"
                        >
-                         Review <Eye className="w-4 h-4" />
+                         Review <Eye className="w-3.5 h-3.5" />
                        </button>
                     </td>
                   </tr>

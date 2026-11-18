@@ -1,78 +1,94 @@
 /**
  * Messages Page for EthioCraft Global
  * 
- * Allows artisans to view and respond to customer inquiries
+ * Mobile-first Chat & Messaging experience (እንደ መደበኛ የሜሴጅ መተግበሪያ)
+ * Fully responsive: full-screen conversation view on mobile with back button,
+ * side-by-side view on desktop, and completely translated to Amharic.
  */
 
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import DashboardLayout from '../components/dashboard/DashboardLayout';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import ErrorMessage from '../components/common/ErrorMessage';
 import { supportAPI } from '../utils/api';
 import toast from 'react-hot-toast';
+import { 
+  ArrowLeft, 
+  Send, 
+  CheckCheck, 
+  Clock, 
+  MessageSquare, 
+  Plus, 
+  RefreshCw, 
+  User, 
+  ShieldCheck, 
+  X, 
+  ChevronRight,
+  Sparkles
+} from 'lucide-react';
 
-  // helper to safely get first character
-  const firstChar = (value) => {
-    if (!value && value !== 0) return 'U';
-    try {
-      return String(value).charAt(0);
-    } catch {
-      return 'U';
-    }
-  };
+// Helper to safely get first character for avatar initials
+const firstChar = (value) => {
+  if (!value && value !== 0) return 'U';
+  try {
+    return String(value).charAt(0).toUpperCase();
+  } catch {
+    return 'U';
+  }
+};
 
 const Messages = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState('inbox');
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [filterTab, setFilterTab] = useState('all'); // 'all', 'unread'
+  
+  // Compose New Message Modal State
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [composeSubject, setComposeSubject] = useState('');
+  const [composeMessage, setComposeMessage] = useState('');
+  const [sendingNewMessage, setSendingNewMessage] = useState(false);
 
   const mountedRef = useRef(false);
   const pollingRef = useRef({ intervalId: null, coolingDown: false });
 
   useEffect(() => {
-    if (mountedRef.current) return; // avoid double-effect in Strict Mode
+    if (mountedRef.current) return;
     mountedRef.current = true;
 
-    let cancelled = false;
+    fetchMessages();
 
-    const startPolling = () => {
-      // initial fetch
-      fetchMessages();
-
-      // lower-frequency polling to avoid rate limits
-      pollingRef.current.intervalId = setInterval(() => {
-        if (!pollingRef.current.coolingDown) fetchMessages();
-      }, 15000);
-    };
-
-    startPolling();
+    // Polling every 20s
+    pollingRef.current.intervalId = setInterval(() => {
+      if (!pollingRef.current.coolingDown) {
+        fetchMessages(true);
+      }
+    }, 20000);
 
     return () => {
-      cancelled = true;
       if (pollingRef.current.intervalId) clearInterval(pollingRef.current.intervalId);
     };
   }, []);
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (isBackground = false) => {
     try {
-      setLoading(true);
+      if (!isBackground) setLoading(true);
       setError('');
 
       const res = await supportAPI.getMessages();
-      const msgs = res.data.messages || [];
-      // normalize messages and ensure known fields exist
+      const msgs = res.data?.messages || [];
       const normalized = msgs.map((m) => ({
         _id: m._id || m.id,
         sender: m.sender || null,
-        senderRole: m.senderRole || m.senderRole || 'customer',
-        subject: m.subject || '',
+        recipient: m.recipient || null,
+        senderRole: m.senderRole || 'customer',
+        subject: m.subject || 'መልዕክት',
         message: m.message || '',
         status: m.status || 'New',
         adminResponse: m.adminResponse || null,
@@ -82,52 +98,40 @@ const Messages = () => {
 
       setMessages(normalized);
 
-      /* Uncomment when backend endpoint is ready
-      const token = localStorage.getItem('authToken');
-      
-      const userId = user?.id || user?._id;
-      
-      if (!token || !userId) {
-        setError('Authentication required');
-        return;
-      }
-
-      const response = await fetch(API_ENDPOINTS.MESSAGES.BY_ARTISAN(userId), {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      // If URL has ?id=..., auto-select that message and open it
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const targetId = params.get('id') || params.get('messageId');
+        if (targetId) {
+          const found = normalized.find(m => m._id === targetId);
+          if (found) {
+            setSelectedMessage(found);
+            if (!found.read) {
+              markAsRead(found._id);
+            }
+          }
         }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.messages || []);
-        setError('');
-      } else {
-        setError('Failed to load messages');
-        setMessages([]);
+      } catch (e) {
+        // ignore url parse error
       }
-      */
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      const status = error.response?.status;
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+      const status = err.response?.status;
       if (status === 429) {
-        // server rate limit hit: enable cooldown for 60s to avoid hammering
         pollingRef.current.coolingDown = true;
         setTimeout(() => { pollingRef.current.coolingDown = false; }, 60000);
-        setError('Server is rate-limiting requests. Retrying shortly.');
+        setError('ጥያቄዎች በዝተዋል፤ ጥቂት ቆይተው እንደገና ይሞክሩ።');
       } else if (status === 403) {
-        setError('Access denied. Please login with correct privileges.');
+        setError('መልዕክቶችን ለማየት ፈቃድ የለዎትም። እባክዎ እንደገና ይግቡ።');
       } else {
-        setError('Unable to connect to server. Please ensure the backend is running.');
+        setError('መልዕክቶችን መጫን አልተቻለም። እባክዎ ኢንተርኔትዎን ይፈትሹ።');
       }
-      setMessages([]);
     } finally {
-      setLoading(false);
+      if (!isBackground) setLoading(false);
     }
   };
 
-  // when messages update, refresh the selectedMessage object so adminResponse shows up
+  // Keep selectedMessage up-to-date when list updates
   useEffect(() => {
     if (selectedMessage && messages.length > 0) {
       const updated = messages.find((m) => m._id === selectedMessage._id);
@@ -136,43 +140,33 @@ const Messages = () => {
   }, [messages]);
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const timeStr = date.toLocaleTimeString('am-ET', { hour: '2-digit', minute: '2-digit' });
+
+      if (diffDays === 0) {
+        return `ዛሬ ${timeStr}`;
+      } else if (diffDays === 1) {
+        return `ትናንት ${timeStr}`;
+      } else if (diffDays < 7) {
+        return `ከ${diffDays} ቀን በፊት`;
+      } else {
+        return date.toLocaleDateString('am-ET', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    } catch {
+      return '';
     }
   };
 
-  const handleSendReply = async () => {
-    if (!replyText.trim()) return;
-
-    if (user?.role !== 'admin') {
-      toast.error('Only admins can send replies.');
-      return;
-    }
-
-    try {
-      const res = await supportAPI.replyMessage(selectedMessage._id, replyText);
-      // update local list
-      setMessages(prev => prev.map(m => m._id === selectedMessage._id ? res.data.data : m));
-      setReplyText('');
-      toast.success('Reply sent');
-    } catch (err) {
-      console.error('Error sending reply:', err);
-      if (err.response?.status === 403) {
-        toast.error('Access denied when sending reply');
-      } else {
-        toast.error('Failed to send reply');
-      }
+  const handleSelectMessage = (msg) => {
+    setSelectedMessage(msg);
+    if (!msg.read) {
+      markAsRead(msg._id);
     }
   };
 
@@ -186,237 +180,549 @@ const Messages = () => {
       setMessages(prev => prev.map(msg => 
         msg._id === messageId ? { ...msg, read: true } : msg
       ));
-    } catch (error) {
-      console.error('Error marking message as read:', error);
+    } catch (err) {
+      console.error('Error marking message read:', err);
+    }
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !selectedMessage) return;
+
+    if (user?.role !== 'admin') {
+      toast.error('ምላሽ መስጠት የሚችሉት አስተዳዳሪዎች ብቻ ናቸው።');
+      return;
+    }
+
+    try {
+      setSendingReply(true);
+      const res = await supportAPI.replyMessage(selectedMessage._id, replyText.trim());
+      const updatedData = res.data?.data;
+      if (updatedData) {
+        setMessages(prev => prev.map(m => m._id === selectedMessage._id ? updatedData : m));
+        setSelectedMessage(updatedData);
+      }
+      setReplyText('');
+      toast.success('ምላሽዎ በተሳካ ሁኔታ ተልኳል!');
+    } catch (err) {
+      console.error('Error sending reply:', err);
+      toast.error('ምላሹን መላክ አልተቻለም፤ እባክዎ እንደገና ይሞክሩ።');
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
+  const handleCreateNewMessage = async (e) => {
+    e.preventDefault();
+    if (!composeSubject.trim() || !composeMessage.trim()) {
+      toast.error('እባክዎ ርዕስ እና መልዕክት ያስገቡ');
+      return;
+    }
+
+    try {
+      setSendingNewMessage(true);
+      const res = await supportAPI.sendMessage({
+        subject: composeSubject.trim(),
+        message: composeMessage.trim()
+      });
+
+      toast.success('መልዕክትዎ በተሳካ ሁኔታ ተልኳል!');
+      setShowComposeModal(false);
+      setComposeSubject('');
+      setComposeMessage('');
+
+      // Refresh and select the new message
+      await fetchMessages(false);
+      if (res.data?.data) {
+        setSelectedMessage(res.data.data);
+      }
+    } catch (err) {
+      console.error('Error sending message:', err);
+      toast.error('መልዕክቱን መላክ አልተቻለም፤ እባክዎ እንደገና ይሞክሩ።');
+    } finally {
+      setSendingNewMessage(false);
+    }
+  };
+
+  const handleBackNavigation = () => {
+    if (selectedMessage) {
+      // If a chat conversation is open on mobile, back returns to thread list!
+      setSelectedMessage(null);
+    } else {
+      // If already on thread list, go back to previous page or appropriate home
+      if (user?.role === 'artisan') {
+        navigate('/artisan/dashboard');
+      } else if (user?.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate(-1);
+      }
     }
   };
 
   const unreadCount = messages.filter(m => !m.read).length;
-  const inboxMessages = messages.filter(m => activeTab === 'inbox');
-  const unrepliedMessages = messages.filter(m => m.status !== 'Replied');
-
-  const selectedName = selectedMessage ? (
-    selectedMessage.sender?.profile
-      ? `${selectedMessage.sender.profile.firstName} ${selectedMessage.sender.profile.lastName}`
-      : (selectedMessage.sender?.email || selectedMessage.from || 'User')
-  ) : '';
-
-  const selectedEmail = selectedMessage ? (selectedMessage.sender?.email || selectedMessage.email || '') : '';
-
-  const selectedDate = selectedMessage ? (selectedMessage.createdAt || selectedMessage.date || '') : '';
+  const filteredMessages = filterTab === 'unread' 
+    ? messages.filter(m => !m.read) 
+    : messages;
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="large" />
+      <div className="min-h-screen bg-[#F8F9FB] flex flex-col items-center justify-center">
+        <LoadingSpinner size="medium" />
+        <p className="text-xs text-gray-500 mt-2 font-medium">መልዕክቶች በመጫን ላይ ናቸው...</p>
       </div>
     );
   }
 
+  const getSenderDisplayName = (msg) => {
+    if (!msg) return 'ተጠቃሚ';
+    if (msg.sender?.profile) {
+      const fn = msg.sender.profile.firstName || '';
+      const ln = msg.sender.profile.lastName || '';
+      const fullName = `${fn} ${ln}`.trim();
+      if (fullName) return fullName;
+    }
+    return msg.sender?.email || msg.senderRole || 'ተጠቃሚ';
+  };
+
   return (
-    <DashboardLayout title="Messages" subtitle="Communicate with your customers" hideSidebar={true}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <button
-          onClick={() => navigate('/artisan/dashboard')}
-          className="text-ethiopian-gold hover:text-ethiopian-earth mb-4 flex items-center"
-        >
-          ← Back to Dashboard
-        </button>
-        {error && <ErrorMessage message={error} className="mb-6" />}
-        
-        <div className="flex justify-end mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="bg-white rounded-lg shadow px-4 py-2">
-              <span className="text-sm text-gray-600">Unread: </span>
-              <span className="font-bold text-ethiopian-gold">{unreadCount}</span>
+    <div className="min-h-screen bg-[#F8F9FB] flex flex-col">
+      {/* Top Ethiopian Tricolor Brand Stripe */}
+      <div className="h-1 bg-gradient-to-r from-green-600 via-amber-400 to-red-600 w-full shrink-0" />
+
+      {/* Main Container */}
+      <div className="flex-1 max-w-5xl w-full mx-auto p-2 sm:p-4 flex flex-col">
+        {/* Top Header Bar */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 px-3.5 py-2.5 mb-3 flex items-center justify-between shrink-0">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleBackNavigation}
+              className="p-1.5 -ml-1 text-gray-600 hover:text-amber-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center"
+              title="ተመለስ"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+            <div>
+              <h1 className="text-xs sm:text-sm font-bold text-gray-900 flex items-center space-x-1.5">
+                <span>የውይይት መልዕክቶች</span>
+                <span className="text-[10px] text-gray-400 font-normal hidden sm:inline">(Messages)</span>
+              </h1>
+              <p className="text-[10px] text-gray-500">ከድጋፍ ሰጪ እና ባለሙያዎች ጋር ይገናኙ</p>
             </div>
-            <div className="bg-white rounded-lg shadow px-4 py-2">
-              <span className="text-sm text-gray-600">Pending Reply: </span>
-              <span className="font-bold text-ethiopian-red">{unrepliedMessages.length}</span>
-            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            {/* New Message Compose Button */}
+            <button
+              onClick={() => setShowComposeModal(true)}
+              className="inline-flex items-center space-x-1 px-2.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold shadow-sm transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>አዲስ መልዕክት</span>
+            </button>
+
+            {/* Refresh Button */}
+            <button
+              onClick={() => fetchMessages(false)}
+              className="p-1.5 text-gray-500 hover:text-amber-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="አድስ (Refresh)"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-300px)] min-h-[500px]">
-          {/* Message List */}
-          <div className="lg:col-span-4 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-            {/* Tabs */}
-            <div className="border-b border-gray-200">
-              <nav className="flex">
+        {error && <ErrorMessage message={error} className="mb-3 shrink-0" />}
+
+        {/* Messaging Layout: Split on desktop, toggle full-screen on mobile */}
+        <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col lg:grid lg:grid-cols-12 min-h-[520px]">
+          
+          {/* ══════════════════════════════════════════════════════════════
+              LEFT PANE: THREAD LIST (የመልዕክት ዝርዝር)
+              Shown when no message is selected on mobile, or always on desktop
+             ══════════════════════════════════════════════════════════════ */}
+          <div className={`lg:col-span-5 border-r border-gray-200 flex flex-col h-full ${
+            selectedMessage ? 'hidden lg:flex' : 'flex'
+          }`}>
+            {/* List Header Tabs */}
+            <div className="px-3.5 py-2.5 border-b border-gray-100 flex items-center justify-between bg-gray-50/60">
+              <div className="flex space-x-1">
                 <button
-                  onClick={() => setActiveTab('inbox')}
-                  className={`flex-1 py-4 px-6 text-center font-medium ${
-                    activeTab === 'inbox'
-                      ? 'border-b-2 border-ethiopian-gold text-ethiopian-gold'
-                      : 'text-gray-500 hover:text-gray-700'
+                  onClick={() => setFilterTab('all')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
+                    filterTab === 'all'
+                      ? 'bg-white text-gray-900 shadow-xs border border-gray-200'
+                      : 'text-gray-500 hover:text-gray-800'
                   }`}
                 >
-                  Inbox
+                  ሁሉም ({messages.length})
+                </button>
+                <button
+                  onClick={() => setFilterTab('unread')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors flex items-center space-x-1 ${
+                    filterTab === 'unread'
+                      ? 'bg-white text-gray-900 shadow-xs border border-gray-200'
+                      : 'text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  <span>ያልተነበቡ</span>
                   {unreadCount > 0 && (
-                    <span className="ml-2 bg-ethiopian-red text-white text-xs px-2 py-1 rounded-full">
+                    <span className="w-4 h-4 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center font-bold">
                       {unreadCount}
                     </span>
                   )}
                 </button>
-              </nav>
+              </div>
+
+              <span className="text-[10px] text-gray-400 font-medium">
+                {filteredMessages.length} ውይይቶች
+              </span>
             </div>
 
-            {/* Message List */}
-            <div className="divide-y divide-gray-100 flex-1 overflow-y-auto custom-scrollbar">
-              {inboxMessages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-gray-400 p-8">
-                  <div className="text-5xl mb-4 opacity-50 grayscale">📭</div>
-                  <p className="font-medium text-sm">No messages yet</p>
+            {/* List Body */}
+            <div className="flex-1 overflow-y-auto divide-y divide-gray-100 custom-scrollbar">
+              {filteredMessages.length === 0 ? (
+                <div className="h-full py-16 flex flex-col items-center justify-center text-center px-4">
+                  <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+                    <MessageSquare className="w-6 h-6 opacity-60" />
+                  </div>
+                  <p className="text-xs font-bold text-gray-700">ምንም መልዕክት የለም</p>
+                  <p className="text-[11px] text-gray-400 mt-1 max-w-xs">
+                    ጥያቄ ወይም አስተያየት ካለዎት "አዲስ መልዕክት" የሚለውን በመጫን ይላኩ።
+                  </p>
+                  <button
+                    onClick={() => setShowComposeModal(true)}
+                    className="mt-3.5 px-3 py-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg text-xs font-bold transition-colors"
+                  >
+                    + መልዕክት ይጻፉ
+                  </button>
                 </div>
               ) : (
-                inboxMessages.map(m => {
-                  const fromName = m.sender?.profile ? `${m.sender.profile.firstName} ${m.sender.profile.lastName}` : (m.sender?.email || 'Unknown');
+                filteredMessages.map((m) => {
+                  const isSelected = selectedMessage?._id === m._id;
+                  const senderName = getSenderDisplayName(m);
+                  const isReplied = m.status === 'Replied' || !!m.adminResponse;
+
                   return (
-                  <div
-                    key={m._id}
-                    onClick={() => { setSelectedMessage(m); markAsRead(m._id); }}
-                    className={`p-4 cursor-pointer hover:bg-gray-50 transition-colors ${selectedMessage?._id === m._id ? 'bg-blue-50' : ''} ${!m.read ? 'bg-amber-50' : ''}`}>
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-10 h-10 bg-ethiopian-gold rounded-full flex items-center justify-center text-white font-bold">
-                          {firstChar(fromName)}
+                    <div
+                      key={m._id}
+                      onClick={() => handleSelectMessage(m)}
+                      className={`p-3 sm:p-3.5 cursor-pointer transition-colors relative flex items-start space-x-3 ${
+                        isSelected 
+                          ? 'bg-amber-50/70 border-l-4 border-amber-600' 
+                          : !m.read 
+                            ? 'bg-amber-50/20 hover:bg-gray-50' 
+                            : 'hover:bg-gray-50/80'
+                      }`}
+                    >
+                      {/* Avatar Circle */}
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-amber-700 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
+                        {firstChar(senderName)}
+                      </div>
+
+                      {/* Content Preview */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline justify-between mb-0.5">
+                          <h4 className={`text-xs truncate ${!m.read ? 'font-bold text-gray-900' : 'font-medium text-gray-800'}`}>
+                            {senderName}
+                          </h4>
+                          <span className="text-[10px] text-gray-400 shrink-0 ml-1">
+                            {formatDate(m.createdAt)}
+                          </span>
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{fromName}</h4>
-                          <p className="text-xs text-gray-500">{formatDate(m.createdAt)}</p>
+
+                        {/* Subject */}
+                        <p className={`text-xs truncate mb-1 ${!m.read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                          {m.subject}
+                        </p>
+
+                        {/* Snippet */}
+                        <p className="text-[11px] text-gray-500 truncate">
+                          {m.adminResponse ? `ምላሽ: ${m.adminResponse}` : m.message}
+                        </p>
+
+                        {/* Badges */}
+                        <div className="mt-1.5 flex items-center space-x-2">
+                          {isReplied ? (
+                            <span className="inline-flex items-center text-[10px] font-bold text-green-700 bg-green-50 px-1.5 py-0.2 rounded border border-green-200">
+                              ✓ ምላሽ ተሰጥቷል
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                              ⏳ በመጠባበቅ ላይ
+                            </span>
+                          )}
+
+                          {!m.read && (
+                            <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.2 rounded">
+                              አዲስ
+                            </span>
+                          )}
                         </div>
                       </div>
-                      {!m.read && (
-                        <span className="w-2 h-2 bg-ethiopian-red rounded-full"></span>
-                      )}
+
+                      {/* Right Chevron for touch feedback */}
+                      <ChevronRight className="w-4 h-4 text-gray-300 self-center shrink-0 hidden sm:block" />
                     </div>
-                    <p className="text-sm font-medium text-gray-900 mb-1">{m.subject}</p>
-                    <p className="text-sm text-gray-600 truncate">{m.message}</p>
-                    <div className="mt-2 flex items-center space-x-2">
-                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">{m.senderRole}</span>
-                      {m.status === 'Replied' && (
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">✓ Replied</span>
-                      )}
-                    </div>
-                  </div>
-                )})
+                  );
+                })
               )}
             </div>
           </div>
 
-          {/* Message Detail */}
-          <div className="lg:col-span-8 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+          {/* ══════════════════════════════════════════════════════════════
+              RIGHT PANE: ACTIVE CONVERSATION (የውይይት ማሳያ)
+              Full-screen on mobile when selected, or right pane on desktop
+             ══════════════════════════════════════════════════════════════ */}
+          <div className={`lg:col-span-7 flex flex-col h-full bg-[#FAFAFC] ${
+            selectedMessage ? 'flex' : 'hidden lg:flex'
+          }`}>
             {selectedMessage ? (
               <div className="flex flex-col h-full">
-                {/* Message Header */}
-                <div className="p-6 border-b border-gray-200">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-ethiopian-gold rounded-full flex items-center justify-center text-white font-bold text-lg">
-                        {firstChar(selectedName || selectedEmail || 'U')}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{selectedName || 'User'}</h3>
-                        <p className="text-sm text-gray-600">{selectedEmail}</p>
-                      </div>
+                
+                {/* Conversation Header (Mobile App Style) */}
+                <div className="bg-white border-b border-gray-200 px-3.5 py-2.5 flex items-center justify-between shrink-0 shadow-xs">
+                  <div className="flex items-center space-x-2.5 min-w-0">
+                    {/* Back to Thread List Button (Crucial on mobile) */}
+                    <button
+                      onClick={() => setSelectedMessage(null)}
+                      className="p-1 -ml-1 text-gray-600 hover:text-amber-800 rounded-lg hover:bg-gray-100 lg:hidden"
+                      title="ወደ ዝርዝር ተመለስ"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </button>
+
+                    <div className="w-8 h-8 rounded-full bg-amber-600 text-white font-bold flex items-center justify-center text-xs shrink-0">
+                      {firstChar(getSenderDisplayName(selectedMessage))}
                     </div>
-                    <span className="text-sm text-gray-500">{formatDate(selectedDate)}</span>
+
+                    <div className="min-w-0">
+                      <h3 className="text-xs sm:text-sm font-bold text-gray-900 truncate">
+                        {getSenderDisplayName(selectedMessage)}
+                      </h3>
+                      <p className="text-[10px] text-gray-500 truncate">
+                        {selectedMessage.subject}
+                      </p>
+                    </div>
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900">{selectedMessage.subject}</h2>
-                  <div className="mt-2">
-                    <span className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded">
-                      Re: {selectedMessage.product}
-                    </span>
+
+                  {/* Status Pill */}
+                  <div className="shrink-0 pl-2">
+                    {selectedMessage.status === 'Replied' || selectedMessage.adminResponse ? (
+                      <span className="text-[10px] font-bold text-green-800 bg-green-100 px-2 py-0.5 rounded-full">
+                        ተጠናቋል
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                        ምላሽ በመጠባበቅ ላይ
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {/* Message Body */}
-                <div className="flex-1 p-6 overflow-y-auto">
-                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                    <p className="text-gray-800 whitespace-pre-wrap">{selectedMessage.message}</p>
+                {/* Conversation Chat Bubbles Area */}
+                <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3.5 custom-scrollbar">
+                  {/* Date Separator */}
+                  <div className="flex justify-center my-1">
+                    <span className="bg-gray-200 text-gray-600 text-[10px] font-medium px-2.5 py-0.5 rounded-full">
+                      {formatDate(selectedMessage.createdAt)}
+                    </span>
                   </div>
 
-                  {selectedMessage.adminResponse && (
-                    <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
-                      <p className="text-sm text-green-800 font-medium mb-2">Reply from Support</p>
-                      <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedMessage.adminResponse}</p>
+                  {/* Bubble 1: Sender's Inquiry */}
+                  <div className="flex flex-col items-start max-w-[92%] sm:max-w-[85%]">
+                    <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm p-3.5 shadow-xs">
+                      <div className="flex items-center space-x-1.5 mb-1.5 pb-1 border-b border-gray-100">
+                        <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.2 rounded">
+                          📌 ርዕስ: {selectedMessage.subject}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                        {selectedMessage.message}
+                      </p>
+                      <div className="flex items-center justify-end space-x-1 mt-1.5 pt-1 text-[10px] text-gray-400">
+                        <span>{formatDate(selectedMessage.createdAt)}</span>
+                        <CheckCheck className="w-3 h-3 text-amber-600" />
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-gray-400 mt-0.5 ml-1">
+                      የተላከው በ: {getSenderDisplayName(selectedMessage)}
+                    </span>
+                  </div>
+
+                  {/* Bubble 2: Support / Admin Response */}
+                  {selectedMessage.adminResponse ? (
+                    <div className="flex flex-col items-end max-w-[92%] sm:max-w-[85%] ml-auto">
+                      <div className="bg-amber-50/80 border border-amber-200 rounded-2xl rounded-tr-sm p-3.5 shadow-xs">
+                        <div className="flex items-center space-x-1.5 mb-1.5 pb-1 border-b border-amber-200/60">
+                          <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+                          <span className="text-[10px] font-bold text-amber-900">
+                            የድጋፍ ሰጪ ቡድን ምላሽ (Support Response)
+                          </span>
+                        </div>
+                        <p className="text-xs sm:text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                          {selectedMessage.adminResponse}
+                        </p>
+                        <div className="flex items-center justify-end space-x-1 mt-1.5 pt-1 text-[10px] text-amber-700">
+                          <span>ምላሽ ተሰጥቷል</span>
+                          <CheckCheck className="w-3 h-3 text-green-600" />
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-gray-400 mt-0.5 mr-1">
+                        EthioCraft የድጋፍ አገልግሎት
+                      </span>
+                    </div>
+                  ) : (
+                    /* Waiting for response banner */
+                    <div className="bg-white border border-dashed border-amber-300 rounded-xl p-3 text-center my-2">
+                      <Clock className="w-5 h-5 text-amber-600 mx-auto mb-1 animate-pulse" />
+                      <p className="text-xs font-bold text-gray-800">
+                        መልዕክትዎ ለድጋፍ ሰጪ ቡድናችን ደርሷል
+                      </p>
+                      <p className="text-[10px] text-gray-500 mt-0.5">
+                        ባለሙያው ወይም አስተዳዳሪው ምላሽ ሲሰጥ እዚህ በቅጽበት ይደርስዎታል
+                      </p>
                     </div>
                   )}
                 </div>
 
-                {/* Reply Section - only visible to admins */}
-                {user?.role === 'admin' ? (
-                  <div className="p-6 border-t border-gray-200">
-                    <h4 className="font-semibold text-gray-900 mb-3">Reply</h4>
-                    <textarea
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
-                      placeholder="Type your reply here..."
-                      rows={4}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-ethiopian-gold focus:border-transparent mb-3"
-                    />
-                    <div className="flex justify-between items-center">
-                      <div className="flex space-x-2">
-                        <button className="text-sm text-gray-600 hover:text-gray-800">
-                          📎 Attach File
-                        </button>
-                        <button className="text-sm text-gray-600 hover:text-gray-800">
-                          📋 Use Template
+                {/* Bottom Reply Bar */}
+                <div className="bg-white border-t border-gray-200 p-2.5 sm:p-3 shrink-0">
+                  {user?.role === 'admin' ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <textarea
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder="ምላሽዎን እዚህ ይጻፉ (Type reply)..."
+                          rows={2}
+                          className="flex-1 px-3 py-1.5 text-xs sm:text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none resize-none"
+                        />
+                        <button
+                          onClick={handleSendReply}
+                          disabled={!replyText.trim() || sendingReply}
+                          className="px-3.5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-colors flex items-center space-x-1 shrink-0 shadow-sm"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                          <span>{sendingReply ? 'በመላክ...' : 'ላክ'}</span>
                         </button>
                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] text-gray-500">
+                        ተጨማሪ ጥያቄ አለዎት? አዲስ መልዕክት መላክ ይችላሉ።
+                      </p>
                       <button
-                        onClick={handleSendReply}
-                        disabled={!replyText.trim()}
-                        className="bg-ethiopian-gold text-white px-6 py-2 rounded-lg hover:bg-ethiopian-earth transition-colors disabled:opacity-50"
+                        onClick={() => {
+                          setComposeSubject(`Re: ${selectedMessage.subject}`);
+                          setShowComposeModal(true);
+                        }}
+                        className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-xs font-bold transition-colors flex items-center space-x-1"
                       >
-                        Send Reply
+                        <Plus className="w-3 h-3" />
+                        <span>መልዕክት ላክ</span>
                       </button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="p-6 border-t border-gray-200">
-                    <p className="text-sm text-gray-600">Only admins can reply to messages. You will see replies from support below.</p>
-                  </div>
-                )}
+                  )}
+                </div>
+
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-gray-400 p-8 bg-gray-50/30">
-                <div className="text-6xl mb-5 opacity-40 grayscale">💬</div>
-                <p className="text-lg font-medium text-gray-500">Select a message to view</p>
+              /* Empty state on desktop when no message is selected */
+              <div className="h-full flex flex-col items-center justify-center p-8 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+                  <MessageSquare className="w-7 h-7 opacity-50" />
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-gray-700">
+                  ለማንበብ መልዕክት ይምረጡ
+                </h3>
+                <p className="text-[11px] text-gray-400 mt-1 max-w-xs">
+                  በግራ በኩል ካለው ዝርዝር ውስጥ ማንበብ ወይም መመለስ የሚፈልጉትን ውይይት ይጫኑ
+                </p>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Quick Reply Templates */}
-        <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Reply Templates</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button
-              onClick={() => setReplyText('Thank you for your interest! Yes, I can customize this product. Please let me know your specific requirements.')}
-              className="p-4 border border-gray-200 rounded-lg hover:border-ethiopian-gold hover:bg-amber-50 transition-colors text-left"
-            >
-              <h4 className="font-medium text-gray-900 mb-1">Customization Available</h4>
-              <p className="text-sm text-gray-600">For custom order inquiries</p>
-            </button>
-            <button
-              onClick={() => setReplyText('Yes, I ship internationally! Shipping typically takes 7-14 business days. I will provide tracking information once your order ships.')}
-              className="p-4 border border-gray-200 rounded-lg hover:border-ethiopian-gold hover:bg-amber-50 transition-colors text-left"
-            >
-              <h4 className="font-medium text-gray-900 mb-1">Shipping Information</h4>
-              <p className="text-sm text-gray-600">For shipping questions</p>
-            </button>
-            <button
-              onClick={() => setReplyText('Thank you for your bulk order inquiry! I would be happy to discuss wholesale pricing. Please let me know the quantity you need.')}
-              className="p-4 border border-gray-200 rounded-lg hover:border-ethiopian-gold hover:bg-amber-50 transition-colors text-left"
-            >
-              <h4 className="font-medium text-gray-900 mb-1">Bulk Order</h4>
-              <p className="text-sm text-gray-600">For wholesale inquiries</p>
-            </button>
-          </div>
         </div>
       </div>
-    </DashboardLayout>
+
+      {/* ════════════════════════════════════════════════════════════════
+          COMPOSE NEW MESSAGE MODAL (አዲስ መልዕክት መጻፊያ)
+         ════════════════════════════════════════════════════════════════ */}
+      {showComposeModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-3 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-4 py-3 bg-amber-50/80 border-b border-amber-100 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-6 h-6 rounded-lg bg-amber-600 text-white flex items-center justify-center">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <h3 className="text-xs sm:text-sm font-bold text-amber-950">
+                  አዲስ መልዕክት ይጻፉ
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowComposeModal(false)}
+                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleCreateNewMessage} className="p-4 space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  የመልዕክት ርዕስ (Subject) *
+                </label>
+                <input
+                  type="text"
+                  value={composeSubject}
+                  onChange={(e) => setComposeSubject(e.target.value)}
+                  placeholder="ምሳሌ: ስለ ትዕዛዝ ማድረሻ፣ ስለ ክፍያ ጥያቄ..."
+                  className="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  መልዕክት (Message Details) *
+                </label>
+                <textarea
+                  value={composeMessage}
+                  onChange={(e) => setComposeMessage(e.target.value)}
+                  placeholder="ጥያቄዎን ወይም አስተያየትዎን እዚህ በዝርዝር ይጻፉ..."
+                  rows={4}
+                  className="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-none resize-none"
+                  required
+                />
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="flex items-center justify-end space-x-2 pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowComposeModal(false)}
+                  className="px-3.5 py-1.5 rounded-xl border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  ሰርዝ
+                </button>
+                <button
+                  type="submit"
+                  disabled={sendingNewMessage}
+                  className="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center space-x-1"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{sendingNewMessage ? 'በመላክ ላይ...' : 'መልዕክት ላክ'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

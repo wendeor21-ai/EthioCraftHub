@@ -13,6 +13,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import api from '../../utils/api';
 import ProductCard from './ProductCard';
 import LoadingSpinner from '../common/LoadingSpinner';
 import ErrorMessage from '../common/ErrorMessage';
@@ -117,7 +118,7 @@ const ProductList = ({
       console.log('Fetching products with params:', params.toString());
 
       // Make API request with timeout
-      const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/products?${params}`, {
+      const response = await api.get(`/products?${params}`, {
         timeout: 10000 // 10 second timeout
       });
 
